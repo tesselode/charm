@@ -3,13 +3,18 @@ local charm = require 'charm'
 local ui = charm.new()
 
 function love.draw()
-	if love.keyboard.isDown 'space' then
-		ui
-			:rectangle(50, 50, 100, 150)
-			:fillColor(.5, .5, .5)
-	end
 	ui
-		:rectangle(200, 200, 10, 10)
-		:fillColor(1, 0, 0)
-	ui:draw()
+		:rectangle(nil, 50, 100, 150)
+			:center(400 + 100 * math.sin(love.timer.getTime()))
+			:fillColor(.5, .5, .5)
+			:name 'mainBox'
+		:rectangle(nil, nil, 50, 50)
+			:left(ui:getRight '@previous')
+			:middle(ui:getMiddle '@previous')
+			:fillColor(1, 0, 0)
+		:rectangle(nil, nil, 10, 300)
+			:center(ui:getCenter 'mainBox')
+			:top(ui:getBottom 'mainBox')
+			:fillColor(0, 1, 0)
+		:draw()
 end
