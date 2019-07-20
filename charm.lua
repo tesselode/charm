@@ -57,8 +57,9 @@ function Ui:_getNewElement(type)
 		table.insert(self._elements, element)
 	end
 	element.type = type
-	if self._grouping then
-		table.insert(self._toBeGrouped, element)
+	if self._currentGroup > 0 then
+		self._groupQueue[self._currentGroup] = self._groupQueue[self._currentGroup] or {}
+		table.insert(self._groupQueue[self._currentGroup], element)
 	end
 	return element
 end
@@ -124,23 +125,24 @@ function Ui:fillColor(r, g, b, a)
 end
 
 function Ui:beginGroup()
-	self._grouping = true
+	self._currentGroup = self._currentGroup + 1
 	return self
 end
 
 function Ui:endGroup(padding)
 	padding = padding or 0
-	self._grouping = false
+	local queue = self._groupQueue[self._currentGroup]
+	self._currentGroup = self._currentGroup - 1
 	-- get the bounds of the group
-	local left = self._toBeGrouped[1].x
-	local top = self._toBeGrouped[1].y
-	local right = self._toBeGrouped[1].x + self._toBeGrouped[1].w
-	local bottom = self._toBeGrouped[1].y + self._toBeGrouped[1].h
-	for i = 2, #self._toBeGrouped do
-		left = math.min(left, self._toBeGrouped[i].x)
-		top = math.min(top, self._toBeGrouped[i].y)
-		right = math.max(right, self._toBeGrouped[i].x + self._toBeGrouped[i].w)
-		bottom = math.max(bottom, self._toBeGrouped[i].y + self._toBeGrouped[i].h)
+	local left = queue[1].x
+	local top = queue[1].y
+	local right = queue[1].x + queue[1].w
+	local bottom = queue[1].y + queue[1].h
+	for i = 2, #queue do
+		left = math.min(left, queue[i].x)
+		top = math.min(top, queue[i].y)
+		right = math.max(right, queue[i].x + queue[i].w)
+		bottom = math.max(bottom, queue[i].y + queue[i].h)
 	end
 	-- apply padding
 	left = left - padding
@@ -150,13 +152,13 @@ function Ui:endGroup(padding)
 	-- make the new rectangle
 	self:rectangle(left, top, right - left, bottom - top)
 	-- add the grouped elements as children of the rectangle
-	for _, element in ipairs(self._toBeGrouped) do
+	for _, element in ipairs(queue) do
 		element.parentIndex = self._activeElements
 		element.x = element.x - left
 		element.y = element.y - top
 	end
 	-- clear the group queue
-	shallowClear(self._toBeGrouped)
+	shallowClear(queue)
 	return self
 end
 
@@ -181,8 +183,11 @@ function Ui:draw(parentIndex)
 		end
 	end
 	self._activeElements = 0
-	self._grouping = false
-	shallowClear(self._toBeGrouped)
+	-- reset groups
+	while self._currentGroup > 0 do
+		shallowClear(self._groupQueue[self._currentGroup])
+		self._currentGroup = self._currentGroup - 1
+	end
 	return self
 end
 
@@ -190,8 +195,8 @@ function charm.new()
 	return setmetatable({
 		_elements = {},
 		_activeElements = 0,
-		_grouping = false,
-		_toBeGrouped = {},
+		_currentGroup = 0,
+		_groupQueue = {},
 	}, Ui)
 end
 
