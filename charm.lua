@@ -65,6 +65,49 @@ Element.rectangle = {
 	end,
 }
 
+Element.image = {
+	new = function(self, image, x, y)
+		self.image = image
+		self.x = x or 0
+		self.y = y or 0
+		self.w = image:getWidth()
+		self.h = image:getHeight()
+	end,
+	set = {
+		scaleX = function(self, sx)
+			self.w = self.image:getWidth() * sx
+		end,
+		scaleY = function(self, sy)
+			self.h = self.image:getHeight() * sy
+		end,
+		scale = function(self, sx, sy)
+			self.w = self.image:getWidth() * sx
+			self.h = self.image:getHeight() * sy
+		end,
+		color = function(self, r, g, b, a)
+			self.color = self.color or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.color[i] = r[i] end
+			else
+				self.color[1] = r
+				self.color[2] = g
+				self.color[3] = b
+				self.color[4] = a
+			end
+		end,
+	},
+	draw = function(self)
+		love.graphics.push 'all'
+		if self.color and #self.color > 0 then
+			love.graphics.setColor(unpack(self.color))
+		end
+		local sx = self.w / self.image:getWidth()
+		local sy = self.h / self.image:getHeight()
+		love.graphics.draw(self.image, 0, 0, 0, sx, sy)
+		love.graphics.pop()
+	end
+}
+
 local Ui = {}
 Ui.__index = Ui
 

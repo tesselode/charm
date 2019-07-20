@@ -1,17 +1,17 @@
 local charm = require 'charm'
 
+local beanMan = love.graphics.newImage 'bean man.png'
+
 local ui = charm.new()
 
 function love.draw()
 	ui
+		:new('image', beanMan, 50, 50)
+			:set('scale', .5, .5)
 		:new 'rectangle'
-			:width(100 + 50 * math.sin(love.timer.getTime()))
-			:height(100 + 50 * math.cos(love.timer.getTime() * 1.1))
-			:center(200):middle(200)
-			:set('fillColor', .5, .5, .5)
-		:new 'rectangle'
-			:size(ui:getSize '@previous')
-			:center(500):middle(300)
+			:size(50, 50)
+			:left(ui:getRight '@previous')
+			:middle(ui:getMiddle '@previous')
 			:set('fillColor', .5, .5, .5)
 		:draw()
 
