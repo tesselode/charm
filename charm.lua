@@ -16,16 +16,54 @@ local function deepClear(t)
 	end
 end
 
-local draw = {}
+local Element = {}
 
-function draw:rectangle()
-	love.graphics.push 'all'
-	if self.fillColor then
-		love.graphics.setColor(unpack(self.fillColor))
-		love.graphics.rectangle('fill', 0, 0, self.w, self.h)
-	end
-	love.graphics.pop()
-end
+Element.rectangle = {
+	new = function(self, x, y, w, h)
+		self.x = x or 0
+		self.y = y or 0
+		self.w = w or 0
+		self.h = h or 0
+	end,
+	set = {
+		fillColor = function(self, r, g, b, a)
+			self.fillColor = self.fillColor or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.fillColor[i] = r[i] end
+			else
+				self.fillColor[1] = r
+				self.fillColor[2] = g
+				self.fillColor[3] = b
+				self.fillColor[4] = a
+			end
+		end,
+		outlineColor = function(self, r, g, b, a)
+			self.outlineColor = self.outlineColor or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.outlineColor[i] = r[i] end
+			else
+				self.outlineColor[1] = r
+				self.outlineColor[2] = g
+				self.outlineColor[3] = b
+				self.outlineColor[4] = a
+			end
+		end,
+		lineWidth = function(self, width) self.lineWidth = width end,
+	},
+	draw = function(self)
+		love.graphics.push 'all'
+		if self.fillColor then
+			love.graphics.setColor(unpack(self.fillColor))
+			love.graphics.rectangle('fill', 0, 0, self.w, self.h)
+		end
+		if self.outlineColor then
+			love.graphics.setColor(unpack(self.outlineColor))
+			love.graphics.setLineWidth(self.lineWidth or 1)
+			love.graphics.rectangle('line', 0, 0, self.w, self.h)
+		end
+		love.graphics.pop()
+	end,
+}
 
 local Ui = {}
 Ui.__index = Ui
@@ -46,7 +84,14 @@ function Ui:_getCurrentElement()
 	return self._elements[self._activeElements]
 end
 
-function Ui:_getNewElement(type)
+function Ui:_getElementClass(element)
+	if type(element.type) == 'string' then
+		return Element[element.type]
+	end
+	return element.type
+end
+
+function Ui:_getNewElement()
 	self._activeElements = self._activeElements + 1
 	local element
 	if self._elements[self._activeElements] then
@@ -56,7 +101,6 @@ function Ui:_getNewElement(type)
 		element = {}
 		table.insert(self._elements, element)
 	end
-	element.type = type
 	if self._currentGroup > 0 then
 		self._groupQueue[self._currentGroup] = self._groupQueue[self._currentGroup] or {}
 		table.insert(self._groupQueue[self._currentGroup], element)
@@ -110,17 +154,10 @@ function Ui:name(name)
 	return self
 end
 
-function Ui:fillColor(r, g, b, a)
-	local element = self._elements[self._activeElements]
-	element.fillColor = element.fillColor or {}
-	if type(r) == 'table' then
-		for i = 1, 4 do element.fillColor[i] = r[i] end
-	else
-		element.fillColor[1] = r
-		element.fillColor[2] = g
-		element.fillColor[3] = b
-		element.fillColor[4] = a
-	end
+function Ui:set(property, ...)
+	local element = self:_getCurrentElement()
+	local elementClass = self:_getElementClass(element)
+	elementClass.set[property](element, ...)
 	return self
 end
 
@@ -150,7 +187,7 @@ function Ui:endGroup(padding)
 	right = right + padding
 	bottom = bottom + padding
 	-- make the new rectangle
-	self:rectangle(left, top, right - left, bottom - top)
+	self:new('rectangle', left, top, right - left, bottom - top)
 	-- add the grouped elements as children of the rectangle
 	for _, element in ipairs(queue) do
 		element.parentIndex = self._activeElements
@@ -162,22 +199,22 @@ function Ui:endGroup(padding)
 	return self
 end
 
-function Ui:rectangle(x, y, w, h)
-	local element = self:_getNewElement 'rectangle'
-	element.x = x or 0
-	element.y = y or 0
-	element.w = w or 0
-	element.h = h or 0
+function Ui:new(type, ...)
+	local element = self:_getNewElement()
+	element.type = type
+	local elementClass = self:_getElementClass(element)
+	elementClass.new(element, ...)
 	return self
 end
 
 function Ui:draw(parentIndex)
 	for i = 1, self._activeElements do
 		local element = self._elements[i]
+		local elementClass = self:_getElementClass(element)
 		if element.parentIndex == parentIndex then
 			love.graphics.push 'all'
 			love.graphics.translate(element.x, element.y)
-			draw[element.type](element)
+			elementClass.draw(element)
 			self:draw(i)
 			love.graphics.pop()
 		end
