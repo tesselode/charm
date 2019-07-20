@@ -108,6 +108,14 @@ function Ui:_getNewElement()
 	return element
 end
 
+function Ui:new(type, ...)
+	local element = self:_getNewElement()
+	element.type = type
+	local elementClass = self:_getElementClass(element)
+	elementClass.new(element, ...)
+	return self
+end
+
 function Ui:getX(name, anchor)
 	anchor = anchor or 0
 	local element = self:_getElement(name)
@@ -147,6 +155,14 @@ end
 function Ui:top(y) return self:y(y, 0) end
 function Ui:middle(y) return self:y(y, .5) end
 function Ui:bottom(y) return self:y(y, 1) end
+
+function Ui:shift(dx, dy)
+	dx, dy = dx or 0, dy or 0
+	local element = self:_getCurrentElement()
+	element.x = element.x + dx
+	element.y = element.y + dy
+	return self
+end
 
 function Ui:name(name)
 	local element = self:_getCurrentElement()
@@ -196,14 +212,6 @@ function Ui:endGroup(padding)
 	end
 	-- clear the group queue
 	shallowClear(queue)
-	return self
-end
-
-function Ui:new(type, ...)
-	local element = self:_getNewElement()
-	element.type = type
-	local elementClass = self:_getElementClass(element)
-	elementClass.new(element, ...)
 	return self
 end
 

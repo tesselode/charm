@@ -19,6 +19,7 @@ function love.draw()
 		:new('rectangle', nil, nil, 50, 50)
 			:left(ui:getRight '@previous')
 			:middle(ui:getMiddle '@previous')
+			:shift(50)
 			:set('fillColor', 1, 0, 0)
 		:draw()
 
