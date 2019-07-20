@@ -12,8 +12,10 @@ function love.draw()
 			:size(50, 50)
 			:left(ui:getRight '@previous')
 			:middle(ui:getMiddle '@previous')
-			:set('fillColor', .5, .5, .5)
-		:draw()
+	if love.keyboard.isDown 'space' then
+		ui:set('fillColor', .5, .5, .5)
+	end
+	ui:draw()
 
 	love.graphics.print('Memory usage: ' .. math.floor(collectgarbage 'count') .. 'kb')
 end

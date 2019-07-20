@@ -52,11 +52,11 @@ Element.rectangle = {
 	},
 	draw = function(self)
 		love.graphics.push 'all'
-		if self.fillColor then
+		if self.fillColor and #self.fillColor > 0 then
 			love.graphics.setColor(unpack(self.fillColor))
 			love.graphics.rectangle('fill', 0, 0, self.w, self.h)
 		end
-		if self.outlineColor then
+		if self.outlineColor and #self.outlineColor > 0 then
 			love.graphics.setColor(unpack(self.outlineColor))
 			love.graphics.setLineWidth(self.lineWidth or 1)
 			love.graphics.rectangle('line', 0, 0, self.w, self.h)
