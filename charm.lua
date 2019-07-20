@@ -136,6 +136,10 @@ function Ui:getTop(name) return self:getY(name, 0) end
 function Ui:getMiddle(name) return self:getY(name, .5) end
 function Ui:getBottom(name) return self:getY(name, 1) end
 
+function Ui:getWidth(name) return self:_getElement(name).w end
+function Ui:getHeight(name) return self:_getElement(name).h end
+function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
+
 function Ui:x(x, anchor)
 	local element = self:_getCurrentElement()
 	element.x = x - element.w * anchor
@@ -155,6 +159,25 @@ end
 function Ui:top(y) return self:y(y, 0) end
 function Ui:middle(y) return self:y(y, .5) end
 function Ui:bottom(y) return self:y(y, 1) end
+
+function Ui:width(width)
+	local element = self:_getCurrentElement()
+	element.w = width
+	return self
+end
+
+function Ui:height(height)
+	local element = self:_getCurrentElement()
+	element.h = height
+	return self
+end
+
+function Ui:size(width, height)
+	width, height = width or 0, height or 0
+	self:width(width)
+	self:height(height)
+	return self
+end
 
 function Ui:shift(dx, dy)
 	dx, dy = dx or 0, dy or 0
