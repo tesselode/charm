@@ -1,13 +1,20 @@
 local charm = require 'charm'
 
-local testFont = love.graphics.newFont(32)
+local loremIpsum = [[
+	Eius id commodi minus cumque. Sit expedita fuga optio quidem.
+	Excepturi explicabo rerum et non nostrum. Delectus tenetur
+	voluptatem voluptas. Qui quo molestias omnis nihil et.
+]]
+
+local testFont = love.graphics.newFont(16)
 local beanMan = love.graphics.newImage 'bean man.png'
 
 local ui = charm.new()
 
 function love.draw()
 	ui
-		:new('text', testFont, 'hello world!\nnewline', 50, 50)
+		:new('paragraph', testFont, loremIpsum, 500, 'right', 50, 50)
+			:set('scale', 2, 2)
 			:set('color', .8, .8, .8)
 			:set('shadowColor', 1, 0, 0)
 			:set('shadowOffset', -5, 5)

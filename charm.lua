@@ -25,6 +25,12 @@ local function getTextHeight(font, text)
 	return font:getHeight() * font:getLineHeight() * numberOfLines(text)
 end
 
+-- todo: investigate ways to make this function more memory-efficient
+local function getParagraphHeight(font, text, limit)
+	local _, lines = font:getWrap(text, limit)
+	return #lines * font:getHeight() * font:getLineHeight()
+end
+
 local Element = {}
 
 Element.rectangle = {
@@ -186,6 +192,81 @@ Element.text = {
 			love.graphics.setColor(unpack(self.color))
 		end
 		love.graphics.print(self.text, 0, 0, 0, sx, sy)
+		love.graphics.pop()
+	end,
+}
+
+Element.paragraph = {
+	new = function(self, font, text, limit, align, x, y)
+		self.font = font
+		self.text = text
+		self.limit = limit
+		self.align = align
+		self.x = x or 0
+		self.y = y or 0
+		self.w = limit
+		self.h = getParagraphHeight(font, text, limit)
+	end,
+	set = {
+		scaleX = function(self, sx)
+			self.w = self.limit * sx
+		end,
+		scaleY = function(self, sy)
+			self.h = getParagraphHeight(self.font, self.text, self.limit) * sy
+		end,
+		scale = function(self, sx, sy)
+			self.w = self.limit * sx
+			self.h = getParagraphHeight(self.font, self.text, self.limit) * sy
+		end,
+		color = function(self, r, g, b, a)
+			self.color = self.color or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.color[i] = r[i] end
+			else
+				self.color[1] = r
+				self.color[2] = g
+				self.color[3] = b
+				self.color[4] = a
+			end
+		end,
+		shadowColor = function(self, r, g, b, a)
+			self.shadowColor = self.shadowColor or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.shadowColor[i] = r[i] end
+			else
+				self.shadowColor[1] = r
+				self.shadowColor[2] = g
+				self.shadowColor[3] = b
+				self.shadowColor[4] = a
+			end
+		end,
+		shadowOffsetX = function(self, offsetX)
+			self.shadowOffsetX = offsetX
+		end,
+		shadowOffsetY = function(self, offsetY)
+			self.shadowOffsetY = offsetY
+		end,
+		shadowOffset = function(self, offsetX, offsetY)
+			self.shadowOffsetX = offsetX or 0
+			self.shadowOffsetY = offsetY or 0
+		end,
+	},
+	draw = function(self)
+		love.graphics.push 'all'
+		love.graphics.setFont(self.font)
+		local sx = self.w / self.limit
+		local sy = self.h / getParagraphHeight(self.font, self.text, self.limit)
+		if self.shadowColor and #self.shadowColor > 0 then
+			local offsetX = self.shadowOffsetX or 1
+			local offsetY = self.shadowOffsetY or 1
+			love.graphics.setColor(unpack(self.shadowColor))
+			love.graphics.printf(self.text, offsetX, offsetY, self.limit, self.align, 0, sx, sy)
+		end
+		love.graphics.setColor(1, 1, 1)
+		if self.color and #self.color > 0 then
+			love.graphics.setColor(unpack(self.color))
+		end
+		love.graphics.printf(self.text, 0, 0, self.limit, self.align, 0, sx, sy)
 		love.graphics.pop()
 	end,
 }
