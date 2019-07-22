@@ -16,6 +16,15 @@ local function deepClear(t)
 	end
 end
 
+local function numberOfLines(s)
+	local _, newlines = s:gsub('\n', '\n')
+	return newlines + 1
+end
+
+local function getTextHeight(font, text)
+	return font:getHeight() * font:getLineHeight() * numberOfLines(text)
+end
+
 local Element = {}
 
 Element.rectangle = {
@@ -106,6 +115,79 @@ Element.image = {
 		love.graphics.draw(self.image, 0, 0, 0, sx, sy)
 		love.graphics.pop()
 	end
+}
+
+Element.text = {
+	new = function(self, font, text, x, y)
+		self.font = font
+		self.text = text
+		self.x = x or 0
+		self.y = y or 0
+		self.w = font:getWidth(text)
+		self.h = getTextHeight(font, text)
+	end,
+	set = {
+		scaleX = function(self, sx)
+			self.w = self.font:getWidth(self.text) * sx
+		end,
+		scaleY = function(self, sy)
+			self.h = getTextHeight(self.font, self.text) * sy
+		end,
+		scale = function(self, sx, sy)
+			self.w = self.font:getWidth(self.text) * sx
+			self.h = getTextHeight(self.font, self.text) * sy
+		end,
+		color = function(self, r, g, b, a)
+			self.color = self.color or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.color[i] = r[i] end
+			else
+				self.color[1] = r
+				self.color[2] = g
+				self.color[3] = b
+				self.color[4] = a
+			end
+		end,
+		shadowColor = function(self, r, g, b, a)
+			self.shadowColor = self.shadowColor or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.shadowColor[i] = r[i] end
+			else
+				self.shadowColor[1] = r
+				self.shadowColor[2] = g
+				self.shadowColor[3] = b
+				self.shadowColor[4] = a
+			end
+		end,
+		shadowOffsetX = function(self, offsetX)
+			self.shadowOffsetX = offsetX
+		end,
+		shadowOffsetY = function(self, offsetY)
+			self.shadowOffsetY = offsetY
+		end,
+		shadowOffset = function(self, offsetX, offsetY)
+			self.shadowOffsetX = offsetX or 0
+			self.shadowOffsetY = offsetY or 0
+		end,
+	},
+	draw = function(self)
+		love.graphics.push 'all'
+		love.graphics.setFont(self.font)
+		local sx = self.w / self.font:getWidth(self.text)
+		local sy = self.h / getTextHeight(self.font, self.text)
+		if self.shadowColor and #self.shadowColor > 0 then
+			local offsetX = self.shadowOffsetX or 1
+			local offsetY = self.shadowOffsetY or 1
+			love.graphics.setColor(unpack(self.shadowColor))
+			love.graphics.print(self.text, offsetX, offsetY, 0, sx, sy)
+		end
+		love.graphics.setColor(1, 1, 1)
+		if self.color and #self.color > 0 then
+			love.graphics.setColor(unpack(self.color))
+		end
+		love.graphics.print(self.text, 0, 0, 0, sx, sy)
+		love.graphics.pop()
+	end,
 }
 
 local Ui = {}
