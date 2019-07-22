@@ -63,7 +63,6 @@ Element.rectangle = {
 				self.outlineColor[4] = a
 			end
 		end,
-		lineWidth = function(self, width) self.lineWidth = width end,
 	},
 	draw = function(self)
 		love.graphics.push 'all'
@@ -165,12 +164,6 @@ Element.text = {
 				self.shadowColor[4] = a
 			end
 		end,
-		shadowOffsetX = function(self, offsetX)
-			self.shadowOffsetX = offsetX
-		end,
-		shadowOffsetY = function(self, offsetY)
-			self.shadowOffsetY = offsetY
-		end,
 		shadowOffset = function(self, offsetX, offsetY)
 			self.shadowOffsetX = offsetX or 0
 			self.shadowOffsetY = offsetY or 0
@@ -239,12 +232,6 @@ Element.paragraph = {
 				self.shadowColor[3] = b
 				self.shadowColor[4] = a
 			end
-		end,
-		shadowOffsetX = function(self, offsetX)
-			self.shadowOffsetX = offsetX
-		end,
-		shadowOffsetY = function(self, offsetY)
-			self.shadowOffsetY = offsetY
 		end,
 		shadowOffset = function(self, offsetX, offsetY)
 			self.shadowOffsetX = offsetX or 0
@@ -402,7 +389,11 @@ end
 function Ui:set(property, ...)
 	local element = self:_getCurrentElement()
 	local elementClass = self:_getElementClass(element)
-	elementClass.set[property](element, ...)
+	if elementClass.set and elementClass.set[property] then
+		elementClass.set[property](element, ...)
+	else
+		element[property] = select(1, ...)
+	end
 	return self
 end
 

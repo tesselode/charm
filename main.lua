@@ -13,7 +13,8 @@ local ui = charm.new()
 
 function love.draw()
 	ui
-		:new('paragraph', testFont, loremIpsum, 500, 'right', 50, 50)
+		:new('paragraph', testFont, loremIpsum, 500, 'left', 50, 50)
+			:set('text', 'asdf')
 			:set('scale', 2, 2)
 			:set('color', .8, .8, .8)
 			:set('shadowColor', 1, 0, 0)
