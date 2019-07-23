@@ -334,6 +334,7 @@ function Ui:getHeight(name) return self:_getElement(name).h end
 function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
 
 function Ui:x(x, anchor)
+	anchor = anchor or 0
 	local element = self:_getCurrentElement()
 	element.x = x - element.w * anchor
 	return self
@@ -344,6 +345,7 @@ function Ui:center(x) return self:x(x, .5) end
 function Ui:right(x) return self:x(x, 1) end
 
 function Ui:y(y, anchor)
+	anchor = anchor or 0
 	local element = self:_getCurrentElement()
 	element.y = y - element.h * anchor
 	return self
