@@ -437,7 +437,7 @@ function Ui:endGroup(padding)
 	return self
 end
 
-function Ui:draw(parentIndex)
+function Ui:_draw(parentIndex)
 	for i = 1, self._activeElements do
 		local element = self._elements[i]
 		local elementClass = self:_getElementClass(element)
@@ -445,16 +445,23 @@ function Ui:draw(parentIndex)
 			love.graphics.push 'all'
 			love.graphics.translate(element.x, element.y)
 			elementClass.draw(element)
-			self:draw(i)
+			self:_draw(i)
 			love.graphics.pop()
 		end
 	end
+end
+
+function Ui:_finish()
 	self._activeElements = 0
-	-- reset groups
 	while self._currentGroup > 0 do
 		shallowClear(self._groupQueue[self._currentGroup])
 		self._currentGroup = self._currentGroup - 1
 	end
+end
+
+function Ui:draw()
+	self:_draw()
+	self:_finish()
 	return self
 end
 
