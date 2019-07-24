@@ -262,6 +262,9 @@ local Ui = {}
 Ui.__index = Ui
 
 function Ui:_getElement(name)
+	if name == '@current' then
+		return self._elements[self._activeElements]
+	end
 	if name == '@previous' then
 		return self._elements[self._activeElements - 1]
 	end
@@ -391,6 +394,12 @@ function Ui:set(property, ...)
 	return self
 end
 
+function Ui:clip()
+	local element = self:_getCurrentElement()
+	element.clip = true
+	return self
+end
+
 function Ui:beginGroup()
 	self._currentGroup = self._currentGroup + 1
 	return self
@@ -446,7 +455,8 @@ function Ui:wrap(padding)
 	return self
 end
 
-function Ui:_draw(parentIndex)
+function Ui:_draw(parentIndex, stencilValue)
+	stencilValue = stencilValue or 0
 	for i = 1, self._activeElements do
 		local element = self._elements[i]
 		local elementClass = self:_getElementClass(element)
@@ -454,7 +464,20 @@ function Ui:_draw(parentIndex)
 			love.graphics.push 'all'
 			love.graphics.translate(element.x, element.y)
 			elementClass.draw(element)
-			self:_draw(i)
+			if element.clip then
+				stencilValue = stencilValue + 1
+				self._stencilFunctionCache[element] = self._stencilFunctionCache[element] or function()
+					love.graphics.rectangle('fill', 0, 0, element.w, element.h)
+				end
+				love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
+				love.graphics.setStencilTest('gequal', stencilValue)
+			end
+			self:_draw(i, stencilValue)
+			if element.clip then
+				stencilValue = stencilValue - 1
+				love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
+				love.graphics.setStencilTest()
+			end
 			love.graphics.pop()
 		end
 	end
@@ -480,6 +503,7 @@ function charm.new()
 		_activeElements = 0,
 		_currentGroup = 0,
 		_groupQueue = {},
+		_stencilFunctionCache = {},
 	}, Ui)
 end
 
