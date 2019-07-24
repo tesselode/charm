@@ -374,14 +374,6 @@ function Ui:size(width, height)
 	return self
 end
 
-function Ui:shift(dx, dy)
-	dx, dy = dx or 0, dy or 0
-	local element = self:_getCurrentElement()
-	element.x = element.x + dx
-	element.y = element.y + dy
-	return self
-end
-
 function Ui:name(name)
 	local element = self:_getCurrentElement()
 	element.name = name
