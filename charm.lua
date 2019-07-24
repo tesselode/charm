@@ -396,36 +396,53 @@ function Ui:beginGroup()
 	return self
 end
 
-function Ui:endGroup(padding)
-	padding = padding or 0
+function Ui:endGroup()
 	local queue = self._groupQueue[self._currentGroup]
 	self._currentGroup = self._currentGroup - 1
-	-- get the bounds of the group
-	local left = queue[1].x
-	local top = queue[1].y
-	local right = queue[1].x + queue[1].w
-	local bottom = queue[1].y + queue[1].h
-	for i = 2, #queue do
-		left = math.min(left, queue[i].x)
-		top = math.min(top, queue[i].y)
-		right = math.max(right, queue[i].x + queue[i].w)
-		bottom = math.max(bottom, queue[i].y + queue[i].h)
+	-- make a new rectangle
+	self:new 'rectangle'
+	-- add the grouped elements as children of the rectangle
+	for _, element in ipairs(queue) do
+		element.parentIndex = self._activeElements
+	end
+	-- clear the group queue
+	shallowClear(queue)
+	return self
+end
+
+function Ui:wrap(padding)
+	padding = padding or 0
+	local parent = self:_getCurrentElement()
+	local parentIndex = self._activeElements
+	-- get the bounds of current element's children
+	local left, top, right, bottom
+	for i = 1, self._activeElements do
+		local child = self._elements[i]
+		if child.parentIndex == parentIndex then
+			left = left and math.min(left, child.x) or child.x
+			top = top and math.min(top, child.y) or child.y
+			right = right and math.max(right, child.x + child.w) or child.x + child.w
+			bottom = bottom and math.max(bottom, child.y + child.h) or child.y + child.h
+		end
 	end
 	-- apply padding
 	left = left - padding
 	top = top - padding
 	right = right + padding
 	bottom = bottom + padding
-	-- make the new rectangle
-	self:new('rectangle', left, top, right - left, bottom - top)
-	-- add the grouped elements as children of the rectangle
-	for _, element in ipairs(queue) do
-		element.parentIndex = self._activeElements
-		element.x = element.x - left
-		element.y = element.y - top
+	-- change the parent position and size
+	parent.x = left
+	parent.y = top
+	parent.w = right - left
+	parent.h = bottom - top
+	-- adjust the children's positions
+	for i = 1, self._activeElements do
+		local child = self._elements[i]
+		if child.parentIndex == parentIndex then
+			child.x = child.x - left
+			child.y = child.y - top
+		end
 	end
-	-- clear the group queue
-	shallowClear(queue)
 	return self
 end
 
