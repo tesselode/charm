@@ -2,10 +2,6 @@ local charm = {}
 
 unpack = unpack or table.unpack -- luacheck: ignore
 
-local function shallowClear(t)
-	for k in pairs(t) do t[k] = nil end
-end
-
 local function deepClear(t)
 	for k, v in pairs(t) do
 		if type(v) == 'table' then
@@ -263,10 +259,11 @@ Ui.__index = Ui
 
 function Ui:_getElement(name)
 	if name == '@current' then
-		return self._elements[self._activeElements]
-	end
-	if name == '@previous' then
-		return self._elements[self._activeElements - 1]
+		return self._elements[self._currentElementIndex]
+	elseif name == '@previous' then
+		return self._elements[self._currentElementIndex - 1]
+	elseif name == '@parent' then
+		return self._elements[self._activeParents[#self._activeParents]]
 	end
 	for i = self._activeElements, 1, -1 do
 		local element = self._elements[i]
@@ -277,7 +274,7 @@ function Ui:_getElement(name)
 end
 
 function Ui:_getCurrentElement()
-	return self._elements[self._activeElements]
+	return self._elements[self._currentElementIndex]
 end
 
 function Ui:_getElementClass(element)
@@ -289,18 +286,16 @@ end
 
 function Ui:_getNewElement()
 	self._activeElements = self._activeElements + 1
+	self._currentElementIndex = self._activeElements
 	local element
-	if self._elements[self._activeElements] then
-		element = self._elements[self._activeElements]
+	if self._elements[self._currentElementIndex] then
+		element = self._elements[self._currentElementIndex]
 		deepClear(element)
 	else
 		element = {}
 		table.insert(self._elements, element)
 	end
-	if self._currentGroup > 0 then
-		self._groupQueue[self._currentGroup] = self._groupQueue[self._currentGroup] or {}
-		table.insert(self._groupQueue[self._currentGroup], element)
-	end
+	element.parentIndex = self._activeParents[#self._activeParents]
 	return element
 end
 
@@ -400,29 +395,21 @@ function Ui:clip()
 	return self
 end
 
-function Ui:beginGroup()
-	self._currentGroup = self._currentGroup + 1
+function Ui:beginChildren()
+	table.insert(self._activeParents, self._currentElementIndex)
 	return self
 end
 
-function Ui:endGroup()
-	local queue = self._groupQueue[self._currentGroup]
-	self._currentGroup = self._currentGroup - 1
-	-- make a new rectangle
-	self:new 'rectangle'
-	-- add the grouped elements as children of the rectangle
-	for _, element in ipairs(queue) do
-		element.parentIndex = self._activeElements
-	end
-	-- clear the group queue
-	shallowClear(queue)
+function Ui:endChildren()
+	self._currentElementIndex = self._activeParents[#self._activeParents]
+	table.remove(self._activeParents, #self._activeParents)
 	return self
 end
 
 function Ui:wrap(padding)
 	padding = padding or 0
 	local parent = self:_getCurrentElement()
-	local parentIndex = self._activeElements
+	local parentIndex = self._currentElementIndex
 	-- get the bounds of current element's children
 	local left, top, right, bottom
 	for i = 1, self._activeElements do
@@ -485,10 +472,7 @@ end
 
 function Ui:_finish()
 	self._activeElements = 0
-	while self._currentGroup > 0 do
-		shallowClear(self._groupQueue[self._currentGroup])
-		self._currentGroup = self._currentGroup - 1
-	end
+	self._currentElementIndex = 0
 end
 
 function Ui:draw()
@@ -501,8 +485,8 @@ function charm.new()
 	return setmetatable({
 		_elements = {},
 		_activeElements = 0,
-		_currentGroup = 0,
-		_groupQueue = {},
+		_currentElementIndex = 0,
+		_activeParents = {},
 		_stencilFunctionCache = {},
 	}, Ui)
 end
