@@ -2,6 +2,10 @@ local charm = {}
 
 unpack = unpack or table.unpack -- luacheck: ignore
 
+local function shallowClear(t)
+	for k in pairs(t) do t[k] = nil end
+end
+
 local function deepClear(t)
 	for k, v in pairs(t) do
 		if type(v) == 'table' then
@@ -25,6 +29,10 @@ end
 local function getParagraphHeight(font, text, limit)
 	local _, lines = font:getWrap(text, limit)
 	return #lines * font:getHeight() * font:getLineHeight()
+end
+
+local function sortElements(a, b)
+	return (a.z or 0) < (b.z or 0)
 end
 
 local Element = {}
@@ -325,6 +333,11 @@ function Ui:getTop(name) return self:getY(name, 0) end
 function Ui:getMiddle(name) return self:getY(name, .5) end
 function Ui:getBottom(name) return self:getY(name, 1) end
 
+function Ui:getZ(name)
+	local element = self:_getElement(name)
+	return element.z or 0
+end
+
 function Ui:getWidth(name) return self:_getElement(name).w end
 function Ui:getHeight(name) return self:_getElement(name).h end
 function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
@@ -350,6 +363,12 @@ end
 function Ui:top(y) return self:y(y, 0) end
 function Ui:middle(y) return self:y(y, .5) end
 function Ui:bottom(y) return self:y(y, 1) end
+
+function Ui:z(z)
+	local element = self:_getSelectedElement()
+	element.z = z
+	return self
+end
 
 function Ui:width(width)
 	local element = self:_getSelectedElement()
@@ -440,31 +459,48 @@ function Ui:wrap(padding)
 	return self
 end
 
-function Ui:_draw(parentIndex, stencilValue)
+function Ui:_draw(groupDepth, parent, stencilValue)
+	groupDepth = groupDepth or 1
 	stencilValue = stencilValue or 0
+	-- make a list of elements to draw in this group
+	-- if a list for this group depth already exists, reuse it
+	local drawList
+	if self._drawList[groupDepth] then
+		shallowClear(self._drawList[groupDepth])
+	else
+		self._drawList[groupDepth] = {}
+	end
+	drawList = self._drawList[groupDepth]
+	-- add the elements in this group to the list and sort them
+	-- by their z position
 	for i = 1, self._numElements do
 		local element = self._elements[i]
-		local elementClass = self:_getElementClass(element)
-		if element.parentIndex == parentIndex then
-			love.graphics.push 'all'
-			love.graphics.translate(element.x, element.y)
-			elementClass.draw(element)
-			if element.clip then
-				stencilValue = stencilValue + 1
-				self._stencilFunctionCache[element] = self._stencilFunctionCache[element] or function()
-					love.graphics.rectangle('fill', 0, 0, element.w, element.h)
-				end
-				love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
-				love.graphics.setStencilTest('gequal', stencilValue)
-			end
-			self:_draw(i, stencilValue)
-			if element.clip then
-				stencilValue = stencilValue - 1
-				love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
-				love.graphics.setStencilTest()
-			end
-			love.graphics.pop()
+		if self._elements[element.parentIndex] == parent then
+			table.insert(drawList, element)
 		end
+	end
+	table.sort(drawList, sortElements)
+	-- draw the elements
+	for _, element in ipairs(drawList) do
+		local elementClass = self:_getElementClass(element)
+		love.graphics.push 'all'
+		love.graphics.translate(element.x, element.y)
+		elementClass.draw(element)
+		if element.clip then
+			stencilValue = stencilValue + 1
+			self._stencilFunctionCache[element] = self._stencilFunctionCache[element] or function()
+				love.graphics.rectangle('fill', 0, 0, element.w, element.h)
+			end
+			love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
+			love.graphics.setStencilTest('gequal', stencilValue)
+		end
+		self:_draw(groupDepth + 1, element, stencilValue)
+		if element.clip then
+			stencilValue = stencilValue - 1
+			love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
+			love.graphics.setStencilTest()
+		end
+		love.graphics.pop()
 	end
 end
 
@@ -485,6 +521,7 @@ function charm.new()
 		_numElements = 0,
 		_selectedElementIndex = 0,
 		_activeParents = {},
+		_drawList = {},
 		_stencilFunctionCache = {},
 	}, Ui)
 end
