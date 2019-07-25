@@ -259,13 +259,13 @@ Ui.__index = Ui
 
 function Ui:_getElement(name)
 	if name == '@current' then
-		return self._elements[self._currentElementIndex]
+		return self._elements[self._selectedElementIndex]
 	elseif name == '@previous' then
-		return self._elements[self._currentElementIndex - 1]
+		return self._elements[self._selectedElementIndex - 1]
 	elseif name == '@parent' then
 		return self._elements[self._activeParents[#self._activeParents]]
 	end
-	for i = self._activeElements, 1, -1 do
+	for i = self._numElements, 1, -1 do
 		local element = self._elements[i]
 		if element.name == name then
 			return element
@@ -273,8 +273,8 @@ function Ui:_getElement(name)
 	end
 end
 
-function Ui:_getCurrentElement()
-	return self._elements[self._currentElementIndex]
+function Ui:_getSelectedElement()
+	return self._elements[self._selectedElementIndex]
 end
 
 function Ui:_getElementClass(element)
@@ -284,23 +284,21 @@ function Ui:_getElementClass(element)
 	return element.type
 end
 
-function Ui:_getNewElement()
-	self._activeElements = self._activeElements + 1
-	self._currentElementIndex = self._activeElements
+function Ui:new(type, ...)
+	self._numElements = self._numElements + 1
+	self._selectedElementIndex = self._numElements
 	local element
-	if self._elements[self._currentElementIndex] then
-		element = self._elements[self._currentElementIndex]
+	-- if there's already an element table at this index,
+	-- reuse the table. otherwise, create a new one and add it
+	-- to the elements list
+	if self._elements[self._selectedElementIndex] then
+		element = self._elements[self._selectedElementIndex]
 		deepClear(element)
 	else
 		element = {}
 		table.insert(self._elements, element)
 	end
 	element.parentIndex = self._activeParents[#self._activeParents]
-	return element
-end
-
-function Ui:new(type, ...)
-	local element = self:_getNewElement()
 	element.type = type
 	local elementClass = self:_getElementClass(element)
 	elementClass.new(element, ...)
@@ -333,7 +331,7 @@ function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
 
 function Ui:x(x, anchor)
 	anchor = anchor or 0
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	element.x = x - element.w * anchor
 	return self
 end
@@ -344,7 +342,7 @@ function Ui:right(x) return self:x(x, 1) end
 
 function Ui:y(y, anchor)
 	anchor = anchor or 0
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	element.y = y - element.h * anchor
 	return self
 end
@@ -354,13 +352,13 @@ function Ui:middle(y) return self:y(y, .5) end
 function Ui:bottom(y) return self:y(y, 1) end
 
 function Ui:width(width)
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	element.w = width
 	return self
 end
 
 function Ui:height(height)
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	element.h = height
 	return self
 end
@@ -373,13 +371,13 @@ function Ui:size(width, height)
 end
 
 function Ui:name(name)
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	element.name = name
 	return self
 end
 
 function Ui:set(property, ...)
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	local elementClass = self:_getElementClass(element)
 	if elementClass.set and elementClass.set[property] then
 		elementClass.set[property](element, ...)
@@ -390,29 +388,29 @@ function Ui:set(property, ...)
 end
 
 function Ui:clip()
-	local element = self:_getCurrentElement()
+	local element = self:_getSelectedElement()
 	element.clip = true
 	return self
 end
 
 function Ui:beginChildren()
-	table.insert(self._activeParents, self._currentElementIndex)
+	table.insert(self._activeParents, self._selectedElementIndex)
 	return self
 end
 
 function Ui:endChildren()
-	self._currentElementIndex = self._activeParents[#self._activeParents]
+	self._selectedElementIndex = self._activeParents[#self._activeParents]
 	table.remove(self._activeParents, #self._activeParents)
 	return self
 end
 
 function Ui:wrap(padding)
 	padding = padding or 0
-	local parent = self:_getCurrentElement()
-	local parentIndex = self._currentElementIndex
+	local parent = self:_getSelectedElement()
+	local parentIndex = self._selectedElementIndex
 	-- get the bounds of current element's children
 	local left, top, right, bottom
-	for i = 1, self._activeElements do
+	for i = 1, self._numElements do
 		local child = self._elements[i]
 		if child.parentIndex == parentIndex then
 			left = left and math.min(left, child.x) or child.x
@@ -432,7 +430,7 @@ function Ui:wrap(padding)
 	parent.w = right - left
 	parent.h = bottom - top
 	-- adjust the children's positions
-	for i = 1, self._activeElements do
+	for i = 1, self._numElements do
 		local child = self._elements[i]
 		if child.parentIndex == parentIndex then
 			child.x = child.x - left
@@ -444,7 +442,7 @@ end
 
 function Ui:_draw(parentIndex, stencilValue)
 	stencilValue = stencilValue or 0
-	for i = 1, self._activeElements do
+	for i = 1, self._numElements do
 		local element = self._elements[i]
 		local elementClass = self:_getElementClass(element)
 		if element.parentIndex == parentIndex then
@@ -471,8 +469,8 @@ function Ui:_draw(parentIndex, stencilValue)
 end
 
 function Ui:_finish()
-	self._activeElements = 0
-	self._currentElementIndex = 0
+	self._numElements = 0
+	self._selectedElementIndex = 0
 end
 
 function Ui:draw()
@@ -484,8 +482,8 @@ end
 function charm.new()
 	return setmetatable({
 		_elements = {},
-		_activeElements = 0,
-		_currentElementIndex = 0,
+		_numElements = 0,
+		_selectedElementIndex = 0,
 		_activeParents = {},
 		_stencilFunctionCache = {},
 	}, Ui)
