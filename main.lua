@@ -1,31 +1,25 @@
 local charm = require 'charm'
 
+local beanMan = love.graphics.newImage 'bean man.png'
+
 local ui = charm.new()
 
 function love.draw()
 	ui
-		:beginGroup()
-			:beginGroup()
-				:new('rectangle', 50, 50, 200, 200)
-					:set('fillColor', 1, 0, 0)
-			:endGroup()
-				:x(200):y(200)
-				:size(100, 100)
-				:clip()
-				:set('fillColor', 1/4, 1/4, 1/4)
-			:beginGroup()
-				:new('rectangle', -50, -50, 60, 60)
-					:set('fillColor', 1, 0, 0)
-			:endGroup()
-				:x(400):y(400)
-				:size(100, 100)
-				:clip()
-				:set('fillColor', 1/4, 1/4, 1/4)
-		:endGroup()
-			:wrap(20)
-			:size(ui:getWidth '@current' - 50, ui:getHeight '@current' - 50)
-			:clip()
-			:set('fillColor', 0, 1, 0)
+		:new 'rectangle'
+			:beginChildren()
+				:new('rectangle', 50, 50, 50, 50)
+					:set('fillColor', .5, .5, .5)
+				:new('rectangle', 250, 250, 50, 50)
+					:set('fillColor', .5, .5, .5)
+			:endChildren()
+			:wrap(25)
+			:beginChildren()
+				:new('image', beanMan)
+					:size(ui:getSize '@parent')
+					:z(-1)
+			:endChildren()
+			:set('fillColor', .25, .25, .25)
 		:draw()
 
 	love.graphics.print('Memory usage: ' .. math.floor(collectgarbage 'count') .. 'kb')
