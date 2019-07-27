@@ -29,8 +29,8 @@ function love.draw()
 			:name 'outer'
 			:set('fillColor', ui:isHovered 'outer' and hoveredColor or idleColor)
 		:draw()
-	if ui:isEntered 'outer' then print 'entered' end
-	if ui:isExited 'outer' then print 'exited' end
+	if ui:isPressed 'inner' then print 'pressed' end
+	if ui:isReleased 'inner' then print 'released' end
 
 	love.graphics.print('Memory usage: ' .. math.floor(collectgarbage 'count') .. 'kb')
 end

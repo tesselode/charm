@@ -440,6 +440,27 @@ function Ui:isExited(name)
 	return state.hoveredPrevious and not state.hovered
 end
 
+-- Gets whether the element is held
+function Ui:isHeld(name)
+	local state = self._buttonState[name]
+	if not state then return end
+	return state.held
+end
+
+-- Gets whether the element was just clicked
+function Ui:isPressed(name)
+	local state = self._buttonState[name]
+	if not state then return end
+	return state.held and not state.heldPrevious
+end
+
+-- Gets whether the element was just released
+function Ui:isReleased(name)
+	local state = self._buttonState[name]
+	if not state then return end
+	return state.released
+end
+
 -- These are all position/size setters, similar to the
 -- getters except they always act on the current element
 function Ui:x(x, anchor)
@@ -652,6 +673,9 @@ end
 function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 	groupDepth = groupDepth or 1
 	dx, dy = dx or 0, dy or 0
+	-- update mouse button state
+	self._mouseDownPrevious = self._mouseDown
+	self._mouseDown = love.mouse.isDown(1)
 	local drawList = self:_getDrawList(groupDepth, parent)
 	-- for each element in this group...
 	for elementIndex, element in ipairs(drawList) do
@@ -665,8 +689,12 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 			self._buttonState[element.name] = self._buttonState[element.name] or {
 				hovered = false,
 				hoveredPrevious = false,
+				held = false,
+				heldPrevious = false,
+				released = false,
 			}
 			local state = self._buttonState[element.name]
+			-- update hover state
 			state.hoveredPrevious = state.hovered
 			state.hovered = hovered and not mouseClipped
 			if state.hovered and not element.transparent then
@@ -689,6 +717,20 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 		self:_draw(groupDepth + 1, element, element.x + dx, element.y + dy, mouseClipped)
 		if element.clip then self:_popStencil(element) end
 		love.graphics.pop()
+		-- update button state that depends on whether other elements blocked this one
+		if element.name then
+			local state = self._buttonState[element.name]
+			-- update held state
+			state.heldPrevious = state.held
+			state.released = false
+			if not state.held and state.hovered and self._mouseDown and self._mouseDownPrevious then
+				state.held = true
+			end
+			if state.held and not self._mouseDown then
+				state.held = false
+				if state.hovered then state.released = true end
+			end
+		end
 	end
 end
 
@@ -714,6 +756,8 @@ function charm.new()
 		_stencilFunctionCache = {},
 		_stencilValue = 0,
 		_buttonState = {},
+		_mouseDown = false,
+		_mouseDownPrevious = false,
 	}, Ui)
 end
 
