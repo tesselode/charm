@@ -541,7 +541,7 @@ function Ui:_draw(groupDepth, parent, stencilValue, dx, dy)
 			love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
 			love.graphics.setStencilTest('gequal', stencilValue)
 		end
-		self:_draw(groupDepth + 1, element, stencilValue, element.x, element.y)
+		self:_draw(groupDepth + 1, element, stencilValue, element.x + dx, element.y + dy, mouseClipped)
 		if element.clip then
 			stencilValue = stencilValue - 1
 			love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
