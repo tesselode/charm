@@ -1,11 +1,19 @@
 local charm = {}
 
+-- for lua 5.2 compatibility
 unpack = unpack or table.unpack -- luacheck: ignore
 
+-- sets all of a table's values to nil
 local function shallowClear(t)
 	for k in pairs(t) do t[k] = nil end
 end
 
+--[[
+	sets all of a table's values to nil, *except* for
+	table values, which are deep cleared themselves.
+	table values are not removed because they can
+	be reused later.
+]]
 local function deepClear(t)
 	for k, v in pairs(t) do
 		if type(v) == 'table' then
@@ -16,25 +24,46 @@ local function deepClear(t)
 	end
 end
 
+-- gets the total number of lines in a string
 local function numberOfLines(s)
 	local _, newlines = s:gsub('\n', '\n')
 	return newlines + 1
 end
 
+-- gets the total height of a text string drawn with a certain font
 local function getTextHeight(font, text)
 	return font:getHeight() * font:getLineHeight() * numberOfLines(text)
 end
 
--- todo: investigate ways to make this function more memory-efficient
+--[[
+	gets the total height of a text string drawn with a certain font
+	and maximum width.
+
+	note:
+	currently this uses love's built in function for getting
+	wrapping info, which returns a table. since getParagraphHeight
+	is called every frame, this creates a lot of garbage, so it would be
+	nice to find another way to do this.
+]]
 local function getParagraphHeight(font, text, limit)
 	local _, lines = font:getWrap(text, limit)
 	return #lines * font:getHeight() * font:getLineHeight()
 end
 
+-- the function used for sorting elements while drawing
 local function sortElements(a, b)
 	return (a.z or 0) < (b.z or 0)
 end
 
+--[[
+	-- Element classes --
+
+	Each element class represents a type of element you can draw
+	(i.e. rectangle, image, etc.). Each class provides:
+	- a constructor function, used by ui.new
+	- property setters, used by ui.set (optional)
+	- a draw function, used to display the element on screen
+]]
 local Element = {}
 
 Element.rectangle = {
@@ -262,9 +291,38 @@ Element.paragraph = {
 	end,
 }
 
+--[[
+	-- UI class --
+
+	The UI class is where the magic happens - it's responsible
+	for arranging and drawing elements. It tries to keep
+	memory footprint low and avoid creating garbage, which means
+	there's a few things that are important to keep in mind when
+	reading the rest of this code:
+	- Tables are only created when they're first needed - this is why
+	  you'll see a lot of x = x or {}
+	- Tables are never removed, they are just cleared out and reused
+	  when needed (hence the deepClear function only clearing out tables
+	  but not removing them)
+	- The code doesn't rely on the number of element tables to know
+	  how many elements are active in this draw frame, since some elements
+	  may be left over from the previous draw. Instead, it uses the
+	  _numElements variable to track how many elements should be drawn
+	  and iterated through.
+	- Some element properties, like colors, are represented as tables.
+	  Since we never remove tables, just clear them, we assume that
+	  an empty table is equivalent to a blank color property.
+]]
 local Ui = {}
 Ui.__index = Ui
 
+--[[
+	Gets an element with the given name. There are three special
+	names you can use to get elements, all prefixed with "@":
+	- @current - the element currently being operated on
+	- @previous - the element directly before the current element
+	- @parent - the element the current element is a child of
+]]
 function Ui:_getElement(name)
 	if name == '@current' then
 		return self._elements[self._selectedElementIndex]
@@ -281,10 +339,17 @@ function Ui:_getElement(name)
 	end
 end
 
+-- Gets the element currently being operated on
 function Ui:_getSelectedElement()
 	return self._elements[self._selectedElementIndex]
 end
 
+--[[
+	Gets the class table for the current element. If the
+	element type is a string, the code will look for the
+	built-in class with that name. If the class is a user-provided
+	table, it'll use that directly.
+]]
 function Ui:_getElementClass(element)
 	if type(element.type) == 'string' then
 		return Element[element.type]
@@ -292,6 +357,7 @@ function Ui:_getElementClass(element)
 	return element.type
 end
 
+-- Creates a new element and starts operating on it
 function Ui:new(type, ...)
 	self._numElements = self._numElements + 1
 	self._selectedElementIndex = self._numElements
@@ -313,6 +379,11 @@ function Ui:new(type, ...)
 	return self
 end
 
+--[[
+	Gets the x position of a point on the element with the given name.
+	Tne anchor specifies what point on the x-axis we want to get
+	(0 = left, 0.5 = center, 1 = right)
+]]
 function Ui:getX(name, anchor)
 	anchor = anchor or 0
 	local element = self:_getElement(name)
@@ -323,6 +394,11 @@ function Ui:getLeft(name) return self:getX(name, 0) end
 function Ui:getCenter(name) return self:getX(name, .5) end
 function Ui:getRight(name) return self:getX(name, 1) end
 
+--[[
+	Gets the y position of a point on the element with the given name.
+	Tne anchor specifies what point on the y-axis we want to get
+	(0 = top, 0.5 = middle, 1 = bottom)
+]]
 function Ui:getY(name, anchor)
 	anchor = anchor or 0
 	local element = self:_getElement(name)
@@ -333,6 +409,7 @@ function Ui:getTop(name) return self:getY(name, 0) end
 function Ui:getMiddle(name) return self:getY(name, .5) end
 function Ui:getBottom(name) return self:getY(name, 1) end
 
+-- Gets the z position of an element (defaults to 0)
 function Ui:getZ(name)
 	local element = self:_getElement(name)
 	return element.z or 0
@@ -342,24 +419,29 @@ function Ui:getWidth(name) return self:_getElement(name).w end
 function Ui:getHeight(name) return self:_getElement(name).h end
 function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
 
+-- Gets whether the mouse is hovering over this element
 function Ui:isHovered(name)
 	local state = self._buttonState[name]
 	if not state then return end
 	return state.hovered
 end
 
+-- Gets whether the mouse just started hovering over this element
 function Ui:isEntered(name)
 	local state = self._buttonState[name]
 	if not state then return end
 	return state.hovered and not state.hoveredPrevious
 end
 
+-- Gets whether the mouse just stopped hovering over this element
 function Ui:isExited(name)
 	local state = self._buttonState[name]
 	if not state then return end
 	return state.hoveredPrevious and not state.hovered
 end
 
+-- These are all position/size setters, similar to the
+-- getters except they always act on the current element
 function Ui:x(x, anchor)
 	anchor = anchor or 0
 	local element = self:_getSelectedElement()
@@ -407,12 +489,15 @@ function Ui:size(width, height)
 	return self
 end
 
+-- Sets the name of the current element
 function Ui:name(name)
 	local element = self:_getSelectedElement()
 	element.name = name
 	return self
 end
 
+-- Sets a property on the current element. What this does
+-- depends on the element's class.
 function Ui:set(property, ...)
 	local element = self:_getSelectedElement()
 	local elementClass = self:_getElementClass(element)
@@ -424,23 +509,32 @@ function Ui:set(property, ...)
 	return self
 end
 
+-- Enables child clipping for this element, meaning that children
+-- will not be visible outside of the bounds of this element.
 function Ui:clip()
 	local element = self:_getSelectedElement()
 	element.clip = true
 	return self
 end
 
+-- Pushes the current element onto the group stack so that newly
+-- created elements will be children of this element.
 function Ui:beginChildren()
 	table.insert(self._activeParents, self._selectedElementIndex)
 	return self
 end
 
+-- Pops the topmost element from the group stack and selects
+-- that element as the current element.
 function Ui:endChildren()
 	self._selectedElementIndex = self._activeParents[#self._activeParents]
 	table.remove(self._activeParents, #self._activeParents)
 	return self
 end
 
+-- Adjusts the element to perfectly surround all of its children (with an optional
+-- amount of padding). Children's local positions will be adjusted so they have
+-- the same position on screen after the wrap is complete.
 function Ui:wrap(padding)
 	padding = padding or 0
 	local parent = self:_getSelectedElement()
