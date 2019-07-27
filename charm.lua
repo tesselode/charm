@@ -477,7 +477,7 @@ function Ui:wrap(padding)
 	return self
 end
 
-function Ui:_draw(groupDepth, parent, stencilValue, dx, dy)
+function Ui:_draw(groupDepth, parent, stencilValue, dx, dy, mouseClipped)
 	groupDepth = groupDepth or 1
 	stencilValue = stencilValue or 0
 	dx, dy = dx or 0, dy or 0
@@ -501,6 +501,13 @@ function Ui:_draw(groupDepth, parent, stencilValue, dx, dy)
 	table.sort(drawList, sortElements)
 	-- for each element in this group...
 	for elementIndex, element in ipairs(drawList) do
+		-- get whether the element is hovered by the mouse
+		local left, top = element.x + dx, element.y + dy
+		local right, bottom = left + element.w, top + element.h
+		local mouseX, mouseY = love.mouse.getPosition()
+		local hovered = mouseX >= left and mouseX <= right
+					and mouseY >= top and mouseY <= bottom
+		if not hovered and element.clip then mouseClipped = true end
 		-- if the element is named, update its button state
 		if element.name then
 			self._buttonState[element.name] = self._buttonState[element.name] or {
@@ -509,16 +516,14 @@ function Ui:_draw(groupDepth, parent, stencilValue, dx, dy)
 			}
 			local state = self._buttonState[element.name]
 			state.hoveredPrevious = state.hovered
-			local left, top = element.x + dx, element.y + dy
-			local right, bottom = left + element.w, top + element.h
-			local mouseX, mouseY = love.mouse.getPosition()
-			state.hovered = mouseX >= left and mouseX <= right
-						and mouseY >= top and mouseY <= bottom
+			state.hovered = hovered and not mouseClipped
 			if state.hovered and not element.transparent then
-				-- block the parent
-				if parent then
-					local parentState = self._buttonState[parent.name]
+				-- block parents
+				local blockedParent = parent
+				while blockedParent do
+					local parentState = self._buttonState[blockedParent.name]
 					if parentState then parentState.hovered = false end
+					blockedParent = self._elements[blockedParent.parentIndex]
 				end
 				-- block other children below this one
 				for i = 1, elementIndex - 1 do
