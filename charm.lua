@@ -571,10 +571,16 @@ function Ui:wrap(padding)
 	return self
 end
 
-function Ui:_draw(groupDepth, parent, stencilValue, dx, dy, mouseClipped)
-	groupDepth = groupDepth or 1
-	stencilValue = stencilValue or 0
-	dx, dy = dx or 0, dy or 0
+--[[
+	Gets a list of children to draw relative to a parent element
+	(if there's no parent, elements that aren't children
+	of any other element will be drawn.) The children are also
+	sorted by their z position.
+
+	The groupDepth argument is used to make sure we don't clobber
+	a drawList table for a lower group, since we're reusing tables.
+]]
+function Ui:_getDrawList(groupDepth, parent)
 	-- make a list of elements to draw in this group
 	-- if a list for this group depth already exists, reuse it
 	local drawList
@@ -592,15 +598,67 @@ function Ui:_draw(groupDepth, parent, stencilValue, dx, dy, mouseClipped)
 			table.insert(drawList, element)
 		end
 	end
+	-- sort the elements
 	table.sort(drawList, sortElements)
+	return drawList
+end
+
+--[[
+	Gets whether the mouse is over a certain element. This does *not*
+	take into account clipping and blocking.
+]]
+function Ui:_isMouseOver(element, dx, dy)
+	local left, top = element.x + dx, element.y + dy
+	local right, bottom = left + element.w, top + element.h
+	local mouseX, mouseY = love.mouse.getPosition()
+	return mouseX >= left and mouseX <= right
+	   and mouseY >= top and mouseY <= bottom
+end
+
+--[[
+	Tells are parent element that a child element is hovered,
+	so parent elements should not be considered hovered,
+	since the child is blocking them.
+]]
+function Ui:_blockParents(parent)
+	while parent do
+		local parentState = self._buttonState[parent.name]
+		if parentState then parentState.hovered = false end
+		parent = self._elements[parent.parentIndex]
+	end
+end
+
+-- Pushes a stencil onto the stack. Elements will only be visible
+-- if they're within the union of all the stencils on the stack.
+function Ui:_pushStencil(element)
+	love.graphics.push 'all'
+	self._stencilValue = self._stencilValue + 1
+	self._stencilFunctionCache[element] = self._stencilFunctionCache[element] or function()
+		love.graphics.rectangle('fill', 0, 0, element.w, element.h)
+	end
+	love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
+	love.graphics.setStencilTest('gequal', self._stencilValue)
+end
+
+-- Pops a stencil from the stack.
+function Ui:_popStencil(element)
+	self._stencilValue = self._stencilValue - 1
+	love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
+	love.graphics.pop()
+end
+
+-- Draws all of the elements that have been placed on this frame,
+-- and updates their button state (hovered, clicked, etc.).
+function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
+	groupDepth = groupDepth or 1
+	dx, dy = dx or 0, dy or 0
+	local drawList = self:_getDrawList(groupDepth, parent)
 	-- for each element in this group...
 	for elementIndex, element in ipairs(drawList) do
 		-- get whether the element is hovered by the mouse
-		local left, top = element.x + dx, element.y + dy
-		local right, bottom = left + element.w, top + element.h
-		local mouseX, mouseY = love.mouse.getPosition()
-		local hovered = mouseX >= left and mouseX <= right
-					and mouseY >= top and mouseY <= bottom
+		local hovered = self:_isMouseOver(element, dx, dy)
+		-- if the element isn't hovered, and it clips its children, make sure
+		-- children know the mouse is clipped
 		if not hovered and element.clip then mouseClipped = true end
 		-- if the element is named, update its button state
 		if element.name then
@@ -613,12 +671,7 @@ function Ui:_draw(groupDepth, parent, stencilValue, dx, dy, mouseClipped)
 			state.hovered = hovered and not mouseClipped
 			if state.hovered and not element.transparent then
 				-- block parents
-				local blockedParent = parent
-				while blockedParent do
-					local parentState = self._buttonState[blockedParent.name]
-					if parentState then parentState.hovered = false end
-					blockedParent = self._elements[blockedParent.parentIndex]
-				end
+				self:_blockParents(parent)
 				-- block other children below this one
 				for i = 1, elementIndex - 1 do
 					local other = drawList[i]
@@ -632,24 +685,14 @@ function Ui:_draw(groupDepth, parent, stencilValue, dx, dy, mouseClipped)
 		love.graphics.push 'all'
 		love.graphics.translate(element.x, element.y)
 		elementClass.draw(element)
-		if element.clip then
-			stencilValue = stencilValue + 1
-			self._stencilFunctionCache[element] = self._stencilFunctionCache[element] or function()
-				love.graphics.rectangle('fill', 0, 0, element.w, element.h)
-			end
-			love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
-			love.graphics.setStencilTest('gequal', stencilValue)
-		end
-		self:_draw(groupDepth + 1, element, stencilValue, element.x + dx, element.y + dy, mouseClipped)
-		if element.clip then
-			stencilValue = stencilValue - 1
-			love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
-			love.graphics.setStencilTest()
-		end
+		if element.clip then self:_pushStencil(element) end
+		self:_draw(groupDepth + 1, element, element.x + dx, element.y + dy, mouseClipped)
+		if element.clip then self:_popStencil(element) end
 		love.graphics.pop()
 	end
 end
 
+-- Resets the UI state for the next frame.
 function Ui:_finish()
 	self._numElements = 0
 	self._selectedElementIndex = 0
@@ -669,6 +712,7 @@ function charm.new()
 		_activeParents = {},
 		_drawList = {},
 		_stencilFunctionCache = {},
+		_stencilValue = 0,
 		_buttonState = {},
 	}, Ui)
 end
