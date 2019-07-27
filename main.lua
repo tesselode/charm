@@ -1,6 +1,7 @@
 local charm = require 'charm'
 
-local beanMan = love.graphics.newImage 'bean man.png'
+local idleColor = {1/4, 1/4, 1/4}
+local hoveredColor = {1/2, 1/2, 1/2}
 
 local ui = charm.new()
 
@@ -8,19 +9,23 @@ function love.draw()
 	ui
 		:new 'rectangle'
 			:beginChildren()
-				:new('rectangle', 50, 50, 50, 50)
-					:set('fillColor', .5, .5, .5)
-				:new('rectangle', 250, 250, 50, 50)
-					:set('fillColor', .5, .5, .5)
+				:new 'rectangle'
+					:name 'inner'
+					:width(50):height(50)
+					:center(400):middle(300)
+					:set('fillColor', ui:isHovered 'inner' and hoveredColor or idleColor)
 			:endChildren()
-			:wrap(25)
+			:wrap(50)
+			:name 'outer'
+			:set('fillColor', ui:isHovered 'outer' and hoveredColor or idleColor)
 			:beginChildren()
-				:new('image', beanMan)
-					:size(ui:getSize '@parent')
-					:z(-1)
+				:new('rectangle', 75, 75, 200, 50)
+					:name 'inner2'
+					:set('fillColor', ui:isHovered 'inner2' and hoveredColor or idleColor)
 			:endChildren()
-			:set('fillColor', .25, .25, .25)
 		:draw()
+	if ui:isEntered 'outer' then print 'entered' end
+	if ui:isExited 'outer' then print 'exited' end
 
 	love.graphics.print('Memory usage: ' .. math.floor(collectgarbage 'count') .. 'kb')
 end

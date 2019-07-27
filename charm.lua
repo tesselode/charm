@@ -342,6 +342,24 @@ function Ui:getWidth(name) return self:_getElement(name).w end
 function Ui:getHeight(name) return self:_getElement(name).h end
 function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
 
+function Ui:isHovered(name)
+	local state = self._buttonState[name]
+	if not state then return end
+	return state.hovered
+end
+
+function Ui:isEntered(name)
+	local state = self._buttonState[name]
+	if not state then return end
+	return state.hovered and not state.hoveredPrevious
+end
+
+function Ui:isExited(name)
+	local state = self._buttonState[name]
+	if not state then return end
+	return state.hoveredPrevious and not state.hovered
+end
+
 function Ui:x(x, anchor)
 	anchor = anchor or 0
 	local element = self:_getSelectedElement()
@@ -459,9 +477,10 @@ function Ui:wrap(padding)
 	return self
 end
 
-function Ui:_draw(groupDepth, parent, stencilValue)
+function Ui:_draw(groupDepth, parent, stencilValue, dx, dy)
 	groupDepth = groupDepth or 1
 	stencilValue = stencilValue or 0
+	dx, dy = dx or 0, dy or 0
 	-- make a list of elements to draw in this group
 	-- if a list for this group depth already exists, reuse it
 	local drawList
@@ -480,8 +499,36 @@ function Ui:_draw(groupDepth, parent, stencilValue)
 		end
 	end
 	table.sort(drawList, sortElements)
-	-- draw the elements
-	for _, element in ipairs(drawList) do
+	-- for each element in this group...
+	for elementIndex, element in ipairs(drawList) do
+		-- if the element is named, update its button state
+		if element.name then
+			self._buttonState[element.name] = self._buttonState[element.name] or {
+				hovered = false,
+				hoveredPrevious = false,
+			}
+			local state = self._buttonState[element.name]
+			state.hoveredPrevious = state.hovered
+			local left, top = element.x + dx, element.y + dy
+			local right, bottom = left + element.w, top + element.h
+			local mouseX, mouseY = love.mouse.getPosition()
+			state.hovered = mouseX >= left and mouseX <= right
+						and mouseY >= top and mouseY <= bottom
+			if state.hovered and not element.transparent then
+				-- block the parent
+				if parent then
+					local parentState = self._buttonState[parent.name]
+					if parentState then parentState.hovered = false end
+				end
+				-- block other children below this one
+				for i = 1, elementIndex - 1 do
+					local other = drawList[i]
+					local otherState = self._buttonState[other.name]
+					if otherState then otherState.hovered = false end
+				end
+			end
+		end
+		-- draw the element
 		local elementClass = self:_getElementClass(element)
 		love.graphics.push 'all'
 		love.graphics.translate(element.x, element.y)
@@ -494,7 +541,7 @@ function Ui:_draw(groupDepth, parent, stencilValue)
 			love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
 			love.graphics.setStencilTest('gequal', stencilValue)
 		end
-		self:_draw(groupDepth + 1, element, stencilValue)
+		self:_draw(groupDepth + 1, element, stencilValue, element.x, element.y)
 		if element.clip then
 			stencilValue = stencilValue - 1
 			love.graphics.stencil(self._stencilFunctionCache[element], 'decrement', 1, true)
@@ -523,6 +570,7 @@ function charm.new()
 		_activeParents = {},
 		_drawList = {},
 		_stencilFunctionCache = {},
+		_buttonState = {},
 	}, Ui)
 end
 
