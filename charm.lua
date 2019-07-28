@@ -505,6 +505,14 @@ function Ui:isReleased(name, button)
 	return state.released[button]
 end
 
+function Ui:isDragged(name, button)
+	if self._mouseX == self._mouseXPrevious and self._mouseY == self._mouseYPrevious then
+		return false
+	end
+	if not self:isHeld(name, button) then return false end
+	return true, self._mouseX - self._mouseXPrevious, self._mouseY - self._mouseYPrevious
+end
+
 -- These are all position/size setters, similar to the
 -- getters except they always act on the current element
 function Ui:x(x, anchor)
@@ -648,6 +656,15 @@ function Ui:wrap(padding)
 		end
 	end
 	return self
+end
+
+function Ui:_updateMouseState()
+	self._mouseXPrevious, self._mouseYPrevious = self._mouseX, self._mouseY
+	self._mouseX, self._mouseY = love.mouse.getPosition()
+	for button = 1, numberOfMouseButtons do
+		self._mouseDownPrevious[button] = self._mouseDown[button]
+		self._mouseDown[button] = love.mouse.isDown(button)
+	end
 end
 
 --[[
@@ -797,11 +814,7 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 end
 
 function Ui:draw()
-	-- update mouse button state
-	for button = 1, numberOfMouseButtons do
-		self._mouseDownPrevious[button] = self._mouseDown[button]
-		self._mouseDown[button] = love.mouse.isDown(button)
-	end
+	self:_updateMouseState()
 	self:_draw()
 	self._finished = true
 	return self
@@ -818,6 +831,10 @@ function charm.new()
 		_stencilFunctionCache = {},
 		_stencilValue = 0,
 		_buttonState = {},
+		_mouseX = 0,
+		_mouseY = 0,
+		_mouseXPrevious = 0,
+		_mouseYPrevious = 0,
 		_mouseDown = {},
 		_mouseDownPrevious = {},
 	}, Ui)
