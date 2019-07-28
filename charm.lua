@@ -1,5 +1,8 @@
 local charm = {}
 
+-- the number of mouse buttons to check for (constant)
+local numberOfMouseButtons = 3
+
 -- for lua 5.2 compatibility
 unpack = unpack or table.unpack -- luacheck: ignore
 
@@ -479,24 +482,27 @@ function Ui:isExited(name)
 end
 
 -- Gets whether the element is held
-function Ui:isHeld(name)
+function Ui:isHeld(name, button)
+	button = button or 1
 	local state = self._buttonState[name]
 	if not state then return end
-	return state.held
+	return state.held[button]
 end
 
 -- Gets whether the element was just clicked
-function Ui:isPressed(name)
+function Ui:isPressed(name, button)
+	button = button or 1
 	local state = self._buttonState[name]
 	if not state then return end
-	return state.held and not state.heldPrevious
+	return state.held[button] and not state.heldPrevious[button]
 end
 
 -- Gets whether the element was just released
-function Ui:isReleased(name)
+function Ui:isReleased(name, button)
+	button = button or 1
 	local state = self._buttonState[name]
 	if not state then return end
-	return state.released
+	return state.released[button]
 end
 
 -- These are all position/size setters, similar to the
@@ -727,9 +733,6 @@ end
 function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 	groupDepth = groupDepth or 1
 	dx, dy = dx or 0, dy or 0
-	-- update mouse button state
-	self._mouseDownPrevious = self._mouseDown
-	self._mouseDown = love.mouse.isDown(1)
 	local drawList = self:_getDrawList(groupDepth, parent)
 	-- for each element in this group...
 	for elementIndex, element in ipairs(drawList) do
@@ -755,9 +758,9 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 			self._buttonState[element.name] = self._buttonState[element.name] or {
 				hovered = false,
 				hoveredPrevious = false,
-				held = false,
-				heldPrevious = false,
-				released = false,
+				held = {},
+				heldPrevious = {},
+				released = {},
 			}
 			local state = self._buttonState[element.name]
 			-- update hover state
@@ -777,20 +780,28 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 		if element.name then
 			local state = self._buttonState[element.name]
 			-- update held state
-			state.heldPrevious = state.held
-			state.released = false
-			if not state.held and state.hovered and self._mouseDown and self._mouseDownPrevious then
-				state.held = true
-			end
-			if state.held and not self._mouseDown then
-				state.held = false
-				if state.hovered then state.released = true end
+			for button = 1, numberOfMouseButtons do
+				state.heldPrevious[button] = state.held[button]
+				state.released[button] = false
+				local mouseClicked = self._mouseDown[button] and not self._mouseDownPrevious[button]
+				if not state.held[button] and state.hovered and mouseClicked then
+					state.held[button] = true
+				end
+				if state.held[button] and not self._mouseDown[button] then
+					state.held[button] = false
+					if state.hovered then state.released[button] = true end
+				end
 			end
 		end
 	end
 end
 
 function Ui:draw()
+	-- update mouse button state
+	for button = 1, numberOfMouseButtons do
+		self._mouseDownPrevious[button] = self._mouseDown[button]
+		self._mouseDown[button] = love.mouse.isDown(button)
+	end
 	self:_draw()
 	self._finished = true
 	return self
@@ -807,8 +818,8 @@ function charm.new()
 		_stencilFunctionCache = {},
 		_stencilValue = 0,
 		_buttonState = {},
-		_mouseDown = false,
-		_mouseDownPrevious = false,
+		_mouseDown = {},
+		_mouseDownPrevious = {},
 	}, Ui)
 end
 
