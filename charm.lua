@@ -55,6 +55,12 @@ local function sortElements(a, b)
 	return (a.z or 0) < (b.z or 0)
 end
 
+-- the default function used for drawing an element's stencil
+-- if the element class doesn't provide a stencil function
+local function defaultStencil(self)
+	love.graphics.rectangle('fill', 0, 0, self.w, self.h)
+end
+
 --[[
 	-- Element classes --
 
@@ -115,6 +121,10 @@ Element.rectangle = {
 				self.radiusX or 0, self.radiusY or 0, self.segments or 64)
 		end
 		love.graphics.pop()
+	end,
+	stencil = function(self)
+		love.graphics.rectangle('fill', 0, 0, self.w, self.h,
+			self.radiusX or 0, self.radiusY or 0, self.segments or 64)
 	end,
 }
 
@@ -661,7 +671,9 @@ function Ui:_pushStencil(element)
 	love.graphics.push 'all'
 	self._stencilValue = self._stencilValue + 1
 	self._stencilFunctionCache[element] = self._stencilFunctionCache[element] or function()
-		love.graphics.rectangle('fill', 0, 0, element.w, element.h)
+		local elementClass = self:_getElementClass(element)
+		local stencilFunction = elementClass.stencil or defaultStencil
+		stencilFunction(element)
 	end
 	love.graphics.stencil(self._stencilFunctionCache[element], 'increment', 1, true)
 	love.graphics.setStencilTest('gequal', self._stencilValue)
