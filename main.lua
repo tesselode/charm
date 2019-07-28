@@ -28,6 +28,8 @@ function love.draw()
 			:wrap(50)
 			:name 'outer'
 			:set('fillColor', ui:isHovered 'outer' and hoveredColor or idleColor)
+			:set('radius', 20, 100)
+			:set('segments', 4)
 		:draw()
 	if ui:isPressed 'inner' then print 'pressed' end
 	if ui:isReleased 'inner' then print 'released' end

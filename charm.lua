@@ -96,17 +96,23 @@ Element.rectangle = {
 				self.outlineColor[4] = a
 			end
 		end,
+		radius = function(self, radiusX, radiusY)
+			self.radiusX = radiusX
+			self.radiusY = radiusY or self.radiusX
+		end,
 	},
 	draw = function(self)
 		love.graphics.push 'all'
 		if self.fillColor and #self.fillColor > 0 then
 			love.graphics.setColor(unpack(self.fillColor))
-			love.graphics.rectangle('fill', 0, 0, self.w, self.h)
+			love.graphics.rectangle('fill', 0, 0, self.w, self.h,
+				self.radiusX or 0, self.radiusY or 0, self.segments or 64)
 		end
 		if self.outlineColor and #self.outlineColor > 0 then
 			love.graphics.setColor(unpack(self.outlineColor))
 			love.graphics.setLineWidth(self.lineWidth or 1)
-			love.graphics.rectangle('line', 0, 0, self.w, self.h)
+			love.graphics.rectangle('line', 0, 0, self.w, self.h,
+				self.radiusX or 0, self.radiusY or 0, self.segments or 64)
 		end
 		love.graphics.pop()
 	end,
