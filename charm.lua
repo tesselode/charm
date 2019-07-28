@@ -135,7 +135,7 @@ Element.image = {
 		end,
 		scale = function(self, sx, sy)
 			self.w = self.image:getWidth() * sx
-			self.h = self.image:getHeight() * sy
+			self.h = self.image:getHeight() * (sy or sx)
 		end,
 		color = function(self, r, g, b, a)
 			self.color = self.color or {}
@@ -179,7 +179,7 @@ Element.text = {
 		end,
 		scale = function(self, sx, sy)
 			self.w = self.font:getWidth(self.text) * sx
-			self.h = getTextHeight(self.font, self.text) * sy
+			self.h = getTextHeight(self.font, self.text) * (sy or sx)
 		end,
 		color = function(self, r, g, b, a)
 			self.color = self.color or {}
@@ -248,7 +248,7 @@ Element.paragraph = {
 		end,
 		scale = function(self, sx, sy)
 			self.w = self.limit * sx
-			self.h = getParagraphHeight(self.font, self.text, self.limit) * sy
+			self.h = getParagraphHeight(self.font, self.text, self.limit) * (sy or sx)
 		end,
 		color = function(self, r, g, b, a)
 			self.color = self.color or {}
