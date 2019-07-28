@@ -387,6 +387,12 @@ end
 
 -- Creates a new element and starts operating on it
 function Ui:new(elementType, ...)
+	-- if we just finished a draw call, reset some UI state
+	if self._finished then
+		self._numElements = 0
+		self._selectedElementIndex = 0
+		self._finished = false
+	end
 	self._numElements = self._numElements + 1
 	self._selectedElementIndex = self._numElements
 	local element
@@ -780,15 +786,9 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 	end
 end
 
--- Resets the UI state for the next frame.
-function Ui:_finish()
-	self._numElements = 0
-	self._selectedElementIndex = 0
-end
-
 function Ui:draw()
 	self:_draw()
-	self:_finish()
+	self._finished = true
 	return self
 end
 
@@ -796,6 +796,7 @@ function charm.new()
 	return setmetatable({
 		_elements = {},
 		_numElements = 0,
+		_finished = false,
 		_selectedElementIndex = 0,
 		_activeParents = {},
 		_drawList = {},
