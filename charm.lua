@@ -13,13 +13,24 @@ end
 	table values, which are deep cleared themselves.
 	table values are not removed because they can
 	be reused later.
+
+	additional arguments are keys to skip clearing out.
 ]]
-local function deepClear(t)
+local function deepClear(t, ...)
 	for k, v in pairs(t) do
-		if type(v) == 'table' then
-			deepClear(v)
-		else
-			t[k] = nil
+		local shouldClear = true
+		for i = 1, select('#', ...) do
+			if k == select(i, ...) then
+				shouldClear = false
+				break
+			end
+		end
+		if shouldClear then
+			if type(v) == 'table' then
+				deepClear(v)
+			else
+				t[k] = nil
+			end
 		end
 	end
 end
@@ -375,7 +386,7 @@ function Ui:_getElementClass(element)
 end
 
 -- Creates a new element and starts operating on it
-function Ui:new(type, ...)
+function Ui:new(elementType, ...)
 	self._numElements = self._numElements + 1
 	self._selectedElementIndex = self._numElements
 	local element
@@ -384,13 +395,13 @@ function Ui:new(type, ...)
 	-- to the elements list
 	if self._elements[self._selectedElementIndex] then
 		element = self._elements[self._selectedElementIndex]
-		deepClear(element)
+		deepClear(element, 'type')
 	else
 		element = {}
 		table.insert(self._elements, element)
 	end
 	element.parentIndex = self._activeParents[#self._activeParents]
-	element.type = type
+	element.type = elementType
 	local elementClass = self:_getElementClass(element)
 	elementClass.new(element, ...)
 	return self
