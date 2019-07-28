@@ -5,12 +5,6 @@ local ui = charm.new()
 local labelFont = love.graphics.newFont(24)
 
 local ellipse = {
-	new = function(self, x, y, w, h)
-		self.x = x or 0
-		self.y = y or 0
-		self.w = w or 0
-		self.h = h or 0
-	end,
 	draw = function(self)
 		love.graphics.ellipse('line', self.w/2, self.h/2, self.w/2, self.h/2, 64)
 	end

@@ -66,12 +66,6 @@ local function sortElements(a, b)
 	return (a.z or 0) < (b.z or 0)
 end
 
--- the default function used for drawing an element's stencil
--- if the element class doesn't provide a stencil function
-local function defaultStencil(self)
-	love.graphics.rectangle('fill', 0, 0, self.w, self.h)
-end
-
 --[[
 	-- Element classes --
 
@@ -81,15 +75,24 @@ end
 	- property setters, used by ui.set (optional)
 	- a draw function, used to display the element on screen
 ]]
+
+-- the default function used for drawing an element's stencil
+-- if the element class doesn't provide a stencil function
+local function defaultStencil(self)
+	love.graphics.rectangle('fill', 0, 0, self.w, self.h)
+end
+
+-- the default constructor for element classes
+local function defaultConstructor(self, x, y, w, h)
+	self.x = x or 0
+	self.y = y or 0
+	self.w = w or 0
+	self.h = h or 0
+end
+
 local Element = {}
 
 Element.rectangle = {
-	new = function(self, x, y, w, h)
-		self.x = x or 0
-		self.y = y or 0
-		self.w = w or 0
-		self.h = h or 0
-	end,
 	set = {
 		fillColor = function(self, r, g, b, a)
 			self.fillColor = self.fillColor or {}
@@ -409,7 +412,8 @@ function Ui:new(elementType, ...)
 	element.parentIndex = self._activeParents[#self._activeParents]
 	element.type = elementType
 	local elementClass = self:_getElementClass(element)
-	elementClass.new(element, ...)
+	local constructor = elementClass.new or defaultConstructor
+	constructor(element, ...)
 	return self
 end
 
