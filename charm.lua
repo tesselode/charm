@@ -79,18 +79,22 @@ end
 	- a draw function, used to display the element on screen
 ]]
 
--- the default function used for drawing an element's stencil
--- if the element class doesn't provide a stencil function
-local function defaultStencil(self)
-	love.graphics.rectangle('fill', 0, 0, self.w, self.h)
-end
-
 -- the default constructor for element classes
 local function defaultConstructor(self, x, y, w, h)
 	self.x = x or 0
 	self.y = y or 0
 	self.w = w or 0
 	self.h = h or 0
+end
+
+local function defaultContainsPoint(self, x, y)
+	return x >= 0 and x <= self.w and y >= 0 and y <= self.h
+end
+
+-- the default function used for drawing an element's stencil
+-- if the element class doesn't provide a stencil function
+local function defaultStencil(self)
+	love.graphics.rectangle('fill', 0, 0, self.w, self.h)
 end
 
 local Element = {}
@@ -142,6 +146,54 @@ Element.rectangle = {
 	stencil = function(self)
 		love.graphics.rectangle('fill', 0, 0, self.w, self.h,
 			self.radiusX or 0, self.radiusY or 0, self.segments or 64)
+	end,
+}
+
+Element.ellipse = {
+	containsPoint = function(self, x, y)
+		local cx, cy = self.w/2, self.h/2
+		local rx, ry = self.w/2, self.h/2
+		return ((x - cx) ^ 2) / (rx ^ 2) + ((y - cy) ^ 2) / (ry ^ 2) <= 1
+	end,
+	set = {
+		fillColor = function(self, r, g, b, a)
+			self.fillColor = self.fillColor or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.fillColor[i] = r[i] end
+			else
+				self.fillColor[1] = r
+				self.fillColor[2] = g
+				self.fillColor[3] = b
+				self.fillColor[4] = a
+			end
+		end,
+		outlineColor = function(self, r, g, b, a)
+			self.outlineColor = self.outlineColor or {}
+			if type(r) == 'table' then
+				for i = 1, 4 do self.outlineColor[i] = r[i] end
+			else
+				self.outlineColor[1] = r
+				self.outlineColor[2] = g
+				self.outlineColor[3] = b
+				self.outlineColor[4] = a
+			end
+		end,
+	},
+	draw = function(self)
+		love.graphics.push 'all'
+		if self.fillColor and #self.fillColor > 0 then
+			love.graphics.setColor(unpack(self.fillColor))
+			love.graphics.ellipse('fill', self.w/2, self.h/2, self.w/2, self.h/2, self.segments or 64)
+		end
+		if self.outlineColor and #self.outlineColor > 0 then
+			love.graphics.setColor(unpack(self.outlineColor))
+			love.graphics.setLineWidth(self.lineWidth or 1)
+			love.graphics.ellipse('line', self.w/2, self.h/2, self.w/2, self.h/2, self.segments or 64)
+		end
+		love.graphics.pop()
+	end,
+	stencil = function(self)
+		love.graphics.ellipse('fill', self.w/2, self.h/2, self.w/2, self.h/2, self.segments or 64)
 	end,
 }
 
@@ -705,10 +757,11 @@ end
 ]]
 function Ui:_isMouseOver(element, dx, dy)
 	local left, top = element.x + dx, element.y + dy
-	local right, bottom = left + element.w, top + element.h
 	local mouseX, mouseY = love.mouse.getPosition()
-	return mouseX >= left and mouseX <= right
-	   and mouseY >= top and mouseY <= bottom
+	local relativeMouseX, relativeMouseY = mouseX - left, mouseY - top
+	local elementClass = self:_getElementClass(element)
+	local containsPointFunction = elementClass.containsPoint or defaultContainsPoint
+	return containsPointFunction(element, relativeMouseX, relativeMouseY)
 end
 
 --[[

@@ -4,21 +4,16 @@ local ui = charm.new()
 
 local labelFont = love.graphics.newFont(24)
 
-local ellipse = {
-	draw = function(self)
-		love.graphics.ellipse('line', self.w/2, self.h/2, self.w/2, self.h/2, 64)
-	end
-}
-
 function love.draw()
 	ui
 		:new 'rectangle'
 			:name 'container'
 			:beginChildren()
 			for i = 1, 5 do
-				ui:new(ellipse, nil, nil, 32, 32)
+				ui:new('ellipse', nil, nil, 32, 32)
 					:center(300 + 150 * math.sin(love.timer.getTime() * (1 + i/10)))
 					:middle(300 + 150 * math.cos(love.timer.getTime() * (1 + i/11)))
+					:set('outlineColor', 1, 1, 1)
 			end
 			ui:endChildren()
 			:wrap()
