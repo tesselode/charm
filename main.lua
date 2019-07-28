@@ -1,1 +1,1 @@
-require 'demos.microbes'
+require 'demos.window'
