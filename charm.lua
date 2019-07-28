@@ -702,6 +702,18 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 		-- if the element isn't hovered, and it clips its children, make sure
 		-- children know the mouse is clipped
 		if not hovered and element.clip then mouseClipped = true end
+		if mouseClipped then hovered = false end
+		-- if the element is hovered, block lower elements from being hovered
+		if hovered and not element.transparent then
+			-- block parents
+			self:_blockParents(parent)
+			-- block other children below this one
+			for i = 1, elementIndex - 1 do
+				local other = drawList[i]
+				local otherState = self._buttonState[other.name]
+				if otherState then otherState.hovered = false end
+			end
+		end
 		-- if the element is named, update its button state
 		if element.name then
 			self._buttonState[element.name] = self._buttonState[element.name] or {
@@ -714,17 +726,7 @@ function Ui:_draw(groupDepth, parent, dx, dy, mouseClipped)
 			local state = self._buttonState[element.name]
 			-- update hover state
 			state.hoveredPrevious = state.hovered
-			state.hovered = hovered and not mouseClipped
-			if state.hovered and not element.transparent then
-				-- block parents
-				self:_blockParents(parent)
-				-- block other children below this one
-				for i = 1, elementIndex - 1 do
-					local other = drawList[i]
-					local otherState = self._buttonState[other.name]
-					if otherState then otherState.hovered = false end
-				end
-			end
+			state.hovered = hovered
 		end
 		-- draw the element
 		local elementClass = self:_getElementClass(element)
