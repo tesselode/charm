@@ -1,1 +1,1 @@
-require 'demos.rounded'
+require 'demos.tooltip'
