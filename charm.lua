@@ -179,6 +179,7 @@ Element.text = {
 		self.y = y or 0
 		self.w = font:getWidth(text)
 		self.h = getTextHeight(font, text)
+		self.transparent = true
 	end,
 	set = {
 		scaleX = function(self, sx)
@@ -551,6 +552,20 @@ end
 function Ui:clip()
 	local element = self:_getSelectedElement()
 	element.clip = true
+	return self
+end
+
+-- Makes this child transparent, which means that the mouse can be
+-- hovered over this element and lower elements simultaneously.
+function Ui:transparent()
+	local element = self:_getSelectedElement()
+	element.transparent = true
+	return self
+end
+
+function Ui:opaque()
+	local element = self:_getSelectedElement()
+	element.transparent = false
 	return self
 end
 
