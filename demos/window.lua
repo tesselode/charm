@@ -1,3 +1,10 @@
+--[[
+	This is an example of how you could implement some higher level
+	GUI controls using Charm. The window code is pretty gross
+	looking when you see it all in one chunk, but if you split
+	this up into multiple functions, it would be more pleasant.
+]]
+
 local charm = require 'charm'
 
 local function lerp(a, b, f)
