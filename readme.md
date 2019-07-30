@@ -45,7 +45,6 @@ local charm = require 'path.to.charm' -- if it's in subfolders
 
 Usage
 -----
-
 ### Drawing elements
 To use Charm, first we need to create a UI object.
 ```lua
@@ -145,3 +144,62 @@ function love.draw()
 		:draw()
 end
 ```
+
+### Grouping elements together
+Any element can have any number of **child elements**. We can assign elements to a parent by placing them between a `beginChildren` and an `endChildren` call.
+```lua
+function love.draw()
+	ui
+		:new('rectangle', 50, 50, 100, 150)
+			:beginChildren()
+				:new('rectangle', 10, 10, 25, 25)
+					:set('fillColor', 1/2, 1/2, 1/2)
+				:new('rectangle', 50, 50, 25, 25)
+					:set('fillColor', 1/2, 1/2, 1/2)
+			:endChildren()
+			:set('fillColor', 1/4, 1/4, 1/4)
+		:draw()
+end
+```
+Child elements are positioned relative to their parent, so in this example, the two child rectangles would be placed at (60, 60) and (100, 100) respectively.
+
+Earlier I said that setter functions always modify the most recently created element. There is one exception: when `endChildren` is called, the parent element is selected. So you can add children to an element and then modify the parent element after.
+
+Sometimes you might want to position multiple elements as a single group. Charm provides a `wrap` function which adjusts the dimensions of a parent element to perfectly surround all its child elements. Then the parent element can be positioned, which moves the children as well. The following code will group two rectangles together and then center the whole group on screen.
+```lua
+function love.draw()
+	ui
+		:new 'rectangle'
+			:beginChildren()
+				:new('rectangle', 0, 0, 100, 100)
+					:set('fillColor', 1/2, 1/2, 1/2)
+				:new('rectangle', 110, 0, 100, 100)
+					:set('fillColor', 1/2, 1/2, 1/2)
+			:endChildren()
+			:wrap()
+			:center(love.graphics.getWidth()/2)
+			:middle(love.graphics.getHeight()/2)
+		:draw()
+end
+```
+
+API
+---
+```lua
+charm.new() -> Ui
+```
+Creates a new UI object.
+
+```lua
+Ui:new(type: string | table, ...) -> Ui
+```
+Defines a new element for this draw frame.
+- `type` - the type of element to create. This can be the name of a built-in element type or a custom element class.
+- `...` - additional arguments to pass to the element class constructor
+
+```lua
+Ui:getX(name: string, anchor: number = 0) -> x: number
+```
+Gets the x position of a point along the x-axis of an element.
+- `name` (string) - the name of the element or an element selector
+- `anchor` (number) - the point along the x-axis to get from 0-1; 0 is left, .5 is center, 1 is right
