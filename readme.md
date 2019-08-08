@@ -104,6 +104,41 @@ function love.draw()
 			- [`outlineColor(color)`](#outlinecolorcolor-1)
 			- [`lineWidth(width)`](#linewidthwidth-1)
 			- [`segments(segments)`](#segmentssegments-1)
+		- [Image](#image)
+			- [`image(image)`](#imageimage)
+			- [`scaleX(scaleX)`](#scalexscalex)
+			- [`scaleY(scaleY)`](#scaleyscaley)
+			- [`scale(scaleX, scaleY)`](#scalescalex-scaley)
+			- [`color(r, g, b, a)`](#colorr-g-b-a)
+			- [`color(color)`](#colorcolor)
+		- [Text](#text)
+			- [`font(font)`](#fontfont)
+			- [`text(text)`](#texttext)
+			- [`limit(limit)`](#limitlimit)
+			- [`align(align)`](#alignalign)
+			- [`scaleX(scaleX)`](#scalexscalex-1)
+			- [`scaleY(scaleY)`](#scaleyscaley-1)
+			- [`scale(scaleX, scaleY)`](#scalescalex-scaley-1)
+			- [`color(r, g, b, a)`](#colorr-g-b-a-1)
+			- [`color(color)`](#colorcolor-1)
+			- [`shadowColor(r, g, b, a)`](#shadowcolorr-g-b-a)
+			- [`shadowColor(shadowColor)`](#shadowcolorshadowcolor)
+			- [`shadowOffsetX(shadowOffsetX)`](#shadowoffsetxshadowoffsetx)
+			- [`shadowOffsetY(shadowOffsetY)`](#shadowoffsetyshadowoffsety)
+			- [`shadowOffset(shadowOffsetX, shadowOffsetY)`](#shadowoffsetshadowoffsetx-shadowoffsety)
+		- [Paragraph](#paragraph)
+			- [`font(font)`](#fontfont-1)
+			- [`text(text)`](#texttext-1)
+			- [`scaleX(scaleX)`](#scalexscalex-2)
+			- [`scaleY(scaleY)`](#scaleyscaley-2)
+			- [`scale(scaleX, scaleY)`](#scalescalex-scaley-2)
+			- [`color(r, g, b, a)`](#colorr-g-b-a-2)
+			- [`color(color)`](#colorcolor-2)
+			- [`shadowColor(r, g, b, a)`](#shadowcolorr-g-b-a-1)
+			- [`shadowColor(shadowColor)`](#shadowcolorshadowcolor-1)
+			- [`shadowOffsetX(shadowOffsetX)`](#shadowoffsetxshadowoffsetx-1)
+			- [`shadowOffsetY(shadowOffsetY)`](#shadowoffsetyshadowoffsety-1)
+			- [`shadowOffset(shadowOffsetX, shadowOffsetY)`](#shadowoffsetshadowoffsetx-shadowoffsety-1)
 
 Installation
 ------------
@@ -795,3 +830,221 @@ Sets the number of segments used to draw the ellipse. 64 by default.
 
 Parameters:
 - `segments` (`number`) - the number of segments used to draw the ellipse
+
+#### Image
+
+##### `image(image)`
+Sets the image that the element should display.
+
+Parameters:
+- `image` (`Image`) - the new image for the element to display
+
+##### `scaleX(scaleX)`
+Sets the horizontal scale of the image, or in other words, sets the width of the element relative to the original width of the image.
+
+Parameters:
+- `scaleX` (`number`) - the new horizontal scale of the image
+
+##### `scaleY(scaleY)`
+Sets the vertical scale of the image, or in other words, sets the height of the element relative to the original height of the image.
+
+Parameters:
+- `scaleY` (`number`) - the new vertical scale of the image
+
+##### `scale(scaleX, scaleY)`
+Sets the horizontal and vertical scale of the image.
+
+Parameters:
+- `scaleX` (`number`) - the new horizontal scale of the image
+- `scaleY` (`number`) - the new vertical scale of the image
+
+##### `color(r, g, b, a)`
+Sets the blend color of the image.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `color(color)`
+Sets the blend color of the image.
+
+Parameters:
+- `color` (`table`) - the new blend color for the image. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+#### Text
+
+##### `font(font)`
+Sets the font that the text should use.
+
+Parameters:
+- `font` (`Font`) - the font that the text should use
+
+##### `text(text)`
+Sets the text that the element should display.
+
+Parameters:
+- `text` (`string`) - the text that the element should display
+
+##### `limit(limit)`
+Sets the maximum width (in pixels) that the text can span before a line break occurs.
+
+Parameters:
+- `limit` (`number`) - the maximum width of a line of text
+
+##### `align(align)`
+Sets the alignment of the text.
+
+Parameters:
+- `align` (`alignMode`) - how text should be aligned within the paragraph
+
+##### `scaleX(scaleX)`
+Sets the horizontal scale of the text, or in other words, sets the width of the element relative to the natural width of the text.
+
+Parameters:
+- `scaleX` (`number`) - the new horizontal scale of the text
+
+##### `scaleY(scaleY)`
+Sets the vertical scale of the text, or in other words, sets the height of the element relative to the natural height of the text.
+
+Parameters:
+- `scaleY` (`number`) - the new vertical scale of the text
+
+##### `scale(scaleX, scaleY)`
+Sets the horizontal and vertical scale of the text.
+
+Parameters:
+- `scaleX` (`number`) - the new horizontal scale of the text
+- `scaleY` (`number`) - the new vertical scale of the text
+
+##### `color(r, g, b, a)`
+Sets the color of the text. Text is white by default.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `color(color)`
+Sets the color of the text.
+
+Parameters:
+- `color` (`table`) - the new color for the text. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `shadowColor(r, g, b, a)`
+Sets the color of the text's shadow.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `shadowColor(shadowColor)`
+Sets the color of the text's shadow.
+
+Parameters:
+- `shadowColor` (`table`) - the new shadow color for the text. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `shadowOffsetX(shadowOffsetX)`
+Sets the horizontal offset of the text's shadow. Defaults to 1 pixel.
+
+Parameters:
+- `shadowOffsetX` (`number`) - the horizontal offset of the text's shadow (in pixels)
+
+##### `shadowOffsetY(shadowOffsetY)`
+Sets the vertical offset of the text's shadow. Defaults to 1 pixel.
+
+Parameters:
+- `shadowOffsetY` (`number`) - the vertical offset of the text's shadow (in pixels)
+
+##### `shadowOffset(shadowOffsetX, shadowOffsetY)`
+Sets the horizontal and vertical offset of the text's shadow.
+
+Parameters:
+- `shadowOffsetX` (`number`) - the horizontal offset of the text's shadow (in pixels)
+- `shadowOffsetY` (`number`) - the vertical offset of the text's shadow (in pixels)
+
+#### Paragraph
+
+##### `font(font)`
+Sets the font that the paragraph should use.
+
+Parameters:
+- `font` (`Font`) - the font that the paragraph should use
+
+##### `text(text)`
+Sets the text that the element should display.
+
+Parameters:
+- `text` (`string`) - the text that the element should display
+
+##### `scaleX(scaleX)`
+Sets the horizontal scale of the paragraph, or in other words, sets the width of the element relative to the natural width of the paragraph.
+
+Parameters:
+- `scaleX` (`number`) - the new horizontal scale of the paragraph
+
+##### `scaleY(scaleY)`
+Sets the vertical scale of the paragraph, or in other words, sets the height of the element relative to the natural height of the paragraph.
+
+Parameters:
+- `scaleY` (`number`) - the new vertical scale of the paragraph
+
+##### `scale(scaleX, scaleY)`
+Sets the horizontal and vertical scale of the paragraph.
+
+Parameters:
+- `scaleX` (`number`) - the new horizontal scale of the paragraph
+- `scaleY` (`number`) - the new vertical scale of the paragraph
+
+##### `color(r, g, b, a)`
+Sets the color of the paragraph. Paragraphs are white by default.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `color(color)`
+Sets the color of the paragraph.
+
+Parameters:
+- `color` (`table`) - the new color for the paragraph. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `shadowColor(r, g, b, a)`
+Sets the color of the paragraph's shadow.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `shadowColor(shadowColor)`
+Sets the color of the paragraph's shadow.
+
+Parameters:
+- `shadowColor` (`table`) - the new shadow color for the paragraph. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `shadowOffsetX(shadowOffsetX)`
+Sets the horizontal offset of the paragraph's shadow. Defaults to 1 pixel.
+
+Parameters:
+- `shadowOffsetX` (`number`) - the horizontal offset of the paragraph's shadow (in pixels)
+
+##### `shadowOffsetY(shadowOffsetY)`
+Sets the vertical offset of the paragraph's shadow. Defaults to 1 pixel.
+
+Parameters:
+- `shadowOffsetY` (`number`) - the vertical offset of the paragraph's shadow (in pixels)
+
+##### `shadowOffset(shadowOffsetX, shadowOffsetY)`
+Sets the horizontal and vertical offset of the paragraph's shadow.
+
+Parameters:
+- `shadowOffsetX` (`number`) - the horizontal offset of the paragraph's shadow (in pixels)
+- `shadowOffsetY` (`number`) - the vertical offset of the paragraph's shadow (in pixels)
