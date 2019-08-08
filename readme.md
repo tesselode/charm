@@ -4,6 +4,11 @@ Charm is a library for LÖVE that makes it easier to arrange and draw graphics, 
 
 This library is similar to [Boxer](https://github.com/tesselode/boxer), but it's **immediate mode**, which means that instead of creating objects that represent each graphic you want to draw, you simply tell Charm what you want to draw on each frame.
 
+To try the demos, run this command from the root project directory:
+```
+lovec . <demoname>
+```
+
 Example <!-- omit in toc -->
 -------
 ![](https://i.imgur.com/09OswHp.gif)
