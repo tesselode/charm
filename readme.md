@@ -4,6 +4,10 @@ Charm is a library for LÖVE that makes it easier to arrange and draw graphics, 
 
 This library is similar to [Boxer](https://github.com/tesselode/boxer), but it's **immediate mode**, which means that instead of creating objects that represent each graphic you want to draw, you simply tell Charm what you want to draw on each frame.
 
+Example <!-- omit in toc -->
+-------
+![](https://i.imgur.com/09OswHp.gif)
+
 ```lua
 local ui = require 'charm'.new()
 local labelFont = love.graphics.newFont(24)
@@ -34,6 +38,8 @@ function love.draw()
 	)
 ```
 
+Table of contents <!-- omit in toc -->
+-----------------
 - [Installation](#installation)
 - [Usage](#usage)
 	- [Drawing elements](#drawing-elements)
@@ -86,59 +92,66 @@ function love.draw()
 		- [`Ui:endChildren()`](#uiendchildren)
 		- [`Ui:wrap(padding)`](#uiwrappadding)
 		- [`Ui:draw()`](#uidraw)
-	- [Element properties](#element-properties)
-		- [Rectangle](#rectangle)
-			- [`fillColor(r, g, b, a)`](#fillcolorr-g-b-a)
-			- [`fillColor(color)`](#fillcolorcolor)
-			- [`outlineColor(r, g, b, a)`](#outlinecolorr-g-b-a)
-			- [`outlineColor(color)`](#outlinecolorcolor)
-			- [`lineWidth(width)`](#linewidthwidth)
-			- [`radiusX(radiusX)`](#radiusxradiusx)
-			- [`radiusY(radiusY)`](#radiusyradiusy)
-			- [`radius(radiusX, radiusY)`](#radiusradiusx-radiusy)
-			- [`segments(segments)`](#segmentssegments)
-		- [Ellipse](#ellipse)
-			- [`fillColor(r, g, b, a)`](#fillcolorr-g-b-a-1)
-			- [`fillColor(color)`](#fillcolorcolor-1)
-			- [`outlineColor(r, g, b, a)`](#outlinecolorr-g-b-a-1)
-			- [`outlineColor(color)`](#outlinecolorcolor-1)
-			- [`lineWidth(width)`](#linewidthwidth-1)
-			- [`segments(segments)`](#segmentssegments-1)
-		- [Image](#image)
-			- [`image(image)`](#imageimage)
-			- [`scaleX(scaleX)`](#scalexscalex)
-			- [`scaleY(scaleY)`](#scaleyscaley)
-			- [`scale(scaleX, scaleY)`](#scalescalex-scaley)
-			- [`color(r, g, b, a)`](#colorr-g-b-a)
-			- [`color(color)`](#colorcolor)
-		- [Text](#text)
-			- [`font(font)`](#fontfont)
-			- [`text(text)`](#texttext)
-			- [`limit(limit)`](#limitlimit)
-			- [`align(align)`](#alignalign)
-			- [`scaleX(scaleX)`](#scalexscalex-1)
-			- [`scaleY(scaleY)`](#scaleyscaley-1)
-			- [`scale(scaleX, scaleY)`](#scalescalex-scaley-1)
-			- [`color(r, g, b, a)`](#colorr-g-b-a-1)
-			- [`color(color)`](#colorcolor-1)
-			- [`shadowColor(r, g, b, a)`](#shadowcolorr-g-b-a)
-			- [`shadowColor(shadowColor)`](#shadowcolorshadowcolor)
-			- [`shadowOffsetX(shadowOffsetX)`](#shadowoffsetxshadowoffsetx)
-			- [`shadowOffsetY(shadowOffsetY)`](#shadowoffsetyshadowoffsety)
-			- [`shadowOffset(shadowOffsetX, shadowOffsetY)`](#shadowoffsetshadowoffsetx-shadowoffsety)
-		- [Paragraph](#paragraph)
-			- [`font(font)`](#fontfont-1)
-			- [`text(text)`](#texttext-1)
-			- [`scaleX(scaleX)`](#scalexscalex-2)
-			- [`scaleY(scaleY)`](#scaleyscaley-2)
-			- [`scale(scaleX, scaleY)`](#scalescalex-scaley-2)
-			- [`color(r, g, b, a)`](#colorr-g-b-a-2)
-			- [`color(color)`](#colorcolor-2)
-			- [`shadowColor(r, g, b, a)`](#shadowcolorr-g-b-a-1)
-			- [`shadowColor(shadowColor)`](#shadowcolorshadowcolor-1)
-			- [`shadowOffsetX(shadowOffsetX)`](#shadowoffsetxshadowoffsetx-1)
-			- [`shadowOffsetY(shadowOffsetY)`](#shadowoffsetyshadowoffsety-1)
-			- [`shadowOffset(shadowOffsetX, shadowOffsetY)`](#shadowoffsetshadowoffsetx-shadowoffsety-1)
+	- [ElementType](#elementtype)
+		- [`ElementType:new(...)`](#elementtypenew)
+		- [`ElementType:containsPoint(x, y)`](#elementtypecontainspointx-y)
+		- [`ElementType.set` (`table`) (optional)](#elementtypeset-table-optional)
+		- [`ElementType:draw()`](#elementtypedraw)
+		- [`ElementType:stencil()`](#elementtypestencil)
+- [Built-in element type properties](#built-in-element-type-properties)
+	- [Rectangle](#rectangle)
+		- [`fillColor(r, g, b, a)`](#fillcolorr-g-b-a)
+		- [`fillColor(color)`](#fillcolorcolor)
+		- [`outlineColor(r, g, b, a)`](#outlinecolorr-g-b-a)
+		- [`outlineColor(color)`](#outlinecolorcolor)
+		- [`lineWidth(width)`](#linewidthwidth)
+		- [`radiusX(radiusX)`](#radiusxradiusx)
+		- [`radiusY(radiusY)`](#radiusyradiusy)
+		- [`radius(radiusX, radiusY)`](#radiusradiusx-radiusy)
+		- [`segments(segments)`](#segmentssegments)
+	- [Ellipse](#ellipse)
+		- [`fillColor(r, g, b, a)`](#fillcolorr-g-b-a-1)
+		- [`fillColor(color)`](#fillcolorcolor-1)
+		- [`outlineColor(r, g, b, a)`](#outlinecolorr-g-b-a-1)
+		- [`outlineColor(color)`](#outlinecolorcolor-1)
+		- [`lineWidth(width)`](#linewidthwidth-1)
+		- [`segments(segments)`](#segmentssegments-1)
+	- [Image](#image)
+		- [`image(image)`](#imageimage)
+		- [`scaleX(scaleX)`](#scalexscalex)
+		- [`scaleY(scaleY)`](#scaleyscaley)
+		- [`scale(scaleX, scaleY)`](#scalescalex-scaley)
+		- [`color(r, g, b, a)`](#colorr-g-b-a)
+		- [`color(color)`](#colorcolor)
+	- [Text](#text)
+		- [`font(font)`](#fontfont)
+		- [`text(text)`](#texttext)
+		- [`limit(limit)`](#limitlimit)
+		- [`align(align)`](#alignalign)
+		- [`scaleX(scaleX)`](#scalexscalex-1)
+		- [`scaleY(scaleY)`](#scaleyscaley-1)
+		- [`scale(scaleX, scaleY)`](#scalescalex-scaley-1)
+		- [`color(r, g, b, a)`](#colorr-g-b-a-1)
+		- [`color(color)`](#colorcolor-1)
+		- [`shadowColor(r, g, b, a)`](#shadowcolorr-g-b-a)
+		- [`shadowColor(shadowColor)`](#shadowcolorshadowcolor)
+		- [`shadowOffsetX(shadowOffsetX)`](#shadowoffsetxshadowoffsetx)
+		- [`shadowOffsetY(shadowOffsetY)`](#shadowoffsetyshadowoffsety)
+		- [`shadowOffset(shadowOffsetX, shadowOffsetY)`](#shadowoffsetshadowoffsetx-shadowoffsety)
+	- [Paragraph](#paragraph)
+		- [`font(font)`](#fontfont-1)
+		- [`text(text)`](#texttext-1)
+		- [`scaleX(scaleX)`](#scalexscalex-2)
+		- [`scaleY(scaleY)`](#scaleyscaley-2)
+		- [`scale(scaleX, scaleY)`](#scalescalex-scaley-2)
+		- [`color(r, g, b, a)`](#colorr-g-b-a-2)
+		- [`color(color)`](#colorcolor-2)
+		- [`shadowColor(r, g, b, a)`](#shadowcolorr-g-b-a-1)
+		- [`shadowColor(shadowColor)`](#shadowcolorshadowcolor-1)
+		- [`shadowOffsetX(shadowOffsetX)`](#shadowoffsetxshadowoffsetx-1)
+		- [`shadowOffsetY(shadowOffsetY)`](#shadowoffsetyshadowoffsety-1)
+		- [`shadowOffset(shadowOffsetX, shadowOffsetY)`](#shadowoffsetshadowoffsetx-shadowoffsety-1)
+- [Contributing](#contributing)
 
 Installation
 ------------
@@ -315,7 +328,7 @@ end
 ```
 
 ### Mouse events
-We can use mouse events to create basic mouse-driven GUi elements, like buttons and windows. The UI object provides some functions for getting the state of certain elements, like `isPressed` and `isDragged`. Note, however, that **the UI object will only track the state of elements that have a name**.
+We can use mouse events to create basic mouse-driven GUI elements, like buttons and windows. The UI object provides some functions for getting the state of certain elements, like `isPressed` and `isDragged`. Note, however, that **the UI object will only track the state of elements that have a name**.
 
 Here's an example of how to make a simple button:
 ```lua
@@ -345,24 +358,26 @@ end
 API
 ---
 ### charm
+The main Charm module. It's only responsible for creating new [`Ui`](#ui) objects.
 
 #### `charm.new()`
 Creates a new UI object.
 
 Returns:
-- `ui` (`Ui`) - the new UI object
+- `ui` ([`Ui`](#ui)) - the new UI object
 
 ### Ui
+Creates, manipulates, and draws graphical elements. It also maintains mouse state for named elements.
 
 #### `Ui:new(elementType, ...)`
 Creates a new element to be drawn this frame.
 
 Parameters:
-- `elementType` (`string` or `table`) - the type of element to create. Can be the name of a built-in element type, or a table with functions for a custom element type.
+- `elementType` (`string` or [`ElementType`](#elementtype)) - the type of element to create. Can be the name of a built-in element type, or a table with functions for a custom element type.
 - `...` - additional arguments to pass to the element type's constructor
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:getX(name, anchor)`
 Gets the x position of a point along the x-axis of an element.
@@ -554,7 +569,7 @@ Parameters:
 - `anchor` (`number`) (optional, defaults to `0`) - the point on the element to set to the destination x. `0` sets the left edge, `.5` sets the horizontal center, `1` sets the right edge
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:left(x)`
 Sets the left edge of the currently selected element to the specified position.
@@ -563,7 +578,7 @@ Parameters:
 - `x` (`number`) - the new x position for the left edge of the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:center(x)`
 Sets the horizontal center of the currently selected element to the specified position.
@@ -572,7 +587,7 @@ Parameters:
 - `x` (`number`) - the new x position for the horizontal center of the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:right(x)`
 Sets the right edge of the currently selected element to the specified position.
@@ -581,7 +596,7 @@ Parameters:
 - `x` (`number`) - the new x position for the right edge of the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:y(y, anchor)`
 Sets the y position of the currently selected element.
@@ -591,7 +606,7 @@ Parameters:
 - `anchor` (`number`) (optional, defaults to `0`) - the point on the element to set to the destination y. `0` sets the top edge, `.5` sets the vertical center, `1` sets the bottom edge
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:top(y)`
 Sets the top edge of the currently selected element to the specified position.
@@ -600,7 +615,7 @@ Parameters:
 - `y` (`number`) - the new y position for the top edge of the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:middle(y)`
 Sets the vertical center of the currently selected element to the specified position.
@@ -609,7 +624,7 @@ Parameters:
 - `y` (`number`) - the new y position for the vertical center of the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:bottom(y)`
 Sets the bottom edge of the currently selected element to the specified position.
@@ -618,7 +633,7 @@ Parameters:
 - `y` (`number`) - the new y position for the bottom edge of the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:z(z)`
 Sets the z position of the currently selected element.
@@ -627,7 +642,7 @@ Parameters:
 - `z` (`number`) - the new z position for the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:width(width)`
 Sets the width of the currently selected element.
@@ -636,7 +651,7 @@ Parameters:
 - `width` (`number`) - the new width for the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:height(height)`
 Sets the height of the currently selected element.
@@ -645,7 +660,7 @@ Parameters:
 - `height` (`number`) - the new height for the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:size(width, height)`
 Sets the width and height of the currently selected element.
@@ -655,7 +670,7 @@ Parameters:
 - `height` (`number`) - the new height for the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:name(name)`
 Sets the name of the currently selected element.
@@ -664,7 +679,7 @@ Parameters:
 - `name` (`string`) - the new name for the element
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:set(property, ...)`
 Sets a property on the currently selected element. What this does depends on the type of the element.
@@ -674,37 +689,37 @@ Parameters:
 - `...` - additional arguments to pass to the property setter
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:clip()`
 Enables clipping for the currently selected element, which causes portions of the element's children that are outside the element's bounds to be hidden.
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:transparent()`
 Sets the currently selected element to be transparent, which means that the element will not block lower elements from receiving mouse events. Text and paragraph elements are transparent by default.
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:opaque()`
 Sets the currently selected element to be opaque, which means that the element will block lower elements from receiving mouse events. Most elements are opaque by default.
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:beginChildren()`
 After this function is called, newly created elements will be children of the element that was selected before the function was called.
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:endChildren()`
 Stops assigning new elements to a previously designated parent element. The parent element will be re-selected as the currently modified element. `beginChildren`/`endChildren` pairs can be nested to create multi-layer hierarchies of elements.
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:wrap(padding)`
 Adjusts the current element's position and size to perfectly surround its children. The children's positions will also be adjusted to have the same position on screen.
@@ -713,20 +728,49 @@ Parameters:
 - `padding` (`number`) (optional, defaults to `0`) - the amount of extra space the parent element should have around its children (in pixels)
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
 #### `Ui:draw()`
 Draws all of the previously created elements to the screen. Creating a new element after calling this function will reset the element list.
 
 Returns:
-- `ui` (`Ui`) - itself
+- `ui` ([`Ui`](#ui)) - itself
 
-### Element properties
+### ElementType
+Represents a type of element a [`Ui`](#ui) can create. Each `ElementType` can define a number of functions to define its behavior. These functions are not called directly, but defined by the user and called by a [`Ui`](#ui) object.
+
+#### `ElementType:new(...)`
+Called when a new element of this type is created. If not provided, the element will use the constructor of the built-in `rectangle` element type.
+
+#### `ElementType:containsPoint(x, y)`
+Checks whether a point is within the element's bounds. If not provided, the element will use the same `containsPoint` function as the `rectangle` element type.
+
+Parameters:
+- `x` (`number`) - the x position to check
+- `y` (`number`) - the y position to check
+
+Returns:
+- `containsPoint` (`boolean`) - whether the point is within the element's bounds
+
+#### `ElementType.set` (`table`) (optional)
+The property setters for this element type. The name of each function corresponds to the name of the property (used in `Ui:set()`). Each setter function can take any number of arguments.
+
+#### `ElementType:draw()`
+Draws the element to the screen.
+
+**Note**: the `draw` function should draw the contents of the element as if its position is (0, 0), as the UI object will take care of translating the graphics.
+
+#### `ElementType:stencil()`
+Draws the element's stencil. Used for clipping children.
+
+**Note**: the `stencil` function should draw the contents of the element as if its position is (0, 0), as the UI object will take care of translating the graphics.
+
+## Built-in element type properties
 This section lists the properties available for Charm's built-in element types. Note that these functions are not called directly; rather, you set an element's properties by using `Ui:set(property, ...)`.
 
-#### Rectangle
+### Rectangle
 
-##### `fillColor(r, g, b, a)`
+#### `fillColor(r, g, b, a)`
 Sets the fill color of the rectangle.
 
 Parameters:
@@ -735,13 +779,13 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `fillColor(color)`
+#### `fillColor(color)`
 Sets the fill color of the rectangle.
 
 Parameters:
 - `color` (`table`) - the new fill color for the rectangle. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `outlineColor(r, g, b, a)`
+#### `outlineColor(r, g, b, a)`
 Sets the outline color of the rectangle.
 
 Parameters:
@@ -750,46 +794,46 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `outlineColor(color)`
+#### `outlineColor(color)`
 Sets the outline color of the rectangle.
 
 Parameters:
 - `color` (`table`) - the new outline color for the rectangle. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `lineWidth(width)`
+#### `lineWidth(width)`
 Sets the width of the rectangle's outline.
 
 Parameters:
 - `width` (`number`) - the width of the rectangle's outline
 
-##### `radiusX(radiusX)`
+#### `radiusX(radiusX)`
 Sets the horizontal radius of the rectangle's corners. The radius is 0 by default.
 
 Parameters:
 - `radiusX` (`number`) - the horizontal radius of the rectangle's corners
 
-##### `radiusY(radiusY)`
+#### `radiusY(radiusY)`
 Sets the vertical radius of the rectangle's corners. The radius is 0 by default.
 
 Parameters:
 - `radiusY` (`number`) - the vertical radius of the rectangle's corners
 
-##### `radius(radiusX, radiusY)`
+#### `radius(radiusX, radiusY)`
 Sets the horizontal and vertical radii of the rectangle's corners.
 
 Parameters:
 - `radiusX` (`number`) - the horizontal radius of the rectangle's corners
 - `radiusY` (`number`) - the vertical radius of the rectangle's corners
 
-##### `segments(segments)`
+#### `segments(segments)`
 Sets the number of segments used to draw the rectangle's corners. 64 by default.
 
 Parameters:
 - `segments` (`number`) - the number of segments used to draw the rectangle's corners
 
-#### Ellipse
+### Ellipse
 
-##### `fillColor(r, g, b, a)`
+#### `fillColor(r, g, b, a)`
 Sets the fill color of the ellipse.
 
 Parameters:
@@ -798,13 +842,13 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `fillColor(color)`
+#### `fillColor(color)`
 Sets the fill color of the ellipse.
 
 Parameters:
 - `color` (`table`) - the new fill color for the ellipse. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `outlineColor(r, g, b, a)`
+#### `outlineColor(r, g, b, a)`
 Sets the outline color of the ellipse.
 
 Parameters:
@@ -813,52 +857,52 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `outlineColor(color)`
+#### `outlineColor(color)`
 Sets the outline color of the ellipse.
 
 Parameters:
 - `color` (`table`) - the new outline color for the ellipse. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `lineWidth(width)`
+#### `lineWidth(width)`
 Sets the width of the ellipse's outline.
 
 Parameters:
 - `width` (`number`) - the width of the ellipse's outline
 
-##### `segments(segments)`
+#### `segments(segments)`
 Sets the number of segments used to draw the ellipse. 64 by default.
 
 Parameters:
 - `segments` (`number`) - the number of segments used to draw the ellipse
 
-#### Image
+### Image
 
-##### `image(image)`
+#### `image(image)`
 Sets the image that the element should display.
 
 Parameters:
 - `image` (`Image`) - the new image for the element to display
 
-##### `scaleX(scaleX)`
+#### `scaleX(scaleX)`
 Sets the horizontal scale of the image, or in other words, sets the width of the element relative to the original width of the image.
 
 Parameters:
 - `scaleX` (`number`) - the new horizontal scale of the image
 
-##### `scaleY(scaleY)`
+#### `scaleY(scaleY)`
 Sets the vertical scale of the image, or in other words, sets the height of the element relative to the original height of the image.
 
 Parameters:
 - `scaleY` (`number`) - the new vertical scale of the image
 
-##### `scale(scaleX, scaleY)`
+#### `scale(scaleX, scaleY)`
 Sets the horizontal and vertical scale of the image.
 
 Parameters:
 - `scaleX` (`number`) - the new horizontal scale of the image
 - `scaleY` (`number`) - the new vertical scale of the image
 
-##### `color(r, g, b, a)`
+#### `color(r, g, b, a)`
 Sets the blend color of the image.
 
 Parameters:
@@ -867,58 +911,58 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `color(color)`
+#### `color(color)`
 Sets the blend color of the image.
 
 Parameters:
 - `color` (`table`) - the new blend color for the image. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-#### Text
+### Text
 
-##### `font(font)`
+#### `font(font)`
 Sets the font that the text should use.
 
 Parameters:
 - `font` (`Font`) - the font that the text should use
 
-##### `text(text)`
+#### `text(text)`
 Sets the text that the element should display.
 
 Parameters:
 - `text` (`string`) - the text that the element should display
 
-##### `limit(limit)`
+#### `limit(limit)`
 Sets the maximum width (in pixels) that the text can span before a line break occurs.
 
 Parameters:
 - `limit` (`number`) - the maximum width of a line of text
 
-##### `align(align)`
+#### `align(align)`
 Sets the alignment of the text.
 
 Parameters:
 - `align` (`alignMode`) - how text should be aligned within the paragraph
 
-##### `scaleX(scaleX)`
+#### `scaleX(scaleX)`
 Sets the horizontal scale of the text, or in other words, sets the width of the element relative to the natural width of the text.
 
 Parameters:
 - `scaleX` (`number`) - the new horizontal scale of the text
 
-##### `scaleY(scaleY)`
+#### `scaleY(scaleY)`
 Sets the vertical scale of the text, or in other words, sets the height of the element relative to the natural height of the text.
 
 Parameters:
 - `scaleY` (`number`) - the new vertical scale of the text
 
-##### `scale(scaleX, scaleY)`
+#### `scale(scaleX, scaleY)`
 Sets the horizontal and vertical scale of the text.
 
 Parameters:
 - `scaleX` (`number`) - the new horizontal scale of the text
 - `scaleY` (`number`) - the new vertical scale of the text
 
-##### `color(r, g, b, a)`
+#### `color(r, g, b, a)`
 Sets the color of the text. Text is white by default.
 
 Parameters:
@@ -927,13 +971,13 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `color(color)`
+#### `color(color)`
 Sets the color of the text.
 
 Parameters:
 - `color` (`table`) - the new color for the text. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `shadowColor(r, g, b, a)`
+#### `shadowColor(r, g, b, a)`
 Sets the color of the text's shadow.
 
 Parameters:
@@ -942,65 +986,65 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `shadowColor(shadowColor)`
+#### `shadowColor(shadowColor)`
 Sets the color of the text's shadow.
 
 Parameters:
 - `shadowColor` (`table`) - the new shadow color for the text. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `shadowOffsetX(shadowOffsetX)`
+#### `shadowOffsetX(shadowOffsetX)`
 Sets the horizontal offset of the text's shadow. Defaults to 1 pixel.
 
 Parameters:
 - `shadowOffsetX` (`number`) - the horizontal offset of the text's shadow (in pixels)
 
-##### `shadowOffsetY(shadowOffsetY)`
+#### `shadowOffsetY(shadowOffsetY)`
 Sets the vertical offset of the text's shadow. Defaults to 1 pixel.
 
 Parameters:
 - `shadowOffsetY` (`number`) - the vertical offset of the text's shadow (in pixels)
 
-##### `shadowOffset(shadowOffsetX, shadowOffsetY)`
+#### `shadowOffset(shadowOffsetX, shadowOffsetY)`
 Sets the horizontal and vertical offset of the text's shadow.
 
 Parameters:
 - `shadowOffsetX` (`number`) - the horizontal offset of the text's shadow (in pixels)
 - `shadowOffsetY` (`number`) - the vertical offset of the text's shadow (in pixels)
 
-#### Paragraph
+### Paragraph
 
-##### `font(font)`
+#### `font(font)`
 Sets the font that the paragraph should use.
 
 Parameters:
 - `font` (`Font`) - the font that the paragraph should use
 
-##### `text(text)`
+#### `text(text)`
 Sets the text that the element should display.
 
 Parameters:
 - `text` (`string`) - the text that the element should display
 
-##### `scaleX(scaleX)`
+#### `scaleX(scaleX)`
 Sets the horizontal scale of the paragraph, or in other words, sets the width of the element relative to the natural width of the paragraph.
 
 Parameters:
 - `scaleX` (`number`) - the new horizontal scale of the paragraph
 
-##### `scaleY(scaleY)`
+#### `scaleY(scaleY)`
 Sets the vertical scale of the paragraph, or in other words, sets the height of the element relative to the natural height of the paragraph.
 
 Parameters:
 - `scaleY` (`number`) - the new vertical scale of the paragraph
 
-##### `scale(scaleX, scaleY)`
+#### `scale(scaleX, scaleY)`
 Sets the horizontal and vertical scale of the paragraph.
 
 Parameters:
 - `scaleX` (`number`) - the new horizontal scale of the paragraph
 - `scaleY` (`number`) - the new vertical scale of the paragraph
 
-##### `color(r, g, b, a)`
+#### `color(r, g, b, a)`
 Sets the color of the paragraph. Paragraphs are white by default.
 
 Parameters:
@@ -1009,13 +1053,13 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `color(color)`
+#### `color(color)`
 Sets the color of the paragraph.
 
 Parameters:
 - `color` (`table`) - the new color for the paragraph. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `shadowColor(r, g, b, a)`
+#### `shadowColor(r, g, b, a)`
 Sets the color of the paragraph's shadow.
 
 Parameters:
@@ -1024,27 +1068,31 @@ Parameters:
 - `b` (`number`) - the component component of the color (from 0-1)
 - `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
 
-##### `shadowColor(shadowColor)`
+#### `shadowColor(shadowColor)`
 Sets the color of the paragraph's shadow.
 
 Parameters:
 - `shadowColor` (`table`) - the new shadow color for the paragraph. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
 
-##### `shadowOffsetX(shadowOffsetX)`
+#### `shadowOffsetX(shadowOffsetX)`
 Sets the horizontal offset of the paragraph's shadow. Defaults to 1 pixel.
 
 Parameters:
 - `shadowOffsetX` (`number`) - the horizontal offset of the paragraph's shadow (in pixels)
 
-##### `shadowOffsetY(shadowOffsetY)`
+#### `shadowOffsetY(shadowOffsetY)`
 Sets the vertical offset of the paragraph's shadow. Defaults to 1 pixel.
 
 Parameters:
 - `shadowOffsetY` (`number`) - the vertical offset of the paragraph's shadow (in pixels)
 
-##### `shadowOffset(shadowOffsetX, shadowOffsetY)`
+#### `shadowOffset(shadowOffsetX, shadowOffsetY)`
 Sets the horizontal and vertical offset of the paragraph's shadow.
 
 Parameters:
 - `shadowOffsetX` (`number`) - the horizontal offset of the paragraph's shadow (in pixels)
 - `shadowOffsetY` (`number`) - the vertical offset of the paragraph's shadow (in pixels)
+
+Contributing
+------------
+Charm is in very early development. Feel free to request features, point out bugs, and even make some pull requests! If you use this library in a game, let me know how it goes.
