@@ -86,6 +86,24 @@ function love.draw()
 		- [`Ui:endChildren()`](#uiendchildren)
 		- [`Ui:wrap(padding)`](#uiwrappadding)
 		- [`Ui:draw()`](#uidraw)
+	- [Element properties](#element-properties)
+		- [Rectangle](#rectangle)
+			- [`fillColor(r, g, b, a)`](#fillcolorr-g-b-a)
+			- [`fillColor(color)`](#fillcolorcolor)
+			- [`outlineColor(r, g, b, a)`](#outlinecolorr-g-b-a)
+			- [`outlineColor(color)`](#outlinecolorcolor)
+			- [`lineWidth(width)`](#linewidthwidth)
+			- [`radiusX(radiusX)`](#radiusxradiusx)
+			- [`radiusY(radiusY)`](#radiusyradiusy)
+			- [`radius(radiusX, radiusY)`](#radiusradiusx-radiusy)
+			- [`segments(segments)`](#segmentssegments)
+		- [Ellipse](#ellipse)
+			- [`fillColor(r, g, b, a)`](#fillcolorr-g-b-a-1)
+			- [`fillColor(color)`](#fillcolorcolor-1)
+			- [`outlineColor(r, g, b, a)`](#outlinecolorr-g-b-a-1)
+			- [`outlineColor(color)`](#outlinecolorcolor-1)
+			- [`lineWidth(width)`](#linewidthwidth-1)
+			- [`segments(segments)`](#segmentssegments-1)
 
 Installation
 ------------
@@ -667,3 +685,113 @@ Draws all of the previously created elements to the screen. Creating a new eleme
 
 Returns:
 - `ui` (`Ui`) - itself
+
+### Element properties
+This section lists the properties available for Charm's built-in element types. Note that these functions are not called directly; rather, you set an element's properties by using `Ui:set(property, ...)`.
+
+#### Rectangle
+
+##### `fillColor(r, g, b, a)`
+Sets the fill color of the rectangle.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `fillColor(color)`
+Sets the fill color of the rectangle.
+
+Parameters:
+- `color` (`table`) - the new fill color for the rectangle. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `outlineColor(r, g, b, a)`
+Sets the outline color of the rectangle.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `outlineColor(color)`
+Sets the outline color of the rectangle.
+
+Parameters:
+- `color` (`table`) - the new outline color for the rectangle. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `lineWidth(width)`
+Sets the width of the rectangle's outline.
+
+Parameters:
+- `width` (`number`) - the width of the rectangle's outline
+
+##### `radiusX(radiusX)`
+Sets the horizontal radius of the rectangle's corners. The radius is 0 by default.
+
+Parameters:
+- `radiusX` (`number`) - the horizontal radius of the rectangle's corners
+
+##### `radiusY(radiusY)`
+Sets the vertical radius of the rectangle's corners. The radius is 0 by default.
+
+Parameters:
+- `radiusY` (`number`) - the vertical radius of the rectangle's corners
+
+##### `radius(radiusX, radiusY)`
+Sets the horizontal and vertical radii of the rectangle's corners.
+
+Parameters:
+- `radiusX` (`number`) - the horizontal radius of the rectangle's corners
+- `radiusY` (`number`) - the vertical radius of the rectangle's corners
+
+##### `segments(segments)`
+Sets the number of segments used to draw the rectangle's corners. 64 by default.
+
+Parameters:
+- `segments` (`number`) - the number of segments used to draw the rectangle's corners
+
+#### Ellipse
+
+##### `fillColor(r, g, b, a)`
+Sets the fill color of the ellipse.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `fillColor(color)`
+Sets the fill color of the ellipse.
+
+Parameters:
+- `color` (`table`) - the new fill color for the ellipse. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `outlineColor(r, g, b, a)`
+Sets the outline color of the ellipse.
+
+Parameters:
+- `r` (`number`) - the red component of the color (from 0-1)
+- `g` (`number`) - the green component of the color (from 0-1)
+- `b` (`number`) - the component component of the color (from 0-1)
+- `a` (`number`) (optional, defaults to `1`) - the alpha component of the color (from 0-1)
+
+##### `outlineColor(color)`
+Sets the outline color of the ellipse.
+
+Parameters:
+- `color` (`table`) - the new outline color for the ellipse. Should contain three values corresponding to the red, green, and blue components of the color, and optionally a fourth alpha component.
+
+##### `lineWidth(width)`
+Sets the width of the ellipse's outline.
+
+Parameters:
+- `width` (`number`) - the width of the ellipse's outline
+
+##### `segments(segments)`
+Sets the number of segments used to draw the ellipse. 64 by default.
+
+Parameters:
+- `segments` (`number`) - the number of segments used to draw the ellipse
