@@ -310,7 +310,7 @@ end
 ### Element selectors
 Rather than using the names of an element to get information about it, we can use special keywords to select an element without having to give it a name first. Charm provides three keywords:
 - `@current` - the element currently being modified
-- `@previous` - the second-most recently created element
+- `@previous` - the previously selected element
 - `@parent` - the parent of the currently modified element
 
 Here's a modified version of the above example that uses `@previous`, the most commonly useful keyword:

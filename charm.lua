@@ -439,7 +439,7 @@ function Ui:_getElement(name)
 	if name == '@current' then
 		return self._elements[self._selectedElementIndex]
 	elseif name == '@previous' then
-		return self._elements[self._selectedElementIndex - 1]
+		return self._elements[self._previousElementIndex]
 	elseif name == '@parent' then
 		return self._elements[self._activeParents[#self._activeParents]]
 	end
@@ -475,9 +475,11 @@ function Ui:new(elementType, ...)
 	if self._finished then
 		self._numElements = 0
 		self._selectedElementIndex = 0
+		self._previousElementIndex = 0
 		self._finished = false
 	end
 	self._numElements = self._numElements + 1
+	self._previousElementIndex = self._selectedElementIndex
 	self._selectedElementIndex = self._numElements
 	local element
 	-- if there's already an element table at this index,
@@ -699,6 +701,7 @@ end
 -- Pops the topmost element from the group stack and selects
 -- that element as the current element.
 function Ui:endChildren()
+	self._previousElementIndex = self._selectedElementIndex
 	self._selectedElementIndex = self._activeParents[#self._activeParents]
 	table.remove(self._activeParents, #self._activeParents)
 	return self
@@ -912,6 +915,7 @@ function charm.new()
 		_numElements = 0,
 		_finished = false,
 		_selectedElementIndex = 0,
+		_previousElementIndex = 0,
 		_activeParents = {},
 		_drawList = {},
 		_stencilFunctionCache = {},
