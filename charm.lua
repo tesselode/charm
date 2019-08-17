@@ -428,29 +428,6 @@ Element.paragraph = {
 local Ui = {}
 Ui.__index = Ui
 
---[[
-	Gets an element with the given name. There are three special
-	names you can use to get elements, all prefixed with "@":
-	- @current - the element currently being operated on
-	- @previous - the element directly before the current element
-	- @parent - the element the current element is a child of
-]]
-function Ui:_getElement(name)
-	if name == '@current' then
-		return self._elements[self._selectedElementIndex]
-	elseif name == '@previous' then
-		return self._elements[self._previousElementIndex]
-	elseif name == '@parent' then
-		return self._elements[self._activeParents[#self._activeParents]]
-	end
-	for i = self._numElements, 1, -1 do
-		local element = self._elements[i]
-		if element.name == name then
-			return element
-		end
-	end
-end
-
 -- Gets the element currently being operated on
 function Ui:_getSelectedElement()
 	return self._elements[self._selectedElementIndex]
@@ -501,13 +478,43 @@ function Ui:new(elementType, ...)
 end
 
 --[[
+	Gets an element with the given name. There are three special
+	names you can use to get elements, all prefixed with "@":
+	- @current - the element currently being operated on
+	- @previous - the element directly before the current element
+	- @parent - the element the current element is a child of
+
+	If the element itself is passed to this function, it'll just
+	return the function. This is done so that the other functions
+	that use getElement can work with names or the element itself
+	without having to write that check for each function.
+]]
+function Ui:getElement(name)
+	if type(name) == 'table' then return name end
+	name = name or '@current'
+	if name == '@current' then
+		return self:_getSelectedElement()
+	elseif name == '@previous' then
+		return self._elements[self._previousElementIndex]
+	elseif name == '@parent' then
+		return self._elements[self._activeParents[#self._activeParents]]
+	end
+	for i = self._numElements, 1, -1 do
+		local element = self._elements[i]
+		if element.name == name then
+			return element
+		end
+	end
+end
+
+--[[
 	Gets the x position of a point on the element with the given name.
 	Tne anchor specifies what point on the x-axis we want to get
 	(0 = left, 0.5 = center, 1 = right)
 ]]
 function Ui:getX(name, anchor)
 	anchor = anchor or 0
-	local element = self:_getElement(name)
+	local element = self:getElement(name)
 	return element.x + element.w * anchor
 end
 
@@ -522,7 +529,7 @@ function Ui:getRight(name) return self:getX(name, 1) end
 ]]
 function Ui:getY(name, anchor)
 	anchor = anchor or 0
-	local element = self:_getElement(name)
+	local element = self:getElement(name)
 	return element.y + element.h * anchor
 end
 
@@ -532,12 +539,12 @@ function Ui:getBottom(name) return self:getY(name, 1) end
 
 -- Gets the z position of an element (defaults to 0)
 function Ui:getZ(name)
-	local element = self:_getElement(name)
+	local element = self:getElement(name)
 	return element.z or 0
 end
 
-function Ui:getWidth(name) return self:_getElement(name).w end
-function Ui:getHeight(name) return self:_getElement(name).h end
+function Ui:getWidth(name) return self:getElement(name).w end
+function Ui:getHeight(name) return self:getElement(name).h end
 function Ui:getSize(name) return self:getWidth(name), self:getHeight(name) end
 
 -- Gets whether the mouse is hovering over this element
