@@ -621,6 +621,13 @@ function Ui:z(z)
 	return self
 end
 
+function Ui:shift(dx, dy)
+	local element = self:_getSelectedElement()
+	element.x = element.x + (dx or 0)
+	element.y = element.y + (dy or 0)
+	return self
+end
+
 function Ui:width(width)
 	local element = self:_getSelectedElement()
 	element.w = width
