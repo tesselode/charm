@@ -43,23 +43,22 @@ end
 	table values are not removed because they can
 	be reused later.
 
-	additional arguments are keys to skip clearing out.
+	additional arguments are keys to only shallow clear
+	(instead of deep clearing).
 ]]
 local function deepClear(t, ...)
 	for k, v in pairs(t) do
-		local shouldClear = true
+		local shouldDeepClear = true
 		for i = 1, select('#', ...) do
 			if k == select(i, ...) then
-				shouldClear = false
+				shouldDeepClear = false
 				break
 			end
 		end
-		if shouldClear then
-			if type(v) == 'table' then
-				deepClear(v)
-			else
-				t[k] = nil
-			end
+		if type(v) == 'table' and shouldDeepClear then
+			deepClear(v)
+		else
+			t[k] = nil
 		end
 	end
 end
@@ -435,11 +434,6 @@ function Ui:__index(k)
 	return self._cachedProperties[k]
 end
 
--- Gets the element currently being operated on
-function Ui:_getSelectedElement()
-	return self._elements[self._selectedElementIndex]
-end
-
 --[[
 	Gets the class table for the current element. If the
 	element type is a string, the code will look for the
@@ -451,37 +445,6 @@ function Ui:_getElementClass(element)
 		return Element[element.type]
 	end
 	return element.type
-end
-
--- Creates a new element and starts operating on it
-function Ui:new(elementType, ...)
-	-- if we just finished a draw call, reset some UI state
-	if self._finished then
-		self._numElements = 0
-		self._selectedElementIndex = 0
-		self._previousElementIndex = 0
-		self._finished = false
-	end
-	self._numElements = self._numElements + 1
-	self._previousElementIndex = self._selectedElementIndex
-	self._selectedElementIndex = self._numElements
-	local element
-	-- if there's already an element table at this index,
-	-- reuse the table. otherwise, create a new one and add it
-	-- to the elements list
-	if self._elements[self._selectedElementIndex] then
-		element = self._elements[self._selectedElementIndex]
-		deepClear(element, 'type')
-	else
-		element = {}
-		table.insert(self._elements, element)
-	end
-	element.parentIndex = self._activeParents[#self._activeParents]
-	element.type = elementType
-	local elementClass = self:_getElementClass(element)
-	local constructor = elementClass.new or defaultConstructor
-	constructor(element, ...)
-	return self
 end
 
 --[[
@@ -500,11 +463,11 @@ function Ui:getElement(name)
 	if type(name) == 'table' then return name end
 	name = name or '@current'
 	if name == '@current' then
-		return self:_getSelectedElement()
+		return self._selectedElement
 	elseif name == '@previous' then
-		return self._elements[self._previousElementIndex]
+		return self._previousElement
 	elseif name == '@parent' then
-		return self._elements[self._activeParents[#self._activeParents]]
+		return self._activeParents[#self._activeParents]
 	end
 	for i = self._numElements, 1, -1 do
 		local element = self._elements[i]
@@ -512,6 +475,43 @@ function Ui:getElement(name)
 			return element
 		end
 	end
+end
+
+function Ui:select(name)
+	local element = self:getElement(name)
+	self._previousElement = self._selectedElement
+	self._selectedElement = element
+	return self
+end
+
+-- Creates a new element and starts operating on it
+function Ui:new(elementType, ...)
+	-- if we just finished a draw call, reset some UI state
+	if self._finished then
+		self._numElements = 0
+		self._selectedElement = nil
+		self._previousElement = nil
+		self._finished = false
+	end
+	self._numElements = self._numElements + 1
+	local element
+	-- if there's already an element table at this index,
+	-- reuse the table. otherwise, create a new one and add it
+	-- to the elements list
+	if self._elements[self._numElements] then
+		element = self._elements[self._numElements]
+		deepClear(element, 'type', 'parent')
+	else
+		element = {}
+		table.insert(self._elements, element)
+	end
+	element.parent = self._activeParents[#self._activeParents]
+	element.type = elementType
+	local elementClass = self:_getElementClass(element)
+	local constructor = elementClass.new or defaultConstructor
+	constructor(element, ...)
+	self:select(element)
+	return self
 end
 
 --[[
@@ -611,7 +611,7 @@ end
 -- getters except they always act on the current element
 function Ui:x(x, anchor)
 	anchor = anchor or 0
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.x = x - element.w * anchor
 	return self
 end
@@ -622,7 +622,7 @@ function Ui:right(x) return self:x(x, 1) end
 
 function Ui:y(y, anchor)
 	anchor = anchor or 0
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.y = y - element.h * anchor
 	return self
 end
@@ -632,26 +632,26 @@ function Ui:middle(y) return self:y(y, .5) end
 function Ui:bottom(y) return self:y(y, 1) end
 
 function Ui:z(z)
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.z = z
 	return self
 end
 
 function Ui:shift(dx, dy)
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.x = element.x + (dx or 0)
 	element.y = element.y + (dy or 0)
 	return self
 end
 
 function Ui:width(width)
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.w = width
 	return self
 end
 
 function Ui:height(height)
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.h = height
 	return self
 end
@@ -665,7 +665,7 @@ end
 
 -- Sets the name of the current element
 function Ui:name(name)
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.name = name
 	return self
 end
@@ -673,7 +673,7 @@ end
 -- Sets a property on the current element. What this does
 -- depends on the element's class.
 function Ui:set(property, ...)
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	local elementClass = self:_getElementClass(element)
 	if elementClass.set and elementClass.set[property] then
 		elementClass.set[property](element, ...)
@@ -686,7 +686,7 @@ end
 -- Enables child clipping for this element, meaning that children
 -- will not be visible outside of the bounds of this element.
 function Ui:clip()
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.clip = true
 	return self
 end
@@ -694,13 +694,13 @@ end
 -- Makes this child transparent, which means that the mouse can be
 -- hovered over this element and lower elements simultaneously.
 function Ui:transparent()
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.transparent = true
 	return self
 end
 
 function Ui:opaque()
-	local element = self:_getSelectedElement()
+	local element = self._selectedElement
 	element.transparent = false
 	return self
 end
@@ -708,15 +708,14 @@ end
 -- Pushes the current element onto the group stack so that newly
 -- created elements will be children of this element.
 function Ui:beginChildren()
-	table.insert(self._activeParents, self._selectedElementIndex)
+	table.insert(self._activeParents, self._selectedElement)
 	return self
 end
 
 -- Pops the topmost element from the group stack and selects
 -- that element as the current element.
 function Ui:endChildren()
-	self._previousElementIndex = self._selectedElementIndex
-	self._selectedElementIndex = self._activeParents[#self._activeParents]
+	self:select(self._activeParents[#self._activeParents])
 	table.remove(self._activeParents, #self._activeParents)
 	return self
 end
@@ -726,13 +725,12 @@ end
 -- the same position on screen after the wrap is complete.
 function Ui:wrap(padding)
 	padding = padding or 0
-	local parent = self:_getSelectedElement()
-	local parentIndex = self._selectedElementIndex
+	local parent = self._selectedElement
 	-- get the bounds of current element's children
 	local left, top, right, bottom
 	for i = 1, self._numElements do
 		local child = self._elements[i]
-		if child.parentIndex == parentIndex then
+		if child.parent == parent then
 			left = left and math.min(left, child.x) or child.x
 			top = top and math.min(top, child.y) or child.y
 			right = right and math.max(right, child.x + child.w) or child.x + child.w
@@ -752,7 +750,7 @@ function Ui:wrap(padding)
 	-- adjust the children's positions
 	for i = 1, self._numElements do
 		local child = self._elements[i]
-		if child.parentIndex == parentIndex then
+		if child.parent == parent then
 			child.x = child.x - left
 			child.y = child.y - top
 		end
@@ -792,7 +790,7 @@ function Ui:_getDrawList(groupDepth, parent)
 	-- by their z position
 	for i = 1, self._numElements do
 		local element = self._elements[i]
-		if self._elements[element.parentIndex] == parent then
+		if element.parent == parent then
 			table.insert(drawList, element)
 		end
 	end
@@ -823,7 +821,7 @@ function Ui:_blockParents(parent)
 	while parent do
 		local parentState = self._buttonState[parent.name]
 		if parentState then parentState.hovered = false end
-		parent = self._elements[parent.parentIndex]
+		parent = parent.parent
 	end
 end
 
@@ -928,8 +926,8 @@ function charm.new()
 		_elements = {},
 		_numElements = 0,
 		_finished = false,
-		_selectedElementIndex = 0,
-		_previousElementIndex = 0,
+		_selectedElement = nil,
+		_previousElement = nil,
 		_activeParents = {},
 		_drawList = {},
 		_stencilFunctionCache = {},
