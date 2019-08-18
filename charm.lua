@@ -426,7 +426,14 @@ Element.paragraph = {
 	  an empty table is equivalent to a blank color property.
 ]]
 local Ui = {}
-Ui.__index = Ui
+
+function Ui:__index(k)
+	if Ui[k] then return Ui[k] end
+	self._cachedProperties[k] = self._cachedProperties[k] or function(_, ...)
+		return self:set(k, ...)
+	end
+	return self._cachedProperties[k]
+end
 
 -- Gets the element currently being operated on
 function Ui:_getSelectedElement()
@@ -934,6 +941,7 @@ function charm.new()
 		_mouseYPrevious = 0,
 		_mouseDown = {},
 		_mouseDownPrevious = {},
+		_cachedProperties = {},
 	}, Ui)
 end
 

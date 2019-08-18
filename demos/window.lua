@@ -48,7 +48,7 @@ function love.draw()
 				:wrap(4)
 				:x(0)
 				:width(ui:getWidth '@parent')
-				:set('fillColor', 1/2, 1/2, 1/2)
+				:fillColor(1/2, 1/2, 1/2)
 			:new 'rectangle'
 				:name 'windowBody'
 				:top(ui:getBottom 'titlebar')
@@ -60,7 +60,7 @@ function love.draw()
 						:width(32)
 						:height(ui:getHeight '@parent')
 						:right(ui:getRight '@parent')
-						:set('fillColor', 1/4, 1/4, 1/4)
+						:fillColor(1/4, 1/4, 1/4)
 						:beginChildren()
 							:new 'rectangle'
 								:name 'scrollbar'
@@ -68,16 +68,16 @@ function love.draw()
 								:height(ui:getHeight '@parent' / 2)
 								:y(lerp(0, ui:getHeight '@parent' - ui:getHeight '@current', scrollAmount))
 								if ui:isHovered 'scrollbar' or ui:isHeld 'scrollbar' then
-									ui:set('fillColor', 3/4, 3/4, 3/4)
+									ui:fillColor(3/4, 3/4, 3/4)
 								else
-									ui:set('fillColor', 1/2, 1/2, 1/2)
+									ui:fillColor(1/2, 1/2, 1/2)
 								end
 						ui:endChildren()
 					:new 'rectangle'
 						:name 'contentArea'
 						:width(ui:getWidth '@parent' - ui:getWidth 'scrollbarContainer')
 						:height(ui:getHeight '@parent')
-						:set('fillColor', 1/5, 1/5, 1/5)
+						:fillColor(1/5, 1/5, 1/5)
 						:clip()
 						:beginChildren()
 							:new('paragraph', font, testText, ui:getWidth '@parent')
