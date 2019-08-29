@@ -600,6 +600,7 @@ function Ui:isReleased(name, button)
 end
 
 function Ui:isDragged(name, button)
+	button = button or 1
 	if self._mouseX == self._mouseXPrevious and self._mouseY == self._mouseYPrevious then
 		return false
 	end
