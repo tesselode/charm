@@ -1,17 +1,4 @@
---[[
-	This is an example of how you could implement some higher level
-	GUI controls using Charm. The window code is pretty gross
-	looking when you see it all in one chunk, but if you split
-	this up into multiple functions, it would be more pleasant.
-]]
-
-local charm = require 'charm'
-
-local function lerp(a, b, f)
-	return a + (b - a) * f
-end
-
-local font = love.graphics.newFont(18)
+local testFont = love.graphics.newFont(16)
 local testText = [[
 Sapiente necessitatibus qui iure mollitia sequi eum nemo voluptatum. Molestiae placeat possimus consequatur tempore. Nam molestias vero iusto. Aperiam est est assumenda fugit sapiente suscipit rem. Expedita quam occaecati autem quo nam autem suscipit.
 
@@ -24,81 +11,96 @@ Itaque saepe quod nihil non sed. Nihil voluptates dolor sit error laudantium eum
 Eum molestiae nihil ut voluptatum maiores repellat. Nulla repellat id unde suscipit necessitatibus impedit. Sunt voluptatum cum minima sed. Officia adipisci et recusandae necessitatibus ea est.	
 ]]
 
-local ui = charm.new()
+local function lerp(a, b, f)
+	return a + (b - a) * f
+end
 
-local windowX = 100
-local windowY = 100
-local windowW = 400
-local windowH = 300
-local scrollAmount = .5
+local function clamp(x, min, max)
+	return x < min and min or x > max and max or x
+end
 
-function love.draw()
-	ui:new 'rectangle'
-		:name 'window'
-		:x(windowX)
-		:y(windowY)
-		:width(windowW)
-		:height(windowH)
+local function scrollbar(ui, name, x, y, h, scrollAmount)
+	local handleHeight = h/2
+	local handleY = lerp(0, h - handleHeight, scrollAmount)
+	local handleName = name .. '.handle'
+	ui:new('rectangle', x, y, 25, h)
+		:name(name)
+		:fillColor(1/4, 1/4, 1/4)
 		:beginChildren()
-			:new 'rectangle'
-				:name 'titlebar'
+			:new('rectangle', 0, handleY, 25, handleHeight)
+				:name(handleName)
+				if ui:isHovered(handleName) or ui:isHeld(handleName) then
+					ui:fillColor(3/4, 3/4, 3/4)
+				else
+					ui:fillColor(1/2, 1/2, 1/2)
+				end
+		ui:endChildren()
+	local dragged, _, dy = ui:isDragged(handleName)
+	if dragged then
+		scrollAmount = scrollAmount + dy / (h - handleHeight)
+		scrollAmount = clamp(scrollAmount, 0, 1)
+	end
+	return scrollAmount
+end
+
+local function scrollArea(ui, x, y, w, h, scrollAmount, content)
+	ui:new('rectangle', x, y, w, h)
+		:clip()
+		:beginChildren()
+			ui:new 'rectangle'
+				:width(w)
 				:beginChildren()
-					:new('text', font, 'Test window')
+					content(ui)
+				ui:endChildren()
+				:wrap()
+				:y(-(ui:getHeight '@current' - h) * scrollAmount)
+		:endChildren()
+end
+
+local function window(ui, name, title, x, y, w, h, scrollAmount, content)
+	ui:new('rectangle', x, y, w, h)
+		:name(name)
+		:fillColor(1/6, 1/6, 1/6)
+		:beginChildren()
+			-- titlebar
+			:new 'rectangle'
+				:name(name .. '.titlebar')
+				:beginChildren()
+					:new('text', testFont, title)
 				:endChildren()
 				:wrap(4)
-				:x(0)
-				:width(ui:getWidth '@parent')
-				:fillColor(1/2, 1/2, 1/2)
-			:new 'rectangle'
-				:name 'windowBody'
-				:top(ui:getBottom 'titlebar')
-				:width(ui:getWidth '@parent')
-				:height(ui:getHeight '@parent' - ui:getHeight 'titlebar')
-				:beginChildren()
-					:new 'rectangle'
-						:name 'scrollbarContainer'
-						:width(32)
-						:height(ui:getHeight '@parent')
-						:right(ui:getRight '@parent')
-						:fillColor(1/4, 1/4, 1/4)
-						:beginChildren()
-							:new 'rectangle'
-								:name 'scrollbar'
-								:width(ui:getWidth '@parent')
-								:height(ui:getHeight '@parent' / 2)
-								:y(lerp(0, ui:getHeight '@parent' - ui:getHeight '@current', scrollAmount))
-								if ui:isHovered 'scrollbar' or ui:isHeld 'scrollbar' then
-									ui:fillColor(3/4, 3/4, 3/4)
-								else
-									ui:fillColor(1/2, 1/2, 1/2)
-								end
-						ui:endChildren()
-					:new 'rectangle'
-						:name 'contentArea'
-						:width(ui:getWidth '@parent' - ui:getWidth 'scrollbarContainer')
-						:height(ui:getHeight '@parent')
-						:fillColor(1/5, 1/5, 1/5)
-						:clip()
-						:beginChildren()
-							:new('paragraph', font, testText, ui:getWidth '@parent')
-								:y(lerp(0, -(ui:getHeight '@current' - ui:getHeight '@parent'), scrollAmount))
-						:endChildren()
-				:endChildren()
-		:endChildren()
-	:draw()
-	do
-		local dragged, dx, dy = ui:isDragged 'titlebar'
-		if dragged then
-			windowX = windowX + dx
-			windowY = windowY + dy
-		end
+				:x(0):y(0)
+				:width(w)
+				:fillColor(1/3, 1/3, 1/3)
+			-- scrollbar
+			scrollAmount = scrollbar(ui, name .. '.scrollbar',
+					0, ui:getBottom(name .. '.titlebar'),
+					h - ui:getHeight(name .. '.titlebar'),
+					scrollAmount)
+				ui:right(w)
+			-- content area
+			scrollArea(ui, 0, ui:getHeight(name .. '.titlebar'),
+				w - ui:getWidth(name .. '.scrollbar'), h - ui:getHeight(name .. '.titlebar'),
+				scrollAmount, content)
+		ui:endChildren()
+	local dragged, dx, dy = ui:isDragged(name .. '.titlebar')
+	if dragged then
+		x = x + dx
+		y = y + dy
 	end
-	do
-		local dragged, _, dy = ui:isDragged 'scrollbar'
-		if dragged then
-			local newScrollbarY = ui:getY 'scrollbar' + dy
-			scrollAmount = newScrollbarY / (ui:getHeight 'scrollbarContainer' - ui:getHeight 'scrollbar')
-			scrollAmount = scrollAmount < 0 and 0 or scrollAmount > 1 and 1 or scrollAmount
-		end
-	end
+	return x, y, scrollAmount
+end
+
+local function windowContent(ui)
+	ui:new('paragraph', testFont, testText, ui:getWidth '@parent')
+end
+
+local ui = require 'charm'.new()
+local windowX, windowY = 50, 50
+local scrollAmount = 0
+
+function love.draw()
+	windowX, windowY, scrollAmount = window(ui, 'window', 'Hello world!',
+		windowX, windowY, 300, 300, scrollAmount, windowContent)
+	ui:draw()
 end
