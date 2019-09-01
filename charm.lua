@@ -36,13 +36,25 @@ function Element.base:stencil()
 	love.graphics.rectangle('fill', 0, 0, self.width, self.height)
 end
 
-function Element.base:draw(stencilValue)
+function Element.base:draw(stencilValue, dx, dy)
 	stencilValue = stencilValue or 0
+	dx, dy = dx or 0, dy or 0
 	if self.beforeDraw then self:beforeDraw() end
+	-- update mouse state
+	local state = self:getState()
+	if state then
+		local mouseX, mouseY = love.mouse.getPosition()
+		mouseX, mouseY = mouseX - dx, mouseY - dy
+		state.hoveredPrevious = state.hovered
+		state.hovered = mouseX >= self.x and mouseX <= self.x + self.width
+			and mouseY >= self.y and mouseY <= self.y + self.height
+	end
+	-- draw self and children
 	love.graphics.push 'all'
 	love.graphics.translate(self.x, self.y)
 	if self.drawSelf then self:drawSelf() end
 	if self.children and #self.children > 0 then
+		-- if clipping is enabled, push a stencil to the "stack"
 		if self.clip then
 			love.graphics.push 'all'
 			self._stencilFunction = self._stencilFunction or function()
@@ -51,9 +63,13 @@ function Element.base:draw(stencilValue)
 			love.graphics.stencil(self._stencilFunction, 'increment', 1, true)
 			love.graphics.setStencilTest('gequal', stencilValue + 1)
 		end
+		-- draw children
 		for _, child in ipairs(self.children) do
-			if child.draw then child:draw(stencilValue + 1) end
+			if child.draw then
+				child:draw(stencilValue + 1, self.x + dx, self.y + dy)
+			end
 		end
+		-- if clipping is enabled, pop a stencil from the "stack"
 		if self.clip then
 			love.graphics.stencil(self._stencilFunction, 'decrement', 1, true)
 			love.graphics.pop()
@@ -121,6 +137,17 @@ function Ui:select(element)
 	group._selectedElement = element
 end
 
+function Ui:_reset()
+	for i = #self._elements, 1, -1 do
+		self._elements[i] = nil
+	end
+	for _, element in ipairs(self._elementPool) do
+		element._used = false
+	end
+	self._selectedElement = nil
+	self._previousElement = nil
+end
+
 function Ui:_clearElement(element)
 	for key, value in pairs(element) do
 		if not element.preserve[key] then
@@ -136,6 +163,10 @@ function Ui:_clearElement(element)
 end
 
 function Ui:new(className, ...)
+	if self._finished then
+		self:_reset()
+		self._finished = false
+	end
 	local element
 	-- if possible, reuse an unused element
 	for _, e in ipairs(self._elementPool) do
@@ -213,9 +244,28 @@ end
 
 function Ui:getState(name)
 	local element = self:getElement(name)
+	if not element then return end
 	if not element.name then return end
 	self._state[element.name] = self._state[element.name] or {}
 	return self._state[element.name]
+end
+
+function Ui:isHovered(name)
+	local state = self:getState(name)
+	if not state then return false end
+	return state.hovered
+end
+
+function Ui:isEntered(name)
+	local state = self:getState(name)
+	if not state then return false end
+	return state.hovered and not state.hoveredPrevious
+end
+
+function Ui:isExited(name)
+	local state = self:getState(name)
+	if not state then return false end
+	return state.hoveredPrevious and not state.hovered
 end
 
 function Ui:x(x, anchor)
@@ -290,30 +340,16 @@ function Ui:endChildren()
 	return self
 end
 
-function Ui:_draw()
+function Ui:draw()
 	for _, element in ipairs(self._elements) do
 		if element.draw then element:draw() end
 	end
-end
-
-function Ui:_finish()
-	for i = #self._elements, 1, -1 do
-		self._elements[i] = nil
-	end
-	for _, element in ipairs(self._elementPool) do
-		element._used = false
-	end
-	self._selectedElement = nil
-	self._previousElement = nil
-end
-
-function Ui:draw()
-	self:_draw()
-	self:_finish()
+	self._finished = true
 end
 
 function charm.new()
 	return setmetatable({
+		_finished = false,
 		_elements = {},
 		_elementPool = {},
 		_groups = {{}},
