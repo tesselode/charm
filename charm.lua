@@ -1,5 +1,7 @@
 local charm = {}
 
+local numberOfMouseButtons = 3
+
 local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
@@ -93,8 +95,37 @@ function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 	-- update the persistent state (if available)
 	local state = self:getState()
 	if state then
-		state.hoveredPrevious = state.hovered
-		state.hovered = hovered
+		local mouseDown = self.ui._mouseDown
+		local mouseDownPrevious = self.ui._mouseDownPrevious
+		-- update hovered/entered/exited state
+		state.entered = false
+		state.exited = false
+		if hovered and not state.hovered then
+			state.hovered = true
+			state.entered = true
+		end
+		if state.hovered and not hovered then
+			state.hovered = false
+			state.exited = true
+		end
+		-- update held/pressed/released state
+		state.held = state.held or {}
+		state.pressed = state.pressed or {}
+		state.released = state.released or {}
+		for i = 1, numberOfMouseButtons do
+			state.pressed[i] = false
+			state.released[i] = false
+			if hovered and mouseDown[i] and not mouseDownPrevious[i] then
+				state.held[i] = true
+				state.pressed[i] = true
+			end
+			if state.held[i] and not mouseDown[i] then
+				state.held[i] = false
+				if hovered then
+					state.released[i] = true
+				end
+			end
+		end
 	end
 	-- call the afterDraw callback
 	if self.afterDraw then self:afterDraw() end
@@ -275,20 +306,35 @@ end
 
 function Ui:isHovered(name)
 	local state = self:getState(name)
-	if not state then return false end
-	return state.hovered
+	return state and state.hovered
 end
 
 function Ui:isEntered(name)
 	local state = self:getState(name)
-	if not state then return false end
-	return state.hovered and not state.hoveredPrevious
+	return state and state.entered
 end
 
 function Ui:isExited(name)
 	local state = self:getState(name)
-	if not state then return false end
-	return state.hoveredPrevious and not state.hovered
+	return state and state.exited
+end
+
+function Ui:isHeld(name, button)
+	button = button or 1
+	local state = self:getState(name)
+	return state and state.held and state.held[button]
+end
+
+function Ui:isPressed(name, button)
+	button = button or 1
+	local state = self:getState(name)
+	return state and state.pressed and state.pressed[button]
+end
+
+function Ui:isReleased(name, button)
+	button = button or 1
+	local state = self:getState(name)
+	return state and state.released and state.released[button]
 end
 
 function Ui:x(x, anchor)
@@ -374,6 +420,12 @@ function Ui:endChildren()
 end
 
 function Ui:draw()
+	-- update mouse state
+	for i = 1, numberOfMouseButtons do
+		self._mouseDownPrevious[i] = self._mouseDown[i]
+		self._mouseDown[i] = love.mouse.isDown(i)
+	end
+	-- draw elements
 	for _, element in ipairs(self._elements) do
 		if element.draw then element:draw() end
 	end
@@ -389,6 +441,8 @@ function charm.new()
 		_currentGroup = 1,
 		_state = {},
 		_propertyCache = {},
+		_mouseDown = {},
+		_mouseDownPrevious = {},
 	}, Ui)
 end
 
