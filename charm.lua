@@ -2,6 +2,20 @@ local charm = {}
 
 local numberOfMouseButtons = 3
 
+local function isUpper(s)
+	return s == s:upper()
+end
+
+local function isGetter(functionName)
+	if functionName:sub(1, 2) == 'is' and isUpper(functionName:sub(3, 3)) then
+		return true
+	end
+	if functionName:sub(1, 3) == 'get' and isUpper(functionName:sub(4, 4)) then
+		return true
+	end
+	return false
+end
+
 local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
@@ -278,7 +292,7 @@ local Ui = {}
 function Ui:__index(k)
 	if Ui[k] then return Ui[k] end
 	if not self._functionCache[k] then
-		if k:sub(1, 2) == 'is' or k:sub(1, 3) == 'get' then
+		if isGetter(k) then
 			self._functionCache[k] = function(_, name, ...)
 				local element = self:getElement(name)
 				return element[k](element, ...)
