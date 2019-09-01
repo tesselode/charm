@@ -23,19 +23,136 @@ function Element.base:getState()
 end
 
 function Element.base:new(x, y, width, height)
-	self.x = x or 0
-	self.y = y or 0
-	self.width = width or 0
-	self.height = height or 0
+	self._x = x or 0
+	self._y = y or 0
+	self._width = width or 0
+	self._height = height or 0
+end
+
+function Element.base:getX(anchor)
+	anchor = anchor or 0
+	return self._x + self._width * anchor
+end
+
+function Element.base:getLeft() return self:getX(0) end
+function Element.base:getCenter() return self:getX(.5) end
+function Element.base:getRight() return self:getX(1) end
+
+function Element.base:getY(anchor)
+	anchor = anchor or 0
+	return self._y + self._height * anchor
+end
+
+function Element.base:getTop() return self:getY(0) end
+function Element.base:getMiddle() return self:getY(.5) end
+function Element.base:getBottom() return self:getY(1) end
+
+function Element.base:getWidth() return self._width end
+function Element.base:getHeight() return self._height end
+
+function Element.base:getSize()
+	return self:getWidth(), self:getHeight()
+end
+
+function Element.base:isHovered()
+	local state = self:getState()
+	return state and state.hovered
+end
+
+function Element.base:isEntered()
+	local state = self:getState()
+	return state and state.entered
+end
+
+function Element.base:isExited()
+	local state = self:getState()
+	return state and state.exited
+end
+
+function Element.base:isHeld(button)
+	button = button or 1
+	local state = self:getState()
+	return state and state.held and state.held[button]
+end
+
+function Element.base:isPressed(button)
+	button = button or 1
+	local state = self:getState()
+	return state and state.pressed and state.pressed[button]
+end
+
+function Element.base:isReleased(button)
+	button = button or 1
+	local state = self:getState()
+	return state and state.released and state.released[button]
+end
+
+function Element.base:isDragged(button)
+	button = button or 1
+	local state = self:getState()
+	if not (state and state.held and state.held[button]) then
+		return false
+	end
+	if self._mouseX == self._mouseXPrevious and self._mouseY == self._mouseYPrevious then
+		return false
+	end
+	return true, self._mouseX - self._mouseXPrevious, self._mouseY - self._mouseYPrevious
+end
+
+function Element.base:x(x, anchor)
+	anchor = anchor or 0
+	self._x = x - self._width * anchor
+end
+
+function Element.base:left(x) return self:x(x, 0) end
+function Element.base:center(x) return self:x(x, .5) end
+function Element.base:right(x) return self:x(x, 1) end
+
+function Element.base:y(y, anchor)
+	anchor = anchor or 0
+	self._y = y - self._height * anchor
+end
+
+function Element.base:top(y) return self:y(y, 0) end
+function Element.base:middle(y) return self:y(y, .5) end
+function Element.base:bottom(y) return self:y(y, 1) end
+
+function Element.base:width(width)
+	self._width = width
+end
+
+function Element.base:height(height)
+	self._height = height
+end
+
+function Element.base:size(width, height)
+	self:width(width)
+	self:height(height)
+end
+
+function Element.base:name(name)
+	self._name = name
+end
+
+function Element.base:clip()
+	self._clip = true
+end
+
+function Element.base:transparent()
+	self._transparent = true
+end
+
+function Element.base:opaque()
+	self._transparent = false
 end
 
 function Element.base:onAddChild(element)
-	self.children = self.children or {}
-	table.insert(self.children, element)
+	self._children = self._children or {}
+	table.insert(self._children, element)
 end
 
 function Element.base:stencil()
-	love.graphics.rectangle('fill', 0, 0, self.width, self.height)
+	love.graphics.rectangle('fill', 0, 0, self._width, self._height)
 end
 
 function Element.base:draw(stencilValue, dx, dy, mouseClipped)
@@ -46,21 +163,21 @@ function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 	-- check if the element is hovered
 	local mouseX, mouseY = love.mouse.getPosition()
 	mouseX, mouseY = mouseX - dx, mouseY - dy
-	local hovered = mouseX >= self.x and mouseX <= self.x + self.width
-		and mouseY >= self.y and mouseY <= self.y + self.height
+	local hovered = mouseX >= self._x and mouseX <= self._x + self._width
+		and mouseY >= self._y and mouseY <= self._y + self._height
 	--[[
 		if clipping is enabled, tell children that the mouse is
 		outside the parent's visible region so they know
 		they're not hovered
 	]]
-	if self.clip and not hovered then mouseClipped = true end
+	if self._clip and not hovered then mouseClipped = true end
 	-- draw self and children
 	love.graphics.push 'all'
-	love.graphics.translate(self.x, self.y)
+	love.graphics.translate(self._x, self._y)
 	if self.drawSelf then self:drawSelf() end
-	if self.children and #self.children > 0 then
+	if self._children and #self._children > 0 then
 		-- if clipping is enabled, push a stencil to the "stack"
-		if self.clip then
+		if self._clip then
 			love.graphics.push 'all'
 			self._stencilFunction = self._stencilFunction or function()
 				self:stencil()
@@ -69,20 +186,20 @@ function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 			love.graphics.setStencilTest('gequal', stencilValue + 1)
 		end
 		-- draw children
-		for _, child in ipairs(self.children) do
+		for _, child in ipairs(self._children) do
 			if child.draw then
-				local childHovered = child:draw(stencilValue + 1, self.x + dx, self.y + dy, mouseClipped)
+				local childHovered = child:draw(stencilValue + 1, self._x + dx, self._y + dy, mouseClipped)
 				--[[
 					if the child is hovered and not transparent, then it should block
 					the parent from being hovered
 				]]
-				if childHovered and not child.transparent then
+				if childHovered and not child._transparent then
 					hovered = false
 				end
 			end
 		end
 		-- if clipping is enabled, pop a stencil from the "stack"
-		if self.clip then
+		if self._clip then
 			love.graphics.stencil(self._stencilFunction, 'decrement', 1, true)
 			love.graphics.pop()
 		end
@@ -135,25 +252,23 @@ end
 
 Element.rectangle = newElementClass(Element.base)
 
-Element.rectangle.set = {}
-
-function Element.rectangle.set:fillColor(r, g, b, a)
-	self.fillColor = self.fillColor or {}
+function Element.rectangle:fillColor(r, g, b, a)
+	self._fillColor = self._fillColor or {}
 	if type(r) == 'table' then
-		for i = 1, 4 do self.fillColor[i] = r[i] end
+		for i = 1, 4 do self._fillColor[i] = r[i] end
 	else
-		self.fillColor[1] = r
-		self.fillColor[2] = g
-		self.fillColor[3] = b
-		self.fillColor[4] = a
+		self._fillColor[1] = r
+		self._fillColor[2] = g
+		self._fillColor[3] = b
+		self._fillColor[4] = a
 	end
 end
 
 function Element.rectangle:drawSelf()
 	love.graphics.push 'all'
-	if self.fillColor and #self.fillColor > 1 then
-		love.graphics.setColor(self.fillColor)
-		love.graphics.rectangle('fill', 0, 0, self.width, self.height)
+	if self._fillColor and #self._fillColor > 1 then
+		love.graphics.setColor(self._fillColor)
+		love.graphics.rectangle('fill', 0, 0, self._width, self._height)
 	end
 	love.graphics.pop()
 end
@@ -162,10 +277,21 @@ local Ui = {}
 
 function Ui:__index(k)
 	if Ui[k] then return Ui[k] end
-	self._propertyCache[k] = self._propertyCache[k] or function(_, ...)
-		return self:set(k, ...)
+	if not self._functionCache[k] then
+		if k:sub(1, 2) == 'is' or k:sub(1, 3) == 'get' then
+			self._functionCache[k] = function(_, name, ...)
+				local element = self:getElement(name)
+				return element[k](element, ...)
+			end
+		else
+			self._functionCache[k] = function(_, ...)
+				local element = self:_getSelectedElement()
+				element[k](element, ...)
+				return self
+			end
+		end
 	end
-	return self._propertyCache[k]
+	return self._functionCache[k]
 end
 
 function Ui:_getElementClass(className)
@@ -183,12 +309,6 @@ end
 
 function Ui:_getParentElement()
 	return self._groups[self._currentGroup]._parent
-end
-
-function Ui:select(element)
-	local group = self._groups[self._currentGroup]
-	group._previousElement = group._selectedElement
-	group._selectedElement = element
 end
 
 function Ui:_reset()
@@ -214,6 +334,12 @@ function Ui:_clearElement(element)
 			end
 		end
 	end
+end
+
+function Ui:select(element)
+	local group = self._groups[self._currentGroup]
+	group._previousElement = group._selectedElement
+	group._selectedElement = element
 end
 
 function Ui:new(className, ...)
@@ -263,156 +389,18 @@ function Ui:getElement(name)
 	end
 	for i = #self._elementPool, 1, -1 do
 		local element = self._elementPool[i]
-		if element._used and element.name == name then
+		if element._used and element._name == name then
 			return element
 		end
 	end
 end
 
-function Ui:getX(name, anchor)
-	anchor = anchor or 0
-	local element = self:getElement(name)
-	return element.x + element.width * anchor
-end
-
-function Ui:getLeft(name) return self:getX(name, 0) end
-function Ui:getCenter(name) return self:getX(name, .5) end
-function Ui:getRight(name) return self:getX(name, 1) end
-
-function Ui:getY(name, anchor)
-	anchor = anchor or 0
-	local element = self:getElement(name)
-	return element.y + element.height * anchor
-end
-
-function Ui:getTop(name) return self:getY(name, 0) end
-function Ui:getMiddle(name) return self:getY(name, .5) end
-function Ui:getBottom(name) return self:getY(name, 1) end
-
-function Ui:getWidth(name) return self:getElement(name).width end
-function Ui:getHeight(name) return self:getElement(name).height end
-
-function Ui:getSize(name)
-	return self:getWidth(name), self:getHeight(name)
-end
-
 function Ui:getState(name)
 	local element = self:getElement(name)
 	if not element then return end
-	if not element.name then return end
-	self._state[element.name] = self._state[element.name] or {}
-	return self._state[element.name]
-end
-
-function Ui:isHovered(name)
-	local state = self:getState(name)
-	return state and state.hovered
-end
-
-function Ui:isEntered(name)
-	local state = self:getState(name)
-	return state and state.entered
-end
-
-function Ui:isExited(name)
-	local state = self:getState(name)
-	return state and state.exited
-end
-
-function Ui:isHeld(name, button)
-	button = button or 1
-	local state = self:getState(name)
-	return state and state.held and state.held[button]
-end
-
-function Ui:isPressed(name, button)
-	button = button or 1
-	local state = self:getState(name)
-	return state and state.pressed and state.pressed[button]
-end
-
-function Ui:isReleased(name, button)
-	button = button or 1
-	local state = self:getState(name)
-	return state and state.released and state.released[button]
-end
-
-function Ui:isDragged(name, button)
-	button = button or 1
-	local state = self:getState(name)
-	if not (state and state.held and state.held[button]) then
-		return false
-	end
-	if self._mouseX == self._mouseXPrevious and self._mouseY == self._mouseYPrevious then
-		return false
-	end
-	return true, self._mouseX - self._mouseXPrevious, self._mouseY - self._mouseYPrevious
-end
-
-function Ui:x(x, anchor)
-	anchor = anchor or 0
-	local element = self:_getSelectedElement()
-	element.x = x - element.width * anchor
-	return self
-end
-
-function Ui:left(x) return self:x(x, 0) end
-function Ui:center(x) return self:x(x, .5) end
-function Ui:right(x) return self:x(x, 1) end
-
-function Ui:y(y, anchor)
-	anchor = anchor or 0
-	local element = self:_getSelectedElement()
-	element.y = y - element.height * anchor
-	return self
-end
-
-function Ui:top(y) return self:y(y, 0) end
-function Ui:middle(y) return self:y(y, .5) end
-function Ui:bottom(y) return self:y(y, 1) end
-
-function Ui:width(width)
-	self:_getSelectedElement().width = width
-	return self
-end
-
-function Ui:height(height)
-	self:_getSelectedElement().height = height
-	return self
-end
-
-function Ui:size(width, height)
-	self:width(width)
-	self:height(height)
-	return self
-end
-
-function Ui:name(name)
-	self:_getSelectedElement().name = name
-	return self
-end
-
-function Ui:clip()
-	self:_getSelectedElement().clip = true
-	return self
-end
-
-function Ui:transparent()
-	self:_getSelectedElement().transparent = true
-	return self
-end
-
-function Ui:opaque()
-	self:_getSelectedElement().transparent = false
-	return self
-end
-
-function Ui:set(property, ...)
-	local element = self:_getSelectedElement()
-	if element.set and element.set[property] then
-		element.set[property](element, ...)
-	end
-	return self
+	if not element._name then return end
+	self._state[element._name] = self._state[element._name] or {}
+	return self._state[element._name]
 end
 
 function Ui:beginChildren()
@@ -454,7 +442,7 @@ function charm.new()
 		_groups = {{}},
 		_currentGroup = 1,
 		_state = {},
-		_propertyCache = {},
+		_functionCache = {},
 		_mouseDown = {},
 		_mouseDownPrevious = {},
 		_mouseX = nil,
