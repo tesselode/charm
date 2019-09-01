@@ -36,19 +36,22 @@ function Element.base:stencil()
 	love.graphics.rectangle('fill', 0, 0, self.width, self.height)
 end
 
-function Element.base:draw(stencilValue, dx, dy)
+function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 	stencilValue = stencilValue or 0
 	dx, dy = dx or 0, dy or 0
+	-- call the beforeDraw callback
 	if self.beforeDraw then self:beforeDraw() end
-	-- update mouse state
-	local state = self:getState()
-	if state then
-		local mouseX, mouseY = love.mouse.getPosition()
-		mouseX, mouseY = mouseX - dx, mouseY - dy
-		state.hoveredPrevious = state.hovered
-		state.hovered = mouseX >= self.x and mouseX <= self.x + self.width
-			and mouseY >= self.y and mouseY <= self.y + self.height
-	end
+	-- check if the element is hovered
+	local mouseX, mouseY = love.mouse.getPosition()
+	mouseX, mouseY = mouseX - dx, mouseY - dy
+	local hovered = mouseX >= self.x and mouseX <= self.x + self.width
+		and mouseY >= self.y and mouseY <= self.y + self.height
+	--[[
+		if clipping is enabled, tell children that the mouse is
+		outside the parent's visible region so they know
+		they're not hovered
+	]]
+	if self.clip and not hovered then mouseClipped = true end
 	-- draw self and children
 	love.graphics.push 'all'
 	love.graphics.translate(self.x, self.y)
@@ -66,7 +69,14 @@ function Element.base:draw(stencilValue, dx, dy)
 		-- draw children
 		for _, child in ipairs(self.children) do
 			if child.draw then
-				child:draw(stencilValue + 1, self.x + dx, self.y + dy)
+				local childHovered = child:draw(stencilValue + 1, self.x + dx, self.y + dy, mouseClipped)
+				--[[
+					if the child is hovered and not transparent, then it should block
+					the parent from being hovered
+				]]
+				if childHovered and not child.transparent then
+					hovered = false
+				end
 			end
 		end
 		-- if clipping is enabled, pop a stencil from the "stack"
@@ -76,7 +86,20 @@ function Element.base:draw(stencilValue, dx, dy)
 		end
 	end
 	love.graphics.pop()
+	-- update mouse state
+	-- if the parent tells us the mouse is clipped,
+	-- we know we aren't hovered
+	if mouseClipped then hovered = false end
+	-- update the persistent state (if available)
+	local state = self:getState()
+	if state then
+		state.hoveredPrevious = state.hovered
+		state.hovered = hovered
+	end
+	-- call the afterDraw callback
 	if self.afterDraw then self:afterDraw() end
+	-- tell any parent element if this element is hovered or not
+	return hovered
 end
 
 Element.rectangle = newElementClass(Element.base)
@@ -313,6 +336,16 @@ end
 
 function Ui:clip()
 	self:_getSelectedElement().clip = true
+	return self
+end
+
+function Ui:transparent()
+	self:_getSelectedElement().transparent = true
+	return self
+end
+
+function Ui:opaque()
+	self:_getSelectedElement().transparent = false
 	return self
 end
 
