@@ -2,23 +2,11 @@ local charm = {}
 
 local numberOfMouseButtons = 3
 
-local function isUpper(s)
-	return s == s:upper()
-end
-
-local function isGetter(functionName)
-	if functionName:sub(1, 2) == 'is' and isUpper(functionName:sub(3, 3)) then
-		return true
-	end
-	if functionName:sub(1, 3) == 'get' and isUpper(functionName:sub(4, 4)) then
-		return true
-	end
-	return false
-end
 
 local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
+	class.get = setmetatable({}, {__index = parent and parent.get})
 	return class
 end
 
@@ -43,74 +31,74 @@ function Element.base:new(x, y, width, height)
 	self._height = height or 0
 end
 
-function Element.base:getX(anchor)
+function Element.base.get:x(anchor)
 	anchor = anchor or 0
 	return self._x + self._width * anchor
 end
 
-function Element.base:getLeft() return self:getX(0) end
-function Element.base:getCenter() return self:getX(.5) end
-function Element.base:getRight() return self:getX(1) end
+function Element.base.get:left() return self.get.x(self, 0) end
+function Element.base.get:center() return self.get.x(self, .5) end
+function Element.base.get:right() return self.get.x(self, 1) end
 
-function Element.base:getY(anchor)
+function Element.base.get:Y(anchor)
 	anchor = anchor or 0
 	return self._y + self._height * anchor
 end
 
-function Element.base:getTop() return self:getY(0) end
-function Element.base:getMiddle() return self:getY(.5) end
-function Element.base:getBottom() return self:getY(1) end
+function Element.base.get:top() return self.get.y(self, 0) end
+function Element.base.get:middle() return self.get.y(self, .5) end
+function Element.base.get:bottom() return self.get.y(self, 1) end
 
-function Element.base:getWidth() return self._width end
-function Element.base:getHeight() return self._height end
+function Element.base.get:width() return self._width end
+function Element.base.get:height() return self._height end
 
-function Element.base:getSize()
-	return self:getWidth(), self:getHeight()
+function Element.base.get:size()
+	return self.get.width(self), self.get.height(self)
 end
 
-function Element.base:isHovered()
+function Element.base.get:hovered()
 	local state = self:getState()
 	return state and state.hovered
 end
 
-function Element.base:isEntered()
+function Element.base.get:entered()
 	local state = self:getState()
 	return state and state.entered
 end
 
-function Element.base:isExited()
+function Element.base.get:exited()
 	local state = self:getState()
 	return state and state.exited
 end
 
-function Element.base:isHeld(button)
+function Element.base.get:held(button)
 	button = button or 1
 	local state = self:getState()
 	return state and state.held and state.held[button]
 end
 
-function Element.base:isPressed(button)
+function Element.base.get:pressed(button)
 	button = button or 1
 	local state = self:getState()
 	return state and state.pressed and state.pressed[button]
 end
 
-function Element.base:isReleased(button)
+function Element.base.get:released(button)
 	button = button or 1
 	local state = self:getState()
 	return state and state.released and state.released[button]
 end
 
-function Element.base:isDragged(button)
+function Element.base.get:dragged(button)
 	button = button or 1
 	local state = self:getState()
 	if not (state and state.held and state.held[button]) then
 		return false
 	end
-	if self._mouseX == self._mouseXPrevious and self._mouseY == self._mouseYPrevious then
+	if self.ui._mouseX == self.ui._mouseXPrevious and self.ui._mouseY == self.ui._mouseYPrevious then
 		return false
 	end
-	return true, self._mouseX - self._mouseXPrevious, self._mouseY - self._mouseYPrevious
+	return true, self.ui._mouseX - self.ui._mouseXPrevious, self.ui._mouseY - self.ui._mouseYPrevious
 end
 
 function Element.base:x(x, anchor)
@@ -291,19 +279,10 @@ local Ui = {}
 
 function Ui:__index(k)
 	if Ui[k] then return Ui[k] end
-	if not self._functionCache[k] then
-		if isGetter(k) then
-			self._functionCache[k] = function(_, name, ...)
-				local element = self:getElement(name)
-				return element[k](element, ...)
-			end
-		else
-			self._functionCache[k] = function(_, ...)
-				local element = self:_getSelectedElement()
-				element[k](element, ...)
-				return self
-			end
-		end
+	self._functionCache[k] = self._functionCache[k] or function(_, ...)
+		local element = self:_getSelectedElement()
+		element[k](element, ...)
+		return self
 	end
 	return self._functionCache[k]
 end
@@ -407,6 +386,11 @@ function Ui:getElement(name)
 			return element
 		end
 	end
+end
+
+function Ui:get(elementName, property, ...)
+	local element = self:getElement(elementName)
+	return element.get[property](element, ...)
 end
 
 function Ui:getState(name)

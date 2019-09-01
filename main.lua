@@ -7,20 +7,20 @@ function love.draw()
 		:beginChildren()
 			:new('rectangle', 50, 50, 200, 50)
 				:name 'test'
-				if ui:isHeld 'test' then
+				if ui:get('test', 'held') then
 					ui:fillColor(1, 1, 1)
-				elseif ui:isHovered 'test' then
+				elseif ui:get('test', 'hovered') then
 					ui:fillColor(1, .5, .5)
 				else
 					ui:fillColor(1, 0, 0)
 				end
 		ui:endChildren()
 	ui:draw()
-	if ui:isEntered 'test' then print 'entered' end
-	if ui:isExited 'test' then print 'exited' end
-	if ui:isPressed 'test' then print 'pressed' end
-	if ui:isReleased 'test' then print 'released' end
-	local dragged, dx, dy = ui:isDragged 'test'
+	if ui:get('test', 'entered') then print 'entered' end
+	if ui:get('test', 'exited') then print 'exited' end
+	if ui:get('test', 'pressed') then print 'pressed' end
+	if ui:get('test', 'released') then print 'released' end
+	local dragged, dx, dy = ui:get('test', 'dragged')
 	if dragged then
 		print('dragged', dx, dy)
 	end
