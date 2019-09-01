@@ -38,6 +38,7 @@ end
 
 function Element.base:draw(stencilValue)
 	stencilValue = stencilValue or 0
+	if self.beforeDraw then self:beforeDraw() end
 	love.graphics.push 'all'
 	love.graphics.translate(self.x, self.y)
 	if self.drawSelf then self:drawSelf() end
@@ -59,6 +60,7 @@ function Element.base:draw(stencilValue)
 		end
 	end
 	love.graphics.pop()
+	if self.afterDraw then self:afterDraw() end
 end
 
 Element.rectangle = newElementClass(Element.base)
