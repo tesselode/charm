@@ -337,6 +337,18 @@ function Ui:isReleased(name, button)
 	return state and state.released and state.released[button]
 end
 
+function Ui:isDragged(name, button)
+	button = button or 1
+	local state = self:getState(name)
+	if not (state and state.held and state.held[button]) then
+		return false
+	end
+	if self._mouseX == self._mouseXPrevious and self._mouseY == self._mouseYPrevious then
+		return false
+	end
+	return true, self._mouseX - self._mouseXPrevious, self._mouseY - self._mouseYPrevious
+end
+
 function Ui:x(x, anchor)
 	anchor = anchor or 0
 	local element = self:_getSelectedElement()
@@ -421,6 +433,8 @@ end
 
 function Ui:draw()
 	-- update mouse state
+	self._mouseXPrevious, self._mouseYPrevious = self._mouseX, self._mouseY
+	self._mouseX, self._mouseY = love.mouse.getPosition()
 	for i = 1, numberOfMouseButtons do
 		self._mouseDownPrevious[i] = self._mouseDown[i]
 		self._mouseDown[i] = love.mouse.isDown(i)
@@ -443,6 +457,10 @@ function charm.new()
 		_propertyCache = {},
 		_mouseDown = {},
 		_mouseDownPrevious = {},
+		_mouseX = nil,
+		_mouseY = nil,
+		_mouseXPrevious = nil,
+		_mouseYPrevious = nil,
 	}, Ui)
 end
 

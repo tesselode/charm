@@ -20,5 +20,9 @@ function love.draw()
 	if ui:isExited 'test' then print 'exited' end
 	if ui:isPressed 'test' then print 'pressed' end
 	if ui:isReleased 'test' then print 'released' end
+	local dragged, dx, dy = ui:isDragged 'test'
+	if dragged then
+		print('dragged', dx, dy)
+	end
 	love.graphics.print('Memory usage: ' .. math.floor(collectgarbage 'count') .. 'kb')
 end
