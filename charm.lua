@@ -17,6 +17,23 @@ function Element.base:new(x, y, width, height)
 	self.height = height or 0
 end
 
+function Element.base:onAddChild(element)
+	self.children = self.children or {}
+	table.insert(self.children, element)
+end
+
+function Element.base:draw()
+	love.graphics.push 'all'
+	love.graphics.translate(self.x, self.y)
+	if self.drawSelf then self:drawSelf() end
+	if self.children then
+		for _, child in ipairs(self.children) do
+			if child.draw then child:draw() end
+		end
+	end
+	love.graphics.pop()
+end
+
 Element.rectangle = newElementClass(Element.base)
 
 Element.rectangle.set = {}
@@ -33,11 +50,11 @@ function Element.rectangle.set:fillColor(r, g, b, a)
 	end
 end
 
-function Element.rectangle:draw()
+function Element.rectangle:drawSelf()
 	love.graphics.push 'all'
 	if self.fillColor and #self.fillColor > 1 then
 		love.graphics.setColor(self.fillColor)
-		love.graphics.rectangle('fill', self.x, self.y, self.width, self.height)
+		love.graphics.rectangle('fill', 0, 0, self.width, self.height)
 	end
 	love.graphics.pop()
 end
@@ -57,9 +74,22 @@ function Ui:_getElementClass(className)
 	return Element[className]
 end
 
+function Ui:_getSelectedElement()
+	return self._groups[self._currentGroup]._selectedElement
+end
+
+function Ui:_getPreviousElement()
+	return self._groups[self._currentGroup]._previousElement
+end
+
+function Ui:_getParentElement()
+	return self._groups[self._currentGroup]._parent
+end
+
 function Ui:select(element)
-	self._previousElement = self._selectedElement
-	self._selectedElement = element
+	local group = self._groups[self._currentGroup]
+	group._previousElement = group._selectedElement
+	group._selectedElement = element
 end
 
 function Ui:_clearElement(element)
@@ -90,17 +120,24 @@ function Ui:new(className, ...)
 	element._used = true
 	setmetatable(element, self:_getElementClass(className))
 	if element.new then element:new(...) end
-	table.insert(self._elements, element)
 	self:select(element)
+	local parent = self:_getParentElement()
+	if parent then
+		if parent.onAddChild then parent:onAddChild(element) end
+	else
+		table.insert(self._elements, element)
+	end
 	return self
 end
 
 function Ui:getElement(name)
 	if type(name) == 'table' then return name end
 	if name == '@current' then
-		return self._selectedElement
+		return self:_getSelectedElement()
 	elseif name == '@previous' then
-		return self._previousElement
+		return self:_getPreviousElement()
+	elseif name == '@parent' then
+		return self:_getParentElement()
 	end
 	for i = #self._elementPool, 1, -1 do
 		local element = self._elementPool[i]
@@ -139,7 +176,7 @@ end
 
 function Ui:x(x, anchor)
 	anchor = anchor or 0
-	local element = self._selectedElement
+	local element = self:_getSelectedElement()
 	element.x = x - element.width * anchor
 	return self
 end
@@ -150,7 +187,7 @@ function Ui:right(x) return self:x(x, 1) end
 
 function Ui:y(y, anchor)
 	anchor = anchor or 0
-	local element = self._selectedElement
+	local element = self:_getSelectedElement()
 	element.y = y - element.height * anchor
 	return self
 end
@@ -160,12 +197,12 @@ function Ui:middle(y) return self:y(y, .5) end
 function Ui:bottom(y) return self:y(y, 1) end
 
 function Ui:width(width)
-	self._selectedElement.width = width
+	self:_getSelectedElement().width = width
 	return self
 end
 
 function Ui:height(height)
-	self._selectedElement.height = height
+	self:_getSelectedElement().height = height
 	return self
 end
 
@@ -176,15 +213,31 @@ function Ui:size(width, height)
 end
 
 function Ui:name(name)
-	self._selectedElement.name = name
+	self:_getSelectedElement().name = name
 	return self
 end
 
 function Ui:set(property, ...)
-	local element = self._selectedElement
+	local element = self:_getSelectedElement()
 	if element.set and element.set[property] then
 		element.set[property](element, ...)
 	end
+	return self
+end
+
+function Ui:beginChildren()
+	local parent = self:_getSelectedElement()
+	self._currentGroup = self._currentGroup + 1
+	self._groups[self._currentGroup] = self._groups[self._currentGroup] or {}
+	local group = self._groups[self._currentGroup]
+	group._parent = parent
+	group._selectedElement = nil
+	group._previousElement = nil
+	return self
+end
+
+function Ui:endChildren()
+	self._currentGroup = self._currentGroup - 1
 	return self
 end
 
@@ -214,8 +267,8 @@ function charm.new()
 	return setmetatable({
 		_elements = {},
 		_elementPool = {},
-		_selectedElement = nil,
-		_previousElement = nil,
+		_groups = {{}},
+		_currentGroup = 1,
 		_propertyCache = {},
 	}, Ui)
 end
