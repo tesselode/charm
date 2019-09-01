@@ -10,6 +10,11 @@ local Element = {}
 
 Element.base = newElementClass()
 
+Element.base.preserve = {
+	preserve = true,
+	_stencilFunction = true,
+}
+
 function Element.base:new(x, y, width, height)
 	self.x = x or 0
 	self.y = y or 0
@@ -22,13 +27,30 @@ function Element.base:onAddChild(element)
 	table.insert(self.children, element)
 end
 
-function Element.base:draw()
+function Element.base:stencil()
+	love.graphics.rectangle('fill', 0, 0, self.width, self.height)
+end
+
+function Element.base:draw(stencilValue)
+	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
 	love.graphics.translate(self.x, self.y)
 	if self.drawSelf then self:drawSelf() end
-	if self.children then
+	if self.children and #self.children > 0 then
+		if self.clip then
+			love.graphics.push 'all'
+			self._stencilFunction = self._stencilFunction or function()
+				self:stencil()
+			end
+			love.graphics.stencil(self._stencilFunction, 'increment', 1, true)
+			love.graphics.setStencilTest('gequal', stencilValue + 1)
+		end
 		for _, child in ipairs(self.children) do
-			if child.draw then child:draw() end
+			if child.draw then child:draw(stencilValue + 1) end
+		end
+		if self.clip then
+			love.graphics.stencil(self._stencilFunction, 'decrement', 1, true)
+			love.graphics.pop()
 		end
 	end
 	love.graphics.pop()
@@ -94,12 +116,14 @@ end
 
 function Ui:_clearElement(element)
 	for key, value in pairs(element) do
-		if type(value) == 'table' then
-			for nestedKey in pairs(value) do
-				value[nestedKey] = nil
+		if not element.preserve[key] then
+			if type(value) == 'table' then
+				for nestedKey in pairs(value) do
+					value[nestedKey] = nil
+				end
+			else
+				element[key] = nil
 			end
-		else
-			element[key] = nil
 		end
 	end
 end
@@ -214,6 +238,11 @@ end
 
 function Ui:name(name)
 	self:_getSelectedElement().name = name
+	return self
+end
+
+function Ui:clip()
+	self:_getSelectedElement().clip = true
 	return self
 end
 
