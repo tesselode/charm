@@ -11,9 +11,14 @@ local Element = {}
 Element.base = newElementClass()
 
 Element.base.preserve = {
+	ui = true,
 	preserve = true,
 	_stencilFunction = true,
 }
+
+function Element.base:getState()
+	return self.ui:getState(self)
+end
 
 function Element.base:new(x, y, width, height)
 	self.x = x or 0
@@ -130,6 +135,7 @@ end
 
 function Ui:new(className, ...)
 	local element
+	-- if possible, reuse an unused element
 	for _, e in ipairs(self._elementPool) do
 		if not e._used then
 			self:_clearElement(e)
@@ -137,14 +143,19 @@ function Ui:new(className, ...)
 			break
 		end
 	end
+	-- otherwise, create a new one and add it to the pool
 	if not element then
 		element = {}
 		table.insert(self._elementPool, element)
 	end
+	-- initialize the element
+	element.ui = self
 	element._used = true
 	setmetatable(element, self:_getElementClass(className))
 	if element.new then element:new(...) end
+	-- select the element
 	self:select(element)
+	-- add it to the elements tree
 	local parent = self:_getParentElement()
 	if parent then
 		if parent.onAddChild then parent:onAddChild(element) end
@@ -196,6 +207,13 @@ function Ui:getHeight(name) return self:getElement(name).height end
 
 function Ui:getSize(name)
 	return self:getWidth(name), self:getHeight(name)
+end
+
+function Ui:getState(name)
+	local element = self:getElement(name)
+	if not element.name then return end
+	self._state[element.name] = self._state[element.name] or {}
+	return self._state[element.name]
 end
 
 function Ui:x(x, anchor)
@@ -298,6 +316,7 @@ function charm.new()
 		_elementPool = {},
 		_groups = {{}},
 		_currentGroup = 1,
+		_state = {},
 		_propertyCache = {},
 	}, Ui)
 end
