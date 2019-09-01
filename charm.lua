@@ -40,7 +40,7 @@ function Element.base.get:left() return self.get.x(self, 0) end
 function Element.base.get:center() return self.get.x(self, .5) end
 function Element.base.get:right() return self.get.x(self, 1) end
 
-function Element.base.get:Y(anchor)
+function Element.base.get:y(anchor)
 	anchor = anchor or 0
 	return self._y + self._height * anchor
 end
