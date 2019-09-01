@@ -388,9 +388,10 @@ function Ui:getElement(name)
 	end
 end
 
-function Ui:get(elementName, property, ...)
+function Ui:get(property, ...)
+	local elementName, propertyName = property:match '(.+)%.(.+)'
 	local element = self:getElement(elementName)
-	return element.get[property](element, ...)
+	return element.get[propertyName](element, ...)
 end
 
 function Ui:getState(name)
