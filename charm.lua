@@ -58,6 +58,7 @@ function Ui:_getElementClass(className)
 end
 
 function Ui:select(element)
+	self._previousElement = self._selectedElement
 	self._selectedElement = element
 end
 
@@ -94,6 +95,91 @@ function Ui:new(className, ...)
 	return self
 end
 
+function Ui:getElement(name)
+	if type(name) == 'table' then return name end
+	if name == '@current' then
+		return self._selectedElement
+	elseif name == '@previous' then
+		return self._previousElement
+	end
+	for i = #self._elementPool, 1, -1 do
+		local element = self._elementPool[i]
+		if element._used and element.name == name then
+			return element
+		end
+	end
+end
+
+function Ui:getX(name, anchor)
+	anchor = anchor or 0
+	local element = self:getElement(name)
+	return element.x + element.width * anchor
+end
+
+function Ui:getLeft(name) return self:getX(name, 0) end
+function Ui:getCenter(name) return self:getX(name, .5) end
+function Ui:getRight(name) return self:getX(name, 1) end
+
+function Ui:getY(name, anchor)
+	anchor = anchor or 0
+	local element = self:getElement(name)
+	return element.y + element.height * anchor
+end
+
+function Ui:getTop(name) return self:getY(name, 0) end
+function Ui:getMiddle(name) return self:getY(name, .5) end
+function Ui:getBottom(name) return self:getY(name, 1) end
+
+function Ui:getWidth(name) return self:getElement(name).width end
+function Ui:getHeight(name) return self:getElement(name).height end
+
+function Ui:getSize(name)
+	return self:getWidth(name), self:getHeight(name)
+end
+
+function Ui:x(x, anchor)
+	anchor = anchor or 0
+	local element = self._selectedElement
+	element.x = x - element.width * anchor
+	return self
+end
+
+function Ui:left(x) return self:x(x, 0) end
+function Ui:center(x) return self:x(x, .5) end
+function Ui:right(x) return self:x(x, 1) end
+
+function Ui:y(y, anchor)
+	anchor = anchor or 0
+	local element = self._selectedElement
+	element.y = y - element.height * anchor
+	return self
+end
+
+function Ui:top(y) return self:y(y, 0) end
+function Ui:middle(y) return self:y(y, .5) end
+function Ui:bottom(y) return self:y(y, 1) end
+
+function Ui:width(width)
+	self._selectedElement.width = width
+	return self
+end
+
+function Ui:height(height)
+	self._selectedElement.height = height
+	return self
+end
+
+function Ui:size(width, height)
+	self:width(width)
+	self:height(height)
+	return self
+end
+
+function Ui:name(name)
+	self._selectedElement.name = name
+	return self
+end
+
 function Ui:set(property, ...)
 	local element = self._selectedElement
 	if element.set and element.set[property] then
@@ -115,6 +201,8 @@ function Ui:_finish()
 	for _, element in ipairs(self._elementPool) do
 		element._used = false
 	end
+	self._selectedElement = nil
+	self._previousElement = nil
 end
 
 function Ui:draw()
@@ -127,6 +215,7 @@ function charm.new()
 		_elements = {},
 		_elementPool = {},
 		_selectedElement = nil,
+		_previousElement = nil,
 		_propertyCache = {},
 	}, Ui)
 end
