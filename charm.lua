@@ -301,11 +301,56 @@ function Element.rectangle:fillColor(r, g, b, a)
 	end
 end
 
+function Element.rectangle:outlineColor(r, g, b, a)
+	self._outlineColor = self._outlineColor or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._outlineColor[i] = r[i] end
+	else
+		self._outlineColor[1] = r
+		self._outlineColor[2] = g
+		self._outlineColor[3] = b
+		self._outlineColor[4] = a
+	end
+end
+
+function Element.rectangle:outlineWidth(width)
+	self._outlineWidth = width
+end
+
+function Element.rectangle:cornerRadiusX(radius)
+	self._cornerRadiusX = radius
+end
+
+function Element.rectangle:cornerRadiusY(radius)
+	self._cornerRadiusY = radius
+end
+
+function Element.rectangle:cornerRadius(radiusX, radiusY)
+	self._cornerRadiusX = radiusX
+	self._cornerRadiusY = radiusY
+end
+
+function Element.rectangle:cornerSegments(segments)
+	self._cornerSegments = segments
+end
+
+function Element.rectangle:stencil()
+	love.graphics.rectangle('fill', 0, 0, self._width, self._height,
+		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments or 64)
+end
+
 function Element.rectangle:drawSelf()
 	love.graphics.push 'all'
 	if self._fillColor and #self._fillColor > 1 then
 		love.graphics.setColor(self._fillColor)
-		love.graphics.rectangle('fill', 0, 0, self._width, self._height)
+		love.graphics.rectangle('fill', 0, 0, self._width, self._height,
+			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments or 64)
+	end
+	if self._outlineColor and #self._outlineColor > 1 then
+		love.graphics.setColor(self._outlineColor)
+		love.graphics.setLineWidth(self._outlineWidth or 1)
+		love.graphics.rectangle('line', 0, 0, self._width, self._height,
+			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 	end
 	love.graphics.pop()
 end
