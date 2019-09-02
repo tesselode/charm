@@ -147,6 +147,37 @@ function Element.base:opaque()
 	self._transparent = false
 end
 
+-- Adjusts the element to perfectly surround all of its children (with an optional
+-- amount of padding). Children's local positions will be adjusted so they have
+-- the same position on screen after the wrap is complete.
+function Element.base:wrap(padding)
+	padding = padding or 0
+	-- get the bounds of the children
+	local left, top, right, bottom
+	for _, child in ipairs(self._children) do
+		left = left and math.min(left, child._x) or child._x
+		top = top and math.min(top, child._y) or child._y
+		right = right and math.max(right, child._x + child._width) or child._x + child._width
+		bottom = bottom and math.max(bottom, child._y + child._height) or child._y + child._height
+	end
+	-- apply padding
+	left = left - padding
+	top = top - padding
+	right = right + padding
+	bottom = bottom + padding
+	-- change the parent position and size
+	self._x = left
+	self._y = top
+	self._width = right - left
+	self._height = bottom - top
+	-- adjust the children's positions
+	for _, child in ipairs(self._children) do
+		child._x = child._x - left
+		child._y = child._y - top
+	end
+	return self
+end
+
 function Element.base:onAddChild(element)
 	self._children = self._children or {}
 	table.insert(self._children, element)
