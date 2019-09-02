@@ -118,6 +118,11 @@ function Element.base:top(y) return self:y(y, 0) end
 function Element.base:middle(y) return self:y(y, .5) end
 function Element.base:bottom(y) return self:y(y, 1) end
 
+function Element.base:shift(dx, dy)
+	self._x = self._x + (dx or 0)
+	self._y = self._y + (dy or 0)
+end
+
 function Element.base:width(width)
 	self._width = width
 end
