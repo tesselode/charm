@@ -1,11 +1,11 @@
 local ui = require 'charm'.new()
 
-local beanMan = love.graphics.newImage 'bean man.png'
+local font = love.graphics.newFont(24)
 
 function love.draw()
 	ui
-		:new('image', beanMan, 50, 50)
-			:scale(.5, .25)
+		:new('text', font, 'hello world!', 50, 50)
+			:scale(2, 3)
 			:color(1, 1, 1, .5)
 		:new 'rectangle'
 			:size(25, 25)

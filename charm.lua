@@ -2,6 +2,16 @@ local charm = {}
 
 local numberOfMouseButtons = 3
 
+-- gets the total number of lines in a string
+local function numberOfLines(s)
+	local _, newlines = s:gsub('\n', '\n')
+	return newlines + 1
+end
+
+-- gets the total height of a text string drawn with a certain font
+local function getTextHeight(font, text)
+	return font:getHeight() * font:getLineHeight() * numberOfLines(text)
+end
 
 local function newElementClass(parent)
 	local class = setmetatable({}, parent)
@@ -462,6 +472,86 @@ function Element.image:drawSelf()
 	end
 	love.graphics.draw(self._image, 0, 0, 0,
 		self._width / self._image:getWidth(), self._height / self._image:getHeight())
+	love.graphics.pop()
+end
+
+Element.text = newElementClass(Element.base)
+
+function Element.text:new(font, text, x, y)
+	self._font = font
+	self._text = text
+	self._x = x or 0
+	self._y = y or 0
+	self._width = font:getWidth(text)
+	self._height = getTextHeight(font, text)
+end
+
+function Element.text:scaleX(scaleX)
+	self._width = self._font:getWidth(self._text) * scaleX
+end
+
+function Element.text:scaleY(scaleY)
+	self._height = getTextHeight(self._font, self._text) * scaleY
+end
+
+function Element.text:scale(scaleX, scaleY)
+	self:scaleX(scaleX or 1)
+	self:scaleY(scaleY or scaleX)
+end
+
+function Element.text:color(r, g, b, a)
+	self._color = self._color or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._color[i] = r[i] end
+	else
+		self._color[1] = r
+		self._color[2] = g
+		self._color[3] = b
+		self._color[4] = a
+	end
+end
+
+function Element.text:shadowColor(r, g, b, a)
+	self._shadowColor = self._shadowColor or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._shadowColor[i] = r[i] end
+	else
+		self._shadowColor[1] = r
+		self._shadowColor[2] = g
+		self._shadowColor[3] = b
+		self._shadowColor[4] = a
+	end
+end
+
+function Element.text:shadowOffsetX(offsetX)
+	self._shadowOffsetX = offsetX
+end
+
+function Element.text:shadowOffsetY(offsetY)
+	self._shadowOffsetY = offsetY
+end
+
+function Element.text:shadowOffset(offsetX, offsetY)
+	self:shadowOffsetX(offsetX)
+	self:shadowOffsetY(offsetY)
+end
+
+function Element.text:drawSelf()
+	love.graphics.push 'all'
+	love.graphics.setFont(self._font)
+	local sx = self._width / self._font:getWidth(self._text)
+	local sy = self._height / getTextHeight(self._font, self._text)
+	if self._shadowColor and #self._shadowColor > 0 then
+		local offsetX = self._shadowOffsetX or 1
+		local offsetY = self._shadowOffsetY or 1
+		love.graphics.setColor(self._shadowColor)
+		love.graphics.print(self._text, offsetX, offsetY, 0, sx, sy)
+	end
+	love.graphics.setColor(1, 1, 1)
+	if self._color and #self._color > 0 then
+		love.graphics.setColor(self._color)
+	end
+	love.graphics.print(self._text, 0, 0, 0, sx, sy)
 	love.graphics.pop()
 end
 
