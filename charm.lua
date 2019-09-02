@@ -7,6 +7,7 @@ local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
 	class.get = setmetatable({}, {__index = parent and parent.get})
+	class.preserve = setmetatable({}, {__index = parent and parent.preserve})
 	return class
 end
 
@@ -14,11 +15,9 @@ local Element = {}
 
 Element.base = newElementClass()
 
-Element.base.preserve = {
-	ui = true,
-	preserve = true,
-	_stencilFunction = true,
-}
+Element.base.preserve.preserve = true
+Element.base.preserve.ui = true
+Element.base.preserve._stencilFunction = true
 
 function Element.base:getState()
 	return self.ui:getState(self)
