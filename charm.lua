@@ -13,6 +13,21 @@ local function getTextHeight(font, text)
 	return font:getHeight() * font:getLineHeight() * numberOfLines(text)
 end
 
+--[[
+	gets the total height of a text string drawn with a certain font
+	and maximum width.
+
+	note:
+	currently this uses love's built in function for getting
+	wrapping info, which returns a table. since getParagraphHeight
+	is called every frame, this creates a lot of garbage, so it would be
+	nice to find another way to do this.
+]]
+local function getParagraphHeight(font, text, limit)
+	local _, lines = font:getWrap(text, limit)
+	return #lines * font:getHeight() * font:getLineHeight()
+end
+
 local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
@@ -552,6 +567,88 @@ function Element.text:drawSelf()
 		love.graphics.setColor(self._color)
 	end
 	love.graphics.print(self._text, 0, 0, 0, sx, sy)
+	love.graphics.pop()
+end
+
+Element.paragraph = newElementClass(Element.base)
+
+function Element.paragraph:new(font, text, limit, align, x, y)
+	self._font = font
+	self._text = text
+	self._limit = limit
+	self._align = align
+	self._x = x or 0
+	self._y = y or 0
+	self._width = limit
+	self._height = getParagraphHeight(font, text, limit)
+end
+
+function Element.paragraph:scaleX(scaleX)
+	self._width = self._limit * scaleX
+end
+
+function Element.paragraph:scaleY(scaleY)
+	self._height = getParagraphHeight(self._font, self._text, self._limit) * scaleY
+end
+
+function Element.paragraph:scale(scaleX, scaleY)
+	self:scaleX(scaleX or 1)
+	self:scaleY(scaleY or scaleX)
+end
+
+function Element.paragraph:color(r, g, b, a)
+	self._color = self._color or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._color[i] = r[i] end
+	else
+		self._color[1] = r
+		self._color[2] = g
+		self._color[3] = b
+		self._color[4] = a
+	end
+end
+
+function Element.paragraph:shadowColor(r, g, b, a)
+	self._shadowColor = self._shadowColor or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._shadowColor[i] = r[i] end
+	else
+		self._shadowColor[1] = r
+		self._shadowColor[2] = g
+		self._shadowColor[3] = b
+		self._shadowColor[4] = a
+	end
+end
+
+function Element.paragraph:shadowOffsetX(offsetX)
+	self._shadowOffsetX = offsetX
+end
+
+function Element.paragraph:shadowOffsetY(offsetY)
+	self._shadowOffsetY = offsetY
+end
+
+function Element.paragraph:shadowOffset(offsetX, offsetY)
+	self:shadowOffsetX(offsetX)
+	self:shadowOffsetY(offsetY)
+end
+
+function Element.paragraph:drawSelf()
+	love.graphics.push 'all'
+	love.graphics.setFont(self._font)
+	local sx = self._width / self._limit
+	local sy = self._height / getParagraphHeight(self._font, self._text, self._limit)
+	if self._shadowColor and #self._shadowColor > 0 then
+		local offsetX = self._shadowOffsetX or 1
+		local offsetY = self._shadowOffsetY or 1
+		love.graphics.setColor(self._shadowColor)
+		love.graphics.printf(self._text, offsetX, offsetY, self._limit, self._align, 0, sx, sy)
+	end
+	love.graphics.setColor(1, 1, 1)
+	if self._color and #self._color > 0 then
+		love.graphics.setColor(self._color)
+	end
+	love.graphics.printf(self._text, 0, 0, self._limit, self._align, 0, sx, sy)
 	love.graphics.pop()
 end
 
