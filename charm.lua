@@ -1,4 +1,30 @@
-local charm = {}
+local charm = {
+	_VERSION = 'charm',
+	_DESCRIPTION = 'Layout library for LÖVE.',
+	_LICENSE = [[
+		MIT License
+
+		Copyright (c) 2019 Andrew Minnich
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy
+		of this software and associated documentation files (the "Software"), to deal
+		in the Software without restriction, including without limitation the rights
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		copies of the Software, and to permit persons to whom the Software is
+		furnished to do so, subject to the following conditions:
+
+		The above copyright notice and this permission notice shall be included in all
+		copies or substantial portions of the Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+	]]
+}
 
 local numberOfMouseButtons = 3
 
@@ -36,10 +62,31 @@ local function newElementClass(parent)
 	return class
 end
 
+--[[
+	-- Element classes --
+
+	Each element class represents a type of element you can draw
+	(i.e. rectangle, image, etc.). Each class provides:
+	- a constructor function, used by ui.new
+	- getters, used by ui.get and contained in class.get
+	- setters and other functions that can be called via ui[functionName]
+	- callback functions, such as drawSelf and stencil
+]]
+
 local Element = {}
 
+--[[
+	The base class is used by all other element classes. It provides
+	a lot of functionality common to every element, such as
+	position getting/setting and the main drawing and mouse event
+	logic.
+]]
 Element.base = newElementClass()
 
+--[[
+	The preserve table defines keys that will not be niled out
+	after a frame is drawn.
+]]
 Element.base.preserve.preserve = true
 Element.base.preserve.ui = true
 Element.base.preserve._stencilFunction = true
@@ -652,6 +699,18 @@ function Element.paragraph:drawSelf()
 	love.graphics.pop()
 end
 
+--[[
+	-- UI class --
+
+	The UI class is responsible for creating, storing, and drawing
+	elements. Important things to note:
+	- Element tables are reused whenever possible. This way,
+	we can keep "creating" new elements wihout actually
+	creating new tables and discarding old ones. This makes
+	the garbage collector happier.
+	- The core logic for arranging and drawing elements is in the
+	base element class (see above), not here.
+]]
 local Ui = {}
 
 function Ui:__index(k)
@@ -664,6 +723,12 @@ function Ui:__index(k)
 	return self._functionCache[k]
 end
 
+--[[
+	Gets the class table for the current element. If the
+	element type is a string, the code will look for the
+	built-in class with that name. If the class is a user-provided
+	table, it'll use that directly.
+]]
 function Ui:_getElementClass(className)
 	if type(className) == 'table' then return className end
 	return Element[className]
@@ -681,6 +746,8 @@ function Ui:_getParentElement()
 	return self._groups[self._currentGroup]._parent
 end
 
+-- Resets the UI state after a draw has been completed.
+-- Not called until a new element has been created.
 function Ui:_reset()
 	for i = #self._elements, 1, -1 do
 		self._elements[i] = nil
@@ -692,6 +759,11 @@ function Ui:_reset()
 	self._previousElement = nil
 end
 
+--[[
+	Clears out an element so it can be reused. Tables
+	will be cleared out one level deep, but they'll
+	be left in the element table so they can be reused.
+]]
 function Ui:_clearElement(element)
 	for key, value in pairs(element) do
 		if not element.preserve[key] then
@@ -748,6 +820,13 @@ function Ui:new(className, ...)
 	return self
 end
 
+--[[
+	Gets an element by name or special keyword. If the element itself
+	is passed to this function, it'll just return the element.
+	This is done so that the other functions that use getElement
+	can work with names or the element itself without having to
+	write that check for each function.
+]]
 function Ui:getElement(name)
 	if type(name) == 'table' then return name end
 	if name == '@current' then
