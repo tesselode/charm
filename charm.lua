@@ -420,6 +420,51 @@ function Element.ellipse:drawSelf()
 	love.graphics.pop()
 end
 
+Element.image = newElementClass(Element.base)
+
+function Element.image:new(image, x, y)
+	self._image = image
+	self._x = x or 0
+	self._y = y or 0
+	self._width = image:getWidth()
+	self._height = image:getHeight()
+end
+
+function Element.image:scaleX(scaleX)
+	self._width = self._image:getWidth() * scaleX
+end
+
+function Element.image:scaleY(scaleY)
+	self._height = self._image:getHeight() * scaleY
+end
+
+function Element.image:scale(scaleX, scaleY)
+	self:scaleX(scaleX or 1)
+	self:scaleY(scaleY or scaleX)
+end
+
+function Element.image:color(r, g, b, a)
+	self._color = self._color or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._color[i] = r[i] end
+	else
+		self._color[1] = r
+		self._color[2] = g
+		self._color[3] = b
+		self._color[4] = a
+	end
+end
+
+function Element.image:drawSelf()
+	love.graphics.push 'all'
+	if self._color and #self._color > 0 then
+		love.graphics.setColor(self._color)
+	end
+	love.graphics.draw(self._image, 0, 0, 0,
+		self._width / self._image:getWidth(), self._height / self._image:getHeight())
+	love.graphics.pop()
+end
+
 local Ui = {}
 
 function Ui:__index(k)
