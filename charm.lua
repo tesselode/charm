@@ -30,6 +30,11 @@ function Element.base:new(x, y, width, height)
 	self._height = height or 0
 end
 
+function Element.base:containsPoint(x, y)
+	return x >= self._x and x <= self._x + self._width
+		and y >= self._y and y <= self._y + self._height
+end
+
 function Element.base.get:x(anchor)
 	anchor = anchor or 0
 	return self._x + self._width * anchor
@@ -200,8 +205,7 @@ function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 	-- check if the element is hovered
 	local mouseX, mouseY = love.mouse.getPosition()
 	mouseX, mouseY = mouseX - dx, mouseY - dy
-	local hovered = mouseX >= self._x and mouseX <= self._x + self._width
-		and mouseY >= self._y and mouseY <= self._y + self._height
+	local hovered = self:containsPoint(mouseX, mouseY)
 	--[[
 		if clipping is enabled, tell children that the mouse is
 		outside the parent's visible region so they know
@@ -351,6 +355,67 @@ function Element.rectangle:drawSelf()
 		love.graphics.setLineWidth(self._outlineWidth or 1)
 		love.graphics.rectangle('line', 0, 0, self._width, self._height,
 			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
+	end
+	love.graphics.pop()
+end
+
+Element.ellipse = newElementClass(Element.base)
+
+function Element.ellipse:containsPoint(x, y)
+	local cx, cy = self._x + self._width/2, self._y + self._height/2
+	local rx, ry = self._width/2, self._height/2
+	return ((x - cx) ^ 2) / (rx ^ 2) + ((y - cy) ^ 2) / (ry ^ 2) <= 1
+end
+
+function Element.ellipse:fillColor(r, g, b, a)
+	self._fillColor = self._fillColor or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._fillColor[i] = r[i] end
+	else
+		self._fillColor[1] = r
+		self._fillColor[2] = g
+		self._fillColor[3] = b
+		self._fillColor[4] = a
+	end
+end
+
+function Element.ellipse:outlineColor(r, g, b, a)
+	self._outlineColor = self._outlineColor or {}
+	if type(r) == 'table' then
+		for i = 1, 4 do self._outlineColor[i] = r[i] end
+	else
+		self._outlineColor[1] = r
+		self._outlineColor[2] = g
+		self._outlineColor[3] = b
+		self._outlineColor[4] = a
+	end
+end
+
+function Element.ellipse:outlineWidth(width)
+	self._outlineWidth = width
+end
+
+function Element.ellipse:segments(segments)
+	self._segments = segments
+end
+
+function Element.ellipse:stencil()
+	love.graphics.ellipse('fill', self._width/2, self._height/2,
+		self._width/2, self._height/2, self._segments or 64)
+end
+
+function Element.ellipse:drawSelf()
+	love.graphics.push 'all'
+	if self._fillColor and #self._fillColor > 1 then
+		love.graphics.setColor(self._fillColor)
+		love.graphics.ellipse('fill', self._width/2, self._height/2,
+			self._width/2, self._height/2, self._segments or 64)
+	end
+	if self._outlineColor and #self._outlineColor > 1 then
+		love.graphics.setColor(self._outlineColor)
+		love.graphics.setLineWidth(self._outlineWidth or 1)
+		love.graphics.ellipse('line', self._width/2, self._height/2,
+			self._width/2, self._height/2, self._segments or 64)
 	end
 	love.graphics.pop()
 end
