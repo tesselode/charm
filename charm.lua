@@ -922,4 +922,10 @@ function charm.new()
 	}, Ui)
 end
 
+function charm.extend(parent)
+	if type(parent) == 'string' then parent = Element[parent] end
+	parent = parent or Element.base
+	return newElementClass(parent)
+end
+
 return charm
