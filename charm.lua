@@ -843,6 +843,7 @@ end
 ]]
 function Ui:getElement(name)
 	if type(name) == 'table' then return name end
+	name = name or '@current'
 	if name == '@current' then
 		return self:_getSelectedElement()
 	elseif name == '@previous' then
