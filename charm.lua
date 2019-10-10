@@ -62,6 +62,11 @@ local function newElementClass(parent)
 	return class
 end
 
+-- the function used for sorting elements while drawing
+local function sortElements(a, b)
+	return (a._z or 0) < (b._z or 0)
+end
+
 --[[
 	-- Element classes --
 
@@ -98,6 +103,7 @@ end
 function Element.base:new(x, y, width, height)
 	self._x = x or 0
 	self._y = y or 0
+	self._z = 0
 	self._width = width or 0
 	self._height = height or 0
 end
@@ -124,6 +130,8 @@ end
 function Element.base.get:top() return self.get.y(self, 0) end
 function Element.base.get:middle() return self.get.y(self, .5) end
 function Element.base.get:bottom() return self.get.y(self, 1) end
+
+function Element.base.get:z() return self._z end
 
 function Element.base.get:width() return self._width end
 function Element.base.get:height() return self._height end
@@ -194,6 +202,10 @@ end
 function Element.base:top(y) return self:y(y, 0) end
 function Element.base:middle(y) return self:y(y, .5) end
 function Element.base:bottom(y) return self:y(y, 1) end
+
+function Element.base:z(z)
+	self._z = z
+end
 
 function Element.base:shift(dx, dy)
 	self._x = self._x + (dx or 0)
@@ -289,6 +301,7 @@ function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 	love.graphics.translate(self._x, self._y)
 	if self.drawSelf then self:drawSelf() end
 	if self._children and #self._children > 0 then
+		table.sort(self._children, sortElements)
 		-- if clipping is enabled, push a stencil to the "stack"
 		if self._clip then
 			love.graphics.push 'all'
