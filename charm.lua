@@ -795,6 +795,7 @@ function Ui:select(element)
 	local group = self._groups[self._currentGroup]
 	group._previousElement = group._selectedElement
 	group._selectedElement = element
+	return self
 end
 
 function Ui:new(className, ...)
@@ -899,6 +900,7 @@ function Ui:draw()
 		if element.draw then element:draw() end
 	end
 	self._finished = true
+	return self
 end
 
 function charm.new()
