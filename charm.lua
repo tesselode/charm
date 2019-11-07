@@ -761,7 +761,7 @@ end
 
 -- Resets the UI state after a draw has been completed.
 -- Not called until a new element has been created.
-function Ui:_reset()
+function Ui:start()
 	for i = #self._elements, 1, -1 do
 		self._elements[i] = nil
 	end
@@ -800,7 +800,7 @@ end
 
 function Ui:new(className, ...)
 	if self._finished then
-		self:_reset()
+		self:start()
 		self._finished = false
 	end
 	local element
