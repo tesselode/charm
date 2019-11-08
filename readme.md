@@ -41,6 +41,47 @@ Manages and draws graphical elements.
 
 #### Functions
 
+##### `Ui:beginChildren()`
+Starts adding children to the currently selected element.
+
+##### `Ui:draw()`
+Draws the previously added elements and updates their state. After `draw` is called, the next `new` call will clear out the existing elements.
+
+##### `Ui:endChildren()`
+Stops adding children to the current parent element and re-selects the parent element.
+
+##### `local value = Ui:get(element, propertyName, ...)`
+Gets the value of an element property.
+
+Parameters:
+- `element` (`Element` or `string`) - the element or name of the element to get the property from
+- `propertyName` (`string`) - the name of the property to get the value of
+- `...` - additional arguments to pass to the property getter function
+
+Returns:
+- `value` - the value of the property
+
+##### `local element = Ui:getElement(name)`
+Gets the table representing an element.
+
+Parameters:
+- `name` (`string`) - the name of the element, or one of the following keywords:
+  - `'@current'` - the currently selected element
+  - `'@previous'` - the previously selected element
+  - `'@parent'` - the parent of the currently selected element (if there is one)
+
+Returns:
+- `element` (`Element` or `nil`) - the element table, or `nil` if there's no element with the given name or no element that matches the given keyword
+
+##### `local elementState = Ui:getState(element)`
+Gets the persistent state table for an element.
+
+Parameters:
+- `element` (`Element` or `string`) - the element or name of the element to get the state of
+
+Returns:
+- `elementState` (`table` or `nil`) - the persistent state of the element, or `nil` if the element doesn't have a persistent state
+
 ##### `Ui:new(elementClass, ...)`
 Adds a new element to be drawn this frame.
 
@@ -57,46 +98,6 @@ Sets the element that subsequent function calls should modify.
 Parameters:
 - `element` (`Element`) - the element to select
 
-##### `local element = Ui:getElement(name)`
-Gets the table representing an element.
-
-Parameters:
-- `name` (`string`) - the name of the element, or one of the following keywords:
-  - `'@current'` - the currently selected element
-  - `'@previous'` - the previously selected element
-  - `'@parent'` - the parent of the currently selected element (if there is one)
-
-Returns:
-- `element` (`Element` or `nil`) - the element table, or `nil` if there's no element with the given name or no element that matches the given keyword
-
-##### `local value = Ui:get(element, propertyName, ...)`
-Gets the value of an element property.
-
-Parameters:
-- `element` (`Element` or `string`) - the element or name of the element to get the property from
-- `propertyName` (`string`) - the name of the property to get the value of
-- `...` - additional arguments to pass to the property getter function
-
-Returns:
-- `value` - the value of the property
-
-##### `local elementState = Ui:getState(element)`
-Gets the persistent state table for an element.
-
-Parameters:
-- `element` (`Element` or `string`) - the element or name of the element to get the state of
-
-Returns:
-- `elementState` (`table` or `nil`) - the persistent state of the element, or `nil` if the element doesn't have a persistent state
-
-##### `Ui:beginChildren()`
-Starts adding children to the currently selected element.
-
-##### `Ui:endChildren()`
-Stops adding children to the current parent element and re-selects the parent element.
-
-##### `Ui:draw()`
-Draws the previously added elements and updates their state. After `draw` is called, the next `new` call will clear out the existing elements.
 
 Contributing
 ------------
