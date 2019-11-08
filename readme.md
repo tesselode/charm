@@ -330,7 +330,7 @@ function love.draw()
 		:endChildren()
 		:wrap(32)
 		:fillColor(ui:get('button', 'hovered') and buttonHoveredColor or buttonIdleColor)
-	if ui:isPressed 'button' then print 'hi!' end
+	if ui:get('button', 'pressed') then print 'hi!' end
 end
 ```
 
