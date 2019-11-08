@@ -62,8 +62,54 @@ Table of contents <!-- omit in toc -->
     - [Functions](#functions-1)
       - [`local ElementClass = charm.extend(parent)`](#local-elementclass--charmextendparent)
       - [`local ui = charm.new()`](#local-ui--charmnew)
-  - [Ui](#ui)
+  - [Ellipse](#ellipse)
     - [Functions](#functions-2)
+      - [`Ellipse:fillColor(r, g, b, a)`](#ellipsefillcolorr-g-b-a)
+      - [`Ellipse:new(x, y, width, height)`](#ellipsenewx-y-width-height)
+      - [`Ellipse:outlineColor(r, g, b, a)`](#ellipseoutlinecolorr-g-b-a)
+      - [`Ellipse:outlineWidth(width)`](#ellipseoutlinewidthwidth)
+      - [`Ellipse:segments(segments)`](#ellipsesegmentssegments)
+  - [Image](#image)
+    - [Functions](#functions-3)
+      - [`Image:color(r, g, b, a)`](#imagecolorr-g-b-a)
+      - [`Image:new(image, x, y)`](#imagenewimage-x-y)
+      - [`Image:scale(scaleX, scaleY)`](#imagescalescalex-scaley)
+      - [`Image:scaleX(scaleX)`](#imagescalexscalex)
+      - [`Image:scaleY(scaleY)`](#imagescaleyscaley)
+  - [Paragraph](#paragraph)
+    - [Functions](#functions-4)
+      - [`Paragraph:color(r, g, b, a)`](#paragraphcolorr-g-b-a)
+      - [`Paragraph:new(font, text, limit, align, x, y)`](#paragraphnewfont-text-limit-align-x-y)
+      - [`Paragraph:scale(scaleX, scaleY)`](#paragraphscalescalex-scaley)
+      - [`Paragraph:scaleX(scaleX)`](#paragraphscalexscalex)
+      - [`Paragraph:scaleY(scaleY)`](#paragraphscaleyscaley)
+      - [`Paragraph:shadowColor(r, g, b, a)`](#paragraphshadowcolorr-g-b-a)
+      - [`Paragraph:shadowOffset(offsetX, offsetY)`](#paragraphshadowoffsetoffsetx-offsety)
+      - [`Paragraph:shadowOffsetX(offsetX)`](#paragraphshadowoffsetxoffsetx)
+      - [`Paragraph:shadowOffsetY(offsetY)`](#paragraphshadowoffsetyoffsety)
+  - [Rectangle](#rectangle)
+    - [Functions](#functions-5)
+      - [`Rectangle:cornerRadius(radiusX, radiusY)`](#rectanglecornerradiusradiusx-radiusy)
+      - [`Rectangle:cornerRadiusX(radius)`](#rectanglecornerradiusxradius)
+      - [`Rectangle:cornerRadiusY(radius)`](#rectanglecornerradiusyradius)
+      - [`Rectangle:cornerSegments(segments)`](#rectanglecornersegmentssegments)
+      - [`Rectangle:fillColor(r, g, b, a)`](#rectanglefillcolorr-g-b-a)
+      - [`Rectangle:new(x, y, width, height)`](#rectanglenewx-y-width-height)
+      - [`Rectangle:outlineColor(r, g, b, a)`](#rectangleoutlinecolorr-g-b-a)
+      - [`Rectangle:outlineWidth(width)`](#rectangleoutlinewidthwidth)
+  - [Text](#text)
+    - [Functions](#functions-6)
+      - [`Text:color(r, g, b, a)`](#textcolorr-g-b-a)
+      - [`Text:new(font, text, x, y)`](#textnewfont-text-x-y)
+      - [`Text:scale(scaleX, scaleY)`](#textscalescalex-scaley)
+      - [`Text:scaleX(scaleX)`](#textscalexscalex)
+      - [`Text:scaleY(scaleY)`](#textscaleyscaley)
+      - [`Text:shadowColor(r, g, b, a)`](#textshadowcolorr-g-b-a)
+      - [`Text:shadowOffset(offsetX, offsetY)`](#textshadowoffsetoffsetx-offsety)
+      - [`Text:shadowOffsetX(offsetX)`](#textshadowoffsetxoffsetx)
+      - [`Text:shadowOffsetY(offsetY)`](#textshadowoffsetyoffsety)
+  - [Ui](#ui)
+    - [Functions](#functions-7)
       - [`Ui:beginChildren()`](#uibeginchildren)
       - [`Ui:draw()`](#uidraw)
       - [`Ui:endChildren()`](#uiendchildren)
@@ -72,7 +118,7 @@ Table of contents <!-- omit in toc -->
       - [`local elementState = Ui:getState(element)`](#local-elementstate--uigetstateelement)
       - [`Ui:new(elementClass, ...)`](#uinewelementclass)
       - [`Ui:select(element)`](#uiselectelement)
-    - [`Ui:start()`](#uistart)
+      - [`Ui:start()`](#uistart)
 - [Contributing](#contributing)
 
 Installation
@@ -388,6 +434,291 @@ Returns:
 ##### `local ui = charm.new()`
 Creates a new `Ui` object.
 
+### Ellipse
+
+#### Functions
+
+##### `Ellipse:fillColor(r, g, b, a)`
+Sets the color to draw the inside of the ellipse with.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Ellipse:new(x, y, width, height)`
+Initializes the ellipse.
+
+Parameters:
+- `x` (`number`, defaults to `0`) - the x position of the ellipse
+- `y` (`number`, defaults to `0`) - the y position of the ellipse
+- `width` (`number`, defaults to `0`) - the width of the ellipse
+- `height` (`number`, defaults to `0`) - the height of the ellipse
+
+##### `Ellipse:outlineColor(r, g, b, a)`
+Sets the color to draw the outline of the ellipse with.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Ellipse:outlineWidth(width)`
+Sets the line width of the ellipse's outline.
+
+Parameters:
+- `width` (`number`)
+
+##### `Ellipse:segments(segments)`
+Sets the number of segments to draw the ellipse with.
+
+Parameters:
+- `segments` (`number`)
+
+### Image
+
+#### Functions
+
+##### `Image:color(r, g, b, a)`
+Sets the blend color of the image.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Image:new(image, x, y)`
+Initializes the image.
+
+Parameters:
+- `image` (`Image`) - the image to use
+- `x` (`number`, default to `0`) - the x position of the image
+- `y` (`number`, default to `0`) - the y position of the image
+
+##### `Image:scale(scaleX, scaleY)`
+Sets the scale of the image (as a multiplier of its original size).
+
+Parameters:
+- `scaleX` (`number`, defaults to `1`)
+- `scaleY` (`number`, defaults to `scaleX`)
+
+##### `Image:scaleX(scaleX)`
+Sets the horizontal scale of the image (as a multiplier of its original size).
+
+Parameters:
+- `scaleX` (`number`)
+
+##### `Image:scaleY(scaleY)`
+Sets the vertical scale of the image (as a multiplier of its original size).
+
+Parameters:
+- `scaleY` (`number`)
+
+### Paragraph
+
+#### Functions
+
+##### `Paragraph:color(r, g, b, a)`
+Sets the color of the paragraph.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Paragraph:new(font, text, limit, align, x, y)`
+Initializes the paragraph.
+
+Parameters:
+- `font` (`Font`) - the font to use
+- `text` (`string`) - the text to display
+- `limit` (`number`) - the maximum horizontal width in pixels the text is allowed to span
+- `align` (`AlignMode`) - the alignment of the text
+- `x` (`number`, defaults to `0`) - the x position of the paragraph
+- `y` (`number`, defaults to `0`) - the y position of the paragraph
+
+##### `Paragraph:scale(scaleX, scaleY)`
+Sets the scale of the paragraph (as a multiplier of its original size).
+
+Parameters:
+- `scaleX` (`number`, defaults to `1`)
+- `scaleY` (`number`, defaults to `scaleX`)
+
+##### `Paragraph:scaleX(scaleX)`
+Sets the horizontal scale of the paragraph (as a multiplier of its original size).
+
+Parameters:
+- `scaleX` (`number`)
+
+##### `Paragraph:scaleY(scaleY)`
+Sets the vertical scale of the paragraph (as a multiplier of its original size).
+
+Parameters:
+- `scaleY` (`number`)
+
+##### `Paragraph:shadowColor(r, g, b, a)`
+Sets the color of the paragraph's shadow.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Paragraph:shadowOffset(offsetX, offsetY)`
+Sets the horizontal and vertical offset of the paragraph's shadow.
+
+Parameters:
+- `offsetX` (`number`)
+- `offsetY` (`number`)
+
+##### `Paragraph:shadowOffsetX(offsetX)`
+Sets the horizontal offset of the paragraph's shadow.
+
+Parameters:
+- `offsetX` (`number`)
+
+##### `Paragraph:shadowOffsetY(offsetY)`
+Sets the vertical offset of the paragraph's shadow.
+
+Parameters:
+- `offsetY` (`number`)
+
+### Rectangle
+
+#### Functions
+
+##### `Rectangle:cornerRadius(radiusX, radiusY)`
+Sets the horizontal and vertical radius of the rectangle's corners.
+
+Parameters:
+- `radiusX` (`number`)
+- `radiusY` (`number`)
+
+##### `Rectangle:cornerRadiusX(radius)`
+Sets the horizontal radius of the rectangle's corners.
+
+Parameters:
+- `radiusX` (`number`)
+
+##### `Rectangle:cornerRadiusY(radius)`
+Sets the vertical radius of the rectangle's corners.
+
+Parameters:
+- `radiusY` (`number`)
+
+##### `Rectangle:cornerSegments(segments)`
+Sets the number of segments used to draw the rectangle's corners.
+
+Parameters:
+- `segments` (`number`)
+
+##### `Rectangle:fillColor(r, g, b, a)`
+Sets the color to draw the inside of the rectangle with.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Rectangle:new(x, y, width, height)`
+Initializes the rectangle.
+
+Parameters:
+- `x` (`number`, defaults to `0`) - the x position of the rectangle
+- `y` (`number`, defaults to `0`) - the y position of the rectangle
+- `width` (`number`, defaults to `0`) - the width of the rectangle
+- `height` (`number`, defaults to `0`) - the height of the rectangle
+
+##### `Rectangle:outlineColor(r, g, b, a)`
+Sets the color to draw the outline of the rectangle with.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Rectangle:outlineWidth(width)`
+Sets the line width of the rectangle's outline.
+
+Parameters:
+- `width` (`number`)
+
+### Text
+
+#### Functions
+
+##### `Text:color(r, g, b, a)`
+Sets the color of the text.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Text:new(font, text, x, y)`
+Initializes the text.
+
+Parameters:
+- `font` (`Font`) - the font to use
+- `text` (`string`) - the text to display
+- `x` (`number`, defaults to `0`) - the x position of the text
+- `y` (`number`, defaults to `0`) - the y position of the text
+
+##### `Text:scale(scaleX, scaleY)`
+Sets the scale of the text (as a multiplier of its original size).
+
+Parameters:
+- `scaleX` (`number`, defaults to `1`)
+- `scaleY` (`number`, defaults to `scaleX`)
+
+##### `Text:scaleX(scaleX)`
+Sets the horizontal scale of the text (as a multiplier of its original size).
+
+Parameters:
+- `scaleX` (`number`)
+
+##### `Text:scaleY(scaleY)`
+Sets the vertical scale of the text (as a multiplier of its original size).
+
+Parameters:
+- `scaleY` (`number`)
+
+##### `Text:shadowColor(r, g, b, a)`
+Sets the color of the text's shadow.
+
+Parameters:
+- `r` (`number` or `table`) - the red component of the color, or a table in the form `{r, g, b, a}`
+- `g` (`number`) (optional) - the green component of the color
+- `b` (`number`) (optional) - the blue component of the color
+- `a` (`number`) (optional) - the alpha component of the color
+
+##### `Text:shadowOffset(offsetX, offsetY)`
+Sets the horizontal and vertical offset of the text's shadow.
+
+Parameters:
+- `offsetX` (`number`)
+- `offsetY` (`number`)
+
+##### `Text:shadowOffsetX(offsetX)`
+Sets the horizontal offset of the text's shadow.
+
+Parameters:
+- `offsetX` (`number`)
+
+##### `Text:shadowOffsetY(offsetY)`
+Sets the vertical offset of the text's shadow.
+
+Parameters:
+- `offsetY` (`number`)
+
 ### Ui
 Manages and draws graphical elements.
 
@@ -450,7 +781,7 @@ Sets the element that subsequent function calls should modify.
 Parameters:
 - `element` (`Element`) - the element to select
 
-#### `Ui:start()`
+##### `Ui:start()`
 Manually starts a new draw frame. Normally this is called automatically the first time you call `Ui:new()` after calling `Ui:draw()`.
 
 Returns:
