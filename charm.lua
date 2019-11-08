@@ -770,6 +770,7 @@ function Ui:start()
 	end
 	self._selectedElement = nil
 	self._previousElement = nil
+	return self
 end
 
 --[[
