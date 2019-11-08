@@ -993,4 +993,4 @@ Returns:
 
 Contributing
 ------------
-Charm is in very early development. Feel free to request features, point out bugs, and even make some pull requests! If you use this library in a game, let me know how it goes.
+Charm is in very early development. Feel free to ask questions, point out bugs, and even make some pull requests! If you use this library in a game, let me know how it goes.
