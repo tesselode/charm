@@ -187,6 +187,7 @@ end
 
 function Element.base:x(x, anchor)
 	anchor = anchor or 0
+	self._anchorX = anchor
 	self._x = x - self._width * anchor
 end
 
@@ -196,6 +197,7 @@ function Element.base:right(x) return self:x(x, 1) end
 
 function Element.base:y(y, anchor)
 	anchor = anchor or 0
+	self._anchorY = anchor
 	self._y = y - self._height * anchor
 end
 
@@ -212,17 +214,23 @@ function Element.base:shift(dx, dy)
 	self._y = self._y + (dy or 0)
 end
 
-function Element.base:width(width)
+function Element.base:width(width, anchorX)
+	anchorX = anchorX or self._anchorX or 0
+	local previousX = self.get.x(self, anchorX)
 	self._width = width
+	self:x(previousX, anchorX)
 end
 
-function Element.base:height(height)
+function Element.base:height(height, anchorY)
+	anchorY = anchorY or self._anchorY or 0
+	local previousY = self.get.y(self, anchorY)
 	self._height = height
+	self:y(previousY, anchorY)
 end
 
-function Element.base:size(width, height)
-	self:width(width)
-	self:height(height)
+function Element.base:size(width, height, anchorX, anchorY)
+	self:width(width, anchorX)
+	self:height(height, anchorY)
 end
 
 function Element.base:name(name)
