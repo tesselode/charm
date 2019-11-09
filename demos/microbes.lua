@@ -13,19 +13,19 @@ function love.draw()
 				ui:new('ellipse', nil, nil, 32, 32)
 					:center(300 + 150 * math.sin(love.timer.getTime() * (1 + i/10)))
 					:middle(300 + 150 * math.cos(love.timer.getTime() * (1 + i/11)))
-					:set('outlineColor', 1, 1, 1)
+					:outlineColor(1, 1, 1)
 			end
 			ui:endChildren()
 			:wrap()
-			:set('outlineColor', 1, 1, 1)
+			:outlineColor(1, 1, 1)
 		:new('text', labelFont, 'Microbes')
 			:name 'label'
-			:left(ui:getRight 'container' + 64)
-			:middle(ui:getY('container', 2/3))
+			:left(ui:get('container', 'right') + 64)
+			:middle(ui:get('container', 'y', 2/3))
 		:draw()
 	love.graphics.line(
-		ui:getRight 'label', ui:getBottom 'label',
-		ui:getLeft 'label', ui:getBottom 'label',
-		ui:getRight 'container', ui:getMiddle 'container'
+		ui:get('label', 'right'), ui:get('label', 'bottom'),
+		ui:get('label', 'left'), ui:get('label', 'bottom'),
+		ui:get('container', 'right'), ui:get('container', 'middle')
 	)
 end

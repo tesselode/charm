@@ -21,11 +21,10 @@ function love.draw()
 		:beginChildren()
 			:new('text', bigFont, 'click me!')
 				:center(buttonX):middle(buttonY)
-				:set('fillColor', 1, 0, 0)
 		:endChildren()
 		:wrap(32)
-		:set('fillColor', ui:isHovered 'button' and buttonHoveredColor or buttonIdleColor)
-	if ui:isHovered 'button' then
+		:fillColor(ui:get('button', 'hovered') and buttonHoveredColor or buttonIdleColor)
+	if ui:get('button', 'hovered') then
 		ui:new 'rectangle'
 			:beginChildren()
 				:new('paragraph', smallFont, tooltipText, 300)
@@ -33,11 +32,11 @@ function love.draw()
 			:wrap(16)
 			:left(love.mouse.getX() + 16)
 			:bottom(love.mouse.getY() - 16)
-			:set('fillColor', 1/4, 1/4, 1/3)
+			:fillColor(1/4, 1/4, 1/3)
 	end
 	ui:draw()
-	if ui:isPressed 'button' then print 'hi!' end
-	local dragged, dx, dy = ui:isDragged('button', 2)
+	if ui:get('button', 'pressed') then print 'hi!' end
+	local dragged, dx, dy = ui:get('button', 'dragged', 2)
 	if dragged then
 		buttonX = buttonX + dx
 		buttonY = buttonY + dy
