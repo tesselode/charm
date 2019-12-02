@@ -1,12 +1,17 @@
 local charm = require 'charm'
 
 local titleFont = love.graphics.newFont(24)
+local beanMan = love.graphics.newImage 'bean man.png'
 
 local Window = charm.extend()
 
-function Window:new(title, x, y, width, height)
+function Window:new(name, title, x, y, width, height)
+	self:name(name)
 	self._title = title
-	self.__parent.new(self, x, y, width, height)
+	local state = self:getState()
+	state.x = state.x or x
+	state.y = state.y or y
+	self.__parent.new(self, state.x, state.y, width, height)
 end
 
 function Window:onAddChild(element)
@@ -16,6 +21,7 @@ end
 
 function Window:beforeDraw()
 	local titlebar = self.ui:create 'rectangle'
+		:name(self._name .. '.titlebar')
 		:addChild(self.ui:create('text', titleFont, self._title))
 		:wrap(4)
 		:x(0):y(0)
@@ -35,14 +41,23 @@ function Window:beforeDraw()
 	self:addChild(contentContainer)
 end
 
+function Window:afterDraw()
+	local state = self:getState()
+	local titlebar = self.ui:getElement(self._name .. '.titlebar')
+	local dragged, dx, dy = titlebar:get 'dragged'
+	if dragged then
+		state.x = state.x + dx
+		state.y = state.y + dy
+	end
+end
+
 local ui = charm.new()
 
 function love.draw()
 	ui
-		:new(Window, 'test window', 50, 50, 200, 200)
+		:new(Window, 'testWindow', 'test window', 50, 50, 500, 500)
 			:beginChildren()
-				:new('rectangle', 50, 50, 200, 200)
-					:fillColor(1, 0, 0)
+				:new('image', beanMan)
 			:endChildren()
 		:draw()
 end
