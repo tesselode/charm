@@ -58,7 +58,12 @@ local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
 	class.__parent = parent
-	class.get = setmetatable({}, {__index = parent and parent.get})
+	class.get = setmetatable({}, {
+		__index = parent and parent.get,
+		__call = function(_, self, property, ...)
+			return self.get[property](self, ...)
+		end,
+	})
 	class.preserve = setmetatable({}, {__index = parent and parent.preserve})
 	return class
 end
@@ -887,7 +892,7 @@ end
 
 function Ui:get(elementName, propertyName, ...)
 	local element = self:getElement(elementName)
-	return element.get[propertyName](element, ...)
+	return element:get(propertyName, ...)
 end
 
 function Ui:getState(name)
