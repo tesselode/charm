@@ -270,6 +270,7 @@ end
 -- amount of padding). Children's local positions will be adjusted so they have
 -- the same position on screen after the wrap is complete.
 function Element.base:wrap(padding)
+	if not self._children then return self end
 	padding = padding or 0
 	-- get the bounds of the children
 	local left, top, right, bottom
