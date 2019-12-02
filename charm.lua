@@ -57,6 +57,7 @@ end
 local function newElementClass(parent)
 	local class = setmetatable({}, parent)
 	class.__index = class
+	class.__parent = parent
 	class.get = setmetatable({}, {__index = parent and parent.get})
 	class.preserve = setmetatable({}, {__index = parent and parent.preserve})
 	return class
