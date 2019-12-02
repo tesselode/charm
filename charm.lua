@@ -606,6 +606,7 @@ function Element.text:new(font, text, x, y)
 	self._y = y or 0
 	self._width = font:getWidth(text)
 	self._height = getTextHeight(font, text)
+	self:transparent()
 end
 
 function Element.text:scaleX(scaleX, anchorX)
@@ -696,6 +697,7 @@ function Element.paragraph:new(font, text, limit, align, x, y)
 	self._y = y or 0
 	self._width = limit
 	self._height = getParagraphHeight(font, text, limit)
+	self:transparent()
 end
 
 function Element.paragraph:scaleX(scaleX, anchorX)
