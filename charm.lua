@@ -195,6 +195,7 @@ function Element.base:x(x, anchor)
 	anchor = anchor or 0
 	self._anchorX = anchor
 	self._x = x - self._width * anchor
+	return self
 end
 
 function Element.base:left(x) return self:x(x, 0) end
@@ -205,6 +206,7 @@ function Element.base:y(y, anchor)
 	anchor = anchor or 0
 	self._anchorY = anchor
 	self._y = y - self._height * anchor
+	return self
 end
 
 function Element.base:top(y) return self:y(y, 0) end
@@ -213,11 +215,13 @@ function Element.base:bottom(y) return self:y(y, 1) end
 
 function Element.base:z(z)
 	self._z = z
+	return self
 end
 
 function Element.base:shift(dx, dy)
 	self._x = self._x + (dx or 0)
 	self._y = self._y + (dy or 0)
+	return self
 end
 
 function Element.base:width(width, anchorX)
@@ -225,6 +229,7 @@ function Element.base:width(width, anchorX)
 	local previousX = self.get.x(self, anchorX)
 	self._width = width
 	self:x(previousX, anchorX)
+	return self
 end
 
 function Element.base:height(height, anchorY)
@@ -232,27 +237,33 @@ function Element.base:height(height, anchorY)
 	local previousY = self.get.y(self, anchorY)
 	self._height = height
 	self:y(previousY, anchorY)
+	return self
 end
 
 function Element.base:size(width, height, anchorX, anchorY)
 	self:width(width, anchorX)
 	self:height(height, anchorY)
+	return self
 end
 
 function Element.base:name(name)
 	self._name = name
+	return self
 end
 
 function Element.base:clip()
 	self._clip = true
+	return self
 end
 
 function Element.base:transparent()
 	self._transparent = true
+	return self
 end
 
 function Element.base:opaque()
 	self._transparent = false
+	return self
 end
 
 -- Adjusts the element to perfectly surround all of its children (with an optional
@@ -289,10 +300,12 @@ end
 function Element.base:addChild(element)
 	self._children = self._children or {}
 	table.insert(self._children, element)
+	return self
 end
 
 function Element.base:onAddChild(element)
 	self:addChild(element)
+	return self
 end
 
 function Element.base:stencil()
@@ -407,6 +420,7 @@ function Element.rectangle:fillColor(r, g, b, a)
 		self._fillColor[3] = b
 		self._fillColor[4] = a
 	end
+	return self
 end
 
 function Element.rectangle:outlineColor(r, g, b, a)
@@ -419,27 +433,33 @@ function Element.rectangle:outlineColor(r, g, b, a)
 		self._outlineColor[3] = b
 		self._outlineColor[4] = a
 	end
+	return self
 end
 
 function Element.rectangle:outlineWidth(width)
 	self._outlineWidth = width
+	return self
 end
 
 function Element.rectangle:cornerRadiusX(radius)
 	self._cornerRadiusX = radius
+	return self
 end
 
 function Element.rectangle:cornerRadiusY(radius)
 	self._cornerRadiusY = radius
+	return self
 end
 
 function Element.rectangle:cornerRadius(radiusX, radiusY)
 	self._cornerRadiusX = radiusX
 	self._cornerRadiusY = radiusY
+	return self
 end
 
 function Element.rectangle:cornerSegments(segments)
 	self._cornerSegments = segments
+	return self
 end
 
 function Element.rectangle:stencil()
@@ -481,6 +501,7 @@ function Element.ellipse:fillColor(r, g, b, a)
 		self._fillColor[3] = b
 		self._fillColor[4] = a
 	end
+	return self
 end
 
 function Element.ellipse:outlineColor(r, g, b, a)
@@ -493,14 +514,17 @@ function Element.ellipse:outlineColor(r, g, b, a)
 		self._outlineColor[3] = b
 		self._outlineColor[4] = a
 	end
+	return self
 end
 
 function Element.ellipse:outlineWidth(width)
 	self._outlineWidth = width
+	return self
 end
 
 function Element.ellipse:segments(segments)
 	self._segments = segments
+	return self
 end
 
 function Element.ellipse:stencil()
@@ -536,15 +560,18 @@ end
 
 function Element.image:scaleX(scaleX, anchorX)
 	self:width(self._image:getWidth() * scaleX, anchorX)
+	return self
 end
 
 function Element.image:scaleY(scaleY, anchorY)
 	self:height(self._image:getHeight() * scaleY, anchorY)
+	return self
 end
 
 function Element.image:scale(scaleX, scaleY, anchorX, anchorY)
 	self:scaleX(scaleX or 1, anchorX)
 	self:scaleY(scaleY or scaleX, anchorY)
+	return self
 end
 
 function Element.image:color(r, g, b, a)
@@ -557,6 +584,7 @@ function Element.image:color(r, g, b, a)
 		self._color[3] = b
 		self._color[4] = a
 	end
+	return self
 end
 
 function Element.image:drawSelf()
@@ -582,15 +610,18 @@ end
 
 function Element.text:scaleX(scaleX, anchorX)
 	self:width(self._font:getWidth(self._text) * scaleX, anchorX)
+	return self
 end
 
 function Element.text:scaleY(scaleY, anchorY)
 	self:height(getTextHeight(self._font, self._text) * scaleY, anchorY)
+	return self
 end
 
 function Element.text:scale(scaleX, scaleY, anchorX, anchorY)
 	self:scaleX(scaleX or 1, anchorX)
 	self:scaleY(scaleY or scaleX, anchorY)
+	return self
 end
 
 function Element.text:color(r, g, b, a)
@@ -603,6 +634,7 @@ function Element.text:color(r, g, b, a)
 		self._color[3] = b
 		self._color[4] = a
 	end
+	return self
 end
 
 function Element.text:shadowColor(r, g, b, a)
@@ -615,19 +647,23 @@ function Element.text:shadowColor(r, g, b, a)
 		self._shadowColor[3] = b
 		self._shadowColor[4] = a
 	end
+	return self
 end
 
 function Element.text:shadowOffsetX(offsetX)
 	self._shadowOffsetX = offsetX
+	return self
 end
 
 function Element.text:shadowOffsetY(offsetY)
 	self._shadowOffsetY = offsetY
+	return self
 end
 
 function Element.text:shadowOffset(offsetX, offsetY)
 	self:shadowOffsetX(offsetX)
 	self:shadowOffsetY(offsetY)
+	return self
 end
 
 function Element.text:drawSelf()
@@ -664,15 +700,18 @@ end
 
 function Element.paragraph:scaleX(scaleX, anchorX)
 	self:width(self._limit * scaleX, anchorX)
+	return self
 end
 
 function Element.paragraph:scaleY(scaleY, anchorY)
 	self:height(getParagraphHeight(self._font, self._text, self._limit) * scaleY, anchorY)
+	return self
 end
 
 function Element.paragraph:scale(scaleX, scaleY, anchorX, anchorY)
 	self:scaleX(scaleX or 1, anchorX)
 	self:scaleY(scaleY or scaleX, anchorY)
+	return self
 end
 
 function Element.paragraph:color(r, g, b, a)
@@ -685,6 +724,7 @@ function Element.paragraph:color(r, g, b, a)
 		self._color[3] = b
 		self._color[4] = a
 	end
+	return self
 end
 
 function Element.paragraph:shadowColor(r, g, b, a)
@@ -697,19 +737,23 @@ function Element.paragraph:shadowColor(r, g, b, a)
 		self._shadowColor[3] = b
 		self._shadowColor[4] = a
 	end
+	return self
 end
 
 function Element.paragraph:shadowOffsetX(offsetX)
 	self._shadowOffsetX = offsetX
+	return self
 end
 
 function Element.paragraph:shadowOffsetY(offsetY)
 	self._shadowOffsetY = offsetY
+	return self
 end
 
 function Element.paragraph:shadowOffset(offsetX, offsetY)
 	self:shadowOffsetX(offsetX)
 	self:shadowOffsetY(offsetY)
+	return self
 end
 
 function Element.paragraph:drawSelf()
