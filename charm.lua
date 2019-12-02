@@ -312,17 +312,18 @@ function Element.base:draw(stencilValue, dx, dy, mouseClipped)
 		table.sort(self._children, sortElements)
 		-- if clipping is enabled, push a stencil to the "stack"
 		if self._clip then
+			stencilValue = stencilValue + 1
 			love.graphics.push 'all'
 			self._stencilFunction = self._stencilFunction or function()
 				self:stencil()
 			end
 			love.graphics.stencil(self._stencilFunction, 'increment', 1, true)
-			love.graphics.setStencilTest('gequal', stencilValue + 1)
+			love.graphics.setStencilTest('gequal', stencilValue)
 		end
 		-- draw children
 		for _, child in ipairs(self._children) do
 			if child.draw then
-				local childHovered = child:draw(stencilValue + 1, self._x + dx, self._y + dy, mouseClipped)
+				local childHovered = child:draw(stencilValue, self._x + dx, self._y + dy, mouseClipped)
 				--[[
 					if the child is hovered and not transparent, then it should block
 					the parent from being hovered
