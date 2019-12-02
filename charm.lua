@@ -813,11 +813,8 @@ function Ui:select(element)
 	return self
 end
 
-function Ui:new(className, ...)
-	if self._finished then
-		self:start()
-		self._finished = false
-	end
+-- Creates an element and returns it.
+function Ui:create(className, ...)
 	local element
 	-- if possible, reuse an unused element
 	for _, e in ipairs(self._elementPool) do
@@ -837,15 +834,29 @@ function Ui:new(className, ...)
 	element._used = true
 	setmetatable(element, self:_getElementClass(className))
 	if element.new then element:new(...) end
-	-- select the element
-	self:select(element)
-	-- add it to the elements tree
+	return element
+end
+
+-- Adds an element to the tree (either in the root or a child element).
+function Ui:add(element)
 	local parent = self:_getParentElement()
 	if parent then
-		if parent.onAddChild then parent:onAddChild(element) end
+		parent:onAddChild(element)
 	else
 		table.insert(self._elements, element)
 	end
+end
+
+-- Creates a new element, selects it, and adds it to the tree.
+function Ui:new(className, ...)
+	-- start a new frame if we just finished drawing
+	if self._finished then
+		self:start()
+		self._finished = false
+	end
+	local element = self:create(className, ...)
+	self:select(element)
+	self:add(element)
 	return self
 end
 
