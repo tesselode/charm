@@ -281,9 +281,13 @@ function Element.base:wrap(padding)
 	return self
 end
 
-function Element.base:onAddChild(element)
+function Element.base:addChild(element)
 	self._children = self._children or {}
 	table.insert(self._children, element)
+end
+
+function Element.base:onAddChild(element)
+	self:addChild(element)
 end
 
 function Element.base:stencil()
