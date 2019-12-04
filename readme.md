@@ -676,9 +676,6 @@ Sets the y position of the bottom edge of the element.
 Parameters:
 - `y` (`number`) - the desired y position
 
-Returns:
-- `state` (`table`)
-
 ##### `Base:z(z)`
 Sets the z position of the element.
 
@@ -727,6 +724,9 @@ Sets the element to be transparent, meaning that mouse events can pass through t
 
 ##### `local state = Base:getState()`
 Gets the persistent state of the element.
+
+Returns:
+- `state` (`table`)
 
 ##### `Base:shift(dx, dy)`
 Shifts the element by a certain number of pixels horizontally and vertically.
