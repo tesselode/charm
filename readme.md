@@ -18,6 +18,19 @@ Table of contents <!-- omit in toc -->
     - [Functions](#functions)
       - [`local ElementClass = charm.extend(parent)`](#local-elementclass--charmextendparent)
       - [`local ui = charm.new()`](#local-ui--charmnew)
+  - [Ui](#ui)
+    - [Functions](#functions-1)
+      - [`Ui:new(elementClass, ...)`](#uinewelementclass)
+      - [`local element = Ui:getElement(name)`](#local-element--uigetelementname)
+      - [`local value = Ui:get(element, propertyName, ...)`](#local-value--uigetelement-propertyname)
+      - [`local elementState = Ui:getState(element)`](#local-elementstate--uigetstateelement)
+      - [`Ui:select(element)`](#uiselectelement)
+      - [`Ui:beginChildren()`](#uibeginchildren)
+      - [`Ui:endChildren()`](#uiendchildren)
+      - [`Ui:draw()`](#uidraw)
+      - [`Ui:start()`](#uistart)
+      - [`Ui:create(elementClass, ...)`](#uicreateelementclass)
+      - [`Ui:add(element)`](#uiaddelement)
   - [Base](#base)
     - [Fields](#fields)
       - [`Base.get` (table)](#baseget-table)
@@ -123,19 +136,6 @@ Table of contents <!-- omit in toc -->
       - [`Text:shadowOffsetX(offsetX)`](#textshadowoffsetxoffsetx)
       - [`Text:shadowOffsetY(offsetY)`](#textshadowoffsetyoffsety)
       - [`Text:shadowOffset(offsetX, offsetY)`](#textshadowoffsetoffsetx-offsety)
-  - [Ui](#ui)
-    - [Functions](#functions-1)
-      - [`Ui:new(elementClass, ...)`](#uinewelementclass)
-      - [`local element = Ui:getElement(name)`](#local-element--uigetelementname)
-      - [`local value = Ui:get(element, propertyName, ...)`](#local-value--uigetelement-propertyname)
-      - [`local elementState = Ui:getState(element)`](#local-elementstate--uigetstateelement)
-      - [`Ui:select(element)`](#uiselectelement)
-      - [`Ui:beginChildren()`](#uibeginchildren)
-      - [`Ui:endChildren()`](#uiendchildren)
-      - [`Ui:draw()`](#uidraw)
-      - [`Ui:start()`](#uistart)
-      - [`Ui:create(elementClass, ...)`](#uicreateelementclass)
-      - [`Ui:add(element)`](#uiaddelement)
 - [Contributing](#contributing)
 
 Installation
@@ -364,6 +364,87 @@ Returns:
 
 ##### `local ui = charm.new()`
 Creates a new `Ui` object.
+
+### Ui
+Manages and draws graphical elements.
+
+#### Functions
+
+##### `Ui:new(elementClass, ...)`
+Adds a new element to be drawn this frame.
+
+Parameters:
+- `elementClass` (`ElementClass` or `string`) - the type of element to add
+- `...` - additional arguments to pass to the element class' constructor
+
+Returns:
+- `self` (`Ui`) - itself
+
+##### `local element = Ui:getElement(name)`
+Gets the table representing an element.
+
+Parameters:
+- `name` (`string`) - the name of the element, or one of the following keywords:
+  - `'@current'` - the currently selected element
+  - `'@previous'` - the previously selected element
+  - `'@parent'` - the parent of the currently selected element (if there is one)
+
+Returns:
+- `element` (`Element` or `nil`) - the element table, or `nil` if there's no element with the given name or no element that matches the given keyword
+
+##### `local value = Ui:get(element, propertyName, ...)`
+Gets the value of an element property.
+
+Parameters:
+- `element` (`Element` or `string`) - the element or name of the element to get the property from
+- `propertyName` (`string`) - the name of the property to get the value of
+- `...` - additional arguments to pass to the property getter function
+
+Returns:
+- `value` - the value of the property
+
+##### `local elementState = Ui:getState(element)`
+Gets the persistent state table for an element.
+
+Parameters:
+- `element` (`Element` or `string`) - the element or name of the element to get the state of
+
+Returns:
+- `elementState` (`table` or `nil`) - the persistent state of the element, or `nil` if the element doesn't have a persistent state
+
+##### `Ui:select(element)`
+Sets the element that subsequent function calls should modify.
+
+Parameters:
+- `element` (`Element`) - the element to select
+
+##### `Ui:beginChildren()`
+Starts adding children to the currently selected element.
+
+##### `Ui:endChildren()`
+Stops adding children to the current parent element and re-selects the parent element.
+
+##### `Ui:draw()`
+Draws the previously added elements and updates their state. After `draw` is called, the next `new` call will clear out the existing elements.
+
+##### `Ui:start()`
+Manually starts a new draw frame. Normally this is called automatically the first time you call `Ui:new()` after calling `Ui:draw()`.
+
+Returns:
+- `self` (`Ui`) - itself
+
+##### `Ui:create(elementClass, ...)`
+Creates a new element. This function does not automatically add the element to the tree.
+
+Parameters:
+- `elementClass` (`ElementClass` or `string`) - the type of element to add
+- `...` - additional arguments to pass to the element class' constructor
+
+Returns:
+- `element` (`Element`) - the newly created element
+
+##### `Ui:add(element)`
+Adds an existing element to the tree.
 
 ### Base
 The base element class that all other element classes inherit from.
@@ -960,88 +1041,6 @@ Sets the horizontal and vertical offset of the text's shadow.
 Parameters:
 - `offsetX` (`number`)
 - `offsetY` (`number`)
-
-### Ui
-Manages and draws graphical elements.
-
-#### Functions
-
-##### `Ui:new(elementClass, ...)`
-Adds a new element to be drawn this frame.
-
-Parameters:
-- `elementClass` (`ElementClass` or `string`) - the type of element to add
-- `...` - additional arguments to pass to the element class' constructor
-
-Returns:
-- `self` (`Ui`) - itself
-
-##### `local element = Ui:getElement(name)`
-Gets the table representing an element.
-
-Parameters:
-- `name` (`string`) - the name of the element, or one of the following keywords:
-  - `'@current'` - the currently selected element
-  - `'@previous'` - the previously selected element
-  - `'@parent'` - the parent of the currently selected element (if there is one)
-
-Returns:
-- `element` (`Element` or `nil`) - the element table, or `nil` if there's no element with the given name or no element that matches the given keyword
-
-##### `local value = Ui:get(element, propertyName, ...)`
-Gets the value of an element property.
-
-Parameters:
-- `element` (`Element` or `string`) - the element or name of the element to get the property from
-- `propertyName` (`string`) - the name of the property to get the value of
-- `...` - additional arguments to pass to the property getter function
-
-Returns:
-- `value` - the value of the property
-
-##### `local elementState = Ui:getState(element)`
-Gets the persistent state table for an element.
-
-Parameters:
-- `element` (`Element` or `string`) - the element or name of the element to get the state of
-
-Returns:
-- `elementState` (`table` or `nil`) - the persistent state of the element, or `nil` if the element doesn't have a persistent state
-
-##### `Ui:select(element)`
-Sets the element that subsequent function calls should modify.
-
-Parameters:
-- `element` (`Element`) - the element to select
-
-##### `Ui:beginChildren()`
-Starts adding children to the currently selected element.
-
-##### `Ui:endChildren()`
-Stops adding children to the current parent element and re-selects the parent element.
-
-##### `Ui:draw()`
-Draws the previously added elements and updates their state. After `draw` is called, the next `new` call will clear out the existing elements.
-
-##### `Ui:start()`
-Manually starts a new draw frame. Normally this is called automatically the first time you call `Ui:new()` after calling `Ui:draw()`.
-
-Returns:
-- `self` (`Ui`) - itself
-
-##### `Ui:create(elementClass, ...)`
-Creates a new element. This function does not automatically add the element to the tree.
-
-Parameters:
-- `elementClass` (`ElementClass` or `string`) - the type of element to add
-- `...` - additional arguments to pass to the element class' constructor
-
-Returns:
-- `element` (`Element`) - the newly created element
-
-
-##### `Ui:add(element)`
-Adds an existing element to the tree.
 
 Contributing
 ------------
