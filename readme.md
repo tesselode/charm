@@ -60,9 +60,9 @@ Table of contents <!-- omit in toc -->
       - [`Base:middle(y)`](#basemiddley)
       - [`Base:bottom(y)`](#basebottomy)
       - [`Base:z(z)`](#basezz)
-      - [`Base:width(width)`](#basewidthwidth)
-      - [`Base:height(height)`](#baseheightheight)
-      - [`Base:size(width)`](#basesizewidth)
+      - [`Base:width(width, anchorX)`](#basewidthwidth-anchorx)
+      - [`Base:height(height, anchorY)`](#baseheightheight-anchory)
+      - [`Base:size(width, height)`](#basesizewidth-height)
       - [`Base:name(name)`](#basenamename)
       - [`Base:clip()`](#baseclip)
       - [`Base:opaque()`](#baseopaque)
@@ -71,6 +71,7 @@ Table of contents <!-- omit in toc -->
       - [`local state = Base:getState()`](#local-state--basegetstate)
       - [`Base:shift(dx, dy)`](#baseshiftdx-dy)
       - [`Base:wrap(padding)`](#basewrappadding)
+      - [`Base:addChild(element)`](#baseaddchildelement)
   - [Rectangle](#rectangle)
     - [Constructors](#constructors)
       - [`Rectangle:new(x, y, width, height)`](#rectanglenewx-y-width-height)
@@ -133,6 +134,8 @@ Table of contents <!-- omit in toc -->
       - [`Ui:endChildren()`](#uiendchildren)
       - [`Ui:draw()`](#uidraw)
       - [`Ui:start()`](#uistart)
+      - [`Ui:create(elementClass, ...)`](#uicreateelementclass)
+      - [`Ui:add(element)`](#uiaddelement)
 - [Contributing](#contributing)
 
 Installation
@@ -386,7 +389,7 @@ Returns:
 - `containsPoint` (`boolean`)
 
 ##### `Base:onAddChild(element)`
-Called when an element is added as this element's child.
+Called when an element is added as this element's child from the UI object. If you call `element.addChild` directly, this callback will not be triggered.
 
 Parameters:
 - `element` (`Element`) - the child element
@@ -601,24 +604,28 @@ Sets the z position of the element.
 Parameters:
 - `z` (`number`)
 
-##### `Base:width(width)`
+##### `Base:width(width, anchorX)`
 Sets the width of the element.
 
 Parameters:
 - `width` (`number`)
+- `anchorX` (`number`) (optional) - the horizontal position of the element to hold in place while changing the width. This defaults to the most recently set anchor (by a position or size setter), or `0` if no anchor has been set.
 
-##### `Base:height(height)`
+##### `Base:height(height, anchorY)`
 Sets the height of the element.
 
 Parameters:
 - `height` (`number`)
+- `anchorY` (`number`) (optional) - the vertical position of the element to hold in place while changing the width. This defaults to the most recently set anchor (by a position or size setter), or `0` if no anchor has been set.
 
-##### `Base:size(width)`
+##### `Base:size(width, height)`
 Sets the width and height of the element.
 
 Parameters:
 - `width` (`number`)
 - `height` (`number`)
+- `anchorX` (`number`)
+- `anchorY` (`number`)
 
 ##### `Base:name(name)`
 Gives the element a name. This is required to use persistent state.
@@ -652,6 +659,12 @@ Adjusts the element to perfectly surround all of its children. The children's po
 
 Parameters:
 - `padding` (`number`, defaults to `0`) - the amount of extra space to surround the children with
+
+##### `Base:addChild(element)`
+Adds a child element directly to this element.
+
+Parameters:
+- `element` (`Element`)
 
 ### Rectangle
 
@@ -1015,6 +1028,20 @@ Manually starts a new draw frame. Normally this is called automatically the firs
 
 Returns:
 - `self` (`Ui`) - itself
+
+##### `Ui:create(elementClass, ...)`
+Creates a new element. This function does not automatically add the element to the tree.
+
+Parameters:
+- `elementClass` (`ElementClass` or `string`) - the type of element to add
+- `...` - additional arguments to pass to the element class' constructor
+
+Returns:
+- `element` (`Element`) - the newly created element
+
+
+##### `Ui:add(element)`
+Adds an existing element to the tree.
 
 Contributing
 ------------
