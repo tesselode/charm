@@ -950,8 +950,8 @@ function Ui:getState(name)
 	return self._state[element._name]
 end
 
-function Ui:beginChildren()
-	local parent = self:_getSelectedElement()
+function Ui:beginChildren(parent)
+	parent = parent or self:_getSelectedElement()
 	self._currentGroup = self._currentGroup + 1
 	self._groups[self._currentGroup] = self._groups[self._currentGroup] or {}
 	local group = self._groups[self._currentGroup]
