@@ -162,7 +162,7 @@ local Layout = {}
 function Layout:__index(k)
 	if Layout[k] then return Layout[k] end
 	self._functionCache[k] = self._functionCache[k] or function(_, ...)
-		local element = self:_getSelectedElement()
+		local element = self:getElement '@current'
 		element[k](element, ...)
 		return self
 	end
@@ -179,12 +179,14 @@ function Layout:_clearElement(element)
 	end
 end
 
-function Layout:_getSelectedElement()
-	return self._groups[self._currentGroupIndex].current
-end
-
 function Layout:getElement(name)
+	name = name or '@current'
 	if type(name) == 'table' then return name end
+	if name == '@current' then
+		return self._groups[self._currentGroupIndex].current
+	elseif name == '@previous' then
+		return self._groups[self._currentGroupIndex].previous
+	end
 end
 
 function Layout:get(elementName, propertyName, ...)
