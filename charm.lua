@@ -91,9 +91,9 @@ function Element:draw()
 	love.graphics.pop()
 end
 
-local Rectangle = newElementClass(Element)
+local Shape = newElementClass(Element)
 
-function Rectangle:fillColor(r, g, b, a)
+function Shape:fillColor(r, g, b, a)
 	if type(r) == 'table' then
 		self._fillColor = r
 	else
@@ -105,7 +105,7 @@ function Rectangle:fillColor(r, g, b, a)
 	end
 end
 
-function Rectangle:outlineColor(r, g, b, a)
+function Shape:outlineColor(r, g, b, a)
 	if type(r) == 'table' then
 		self._outlineColor = r
 	else
@@ -117,7 +117,27 @@ function Rectangle:outlineColor(r, g, b, a)
 	end
 end
 
-function Rectangle:outlineWidth(width) self._outlineWidth = width end
+function Shape:outlineWidth(width) self._outlineWidth = width end
+
+function Shape:drawShape(mode) end
+
+function Shape:drawSelf()
+	love.graphics.push 'all'
+	if self._fillColor and #self._fillColor > 0 then
+		love.graphics.setColor(self._fillColor)
+		self:drawShape 'fill'
+	end
+	if self._outlineColor and #self._outlineColor > 0 then
+		love.graphics.setColor(self._outlineColor)
+		if self._outlineWidth then
+			love.graphics.setLineWidth(self._outlineWidth)
+		end
+		self:drawShape 'line'
+	end
+	love.graphics.pop()
+end
+
+local Rectangle = newElementClass(Shape)
 
 function Rectangle:cornerRadius(radiusX, radiusY)
 	self._cornerRadiusX = radiusX
@@ -126,22 +146,9 @@ end
 
 function Rectangle:cornerSegments(segments) self._cornerSegments = segments end
 
-function Rectangle:drawSelf()
-	love.graphics.push 'all'
-	if self._fillColor and #self._fillColor > 0 then
-		love.graphics.setColor(self._fillColor)
-		love.graphics.rectangle('fill', 0, 0, self.get.width(self), self.get.height(self),
-			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
-	end
-	if self._outlineColor and #self._outlineColor > 0 then
-		love.graphics.setColor(self._outlineColor)
-		if self._outlineWidth then
-			love.graphics.setLineWidth(self._outlineWidth)
-		end
-		love.graphics.rectangle('line', 0, 0, self.get.width(self), self.get.height(self),
-			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
-	end
-	love.graphics.pop()
+function Rectangle:drawShape(mode)
+	love.graphics.rectangle(mode, 0, 0, self.get.width(self), self.get.height(self),
+		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
 charm.Rectangle = Rectangle
