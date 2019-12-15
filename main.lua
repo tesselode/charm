@@ -1,15 +1,16 @@
 local charm = require 'charm'
 
-local testElement = setmetatable({}, charm.Rectangle)
-
-testElement:x(love.graphics.getWidth()/2, .5)
-testElement:y(love.graphics.getHeight()/2, .5)
-testElement:size(100, 200)
-testElement:fillColor(.5, .5, .5)
-testElement:outlineColor(1, 1, 1)
-testElement:outlineWidth(4)
-testElement:cornerRadius(10)
+local layout = charm.new()
 
 function love.draw()
-	testElement:draw()
+	layout
+		:new('rectangle', 50, 50, 100, 150)
+			:fillColor(.5, .5, .5)
+		:new('rectangle', 200, 200, 300, 50)
+			if love.keyboard.isDown 'space' then
+				layout:outlineColor(1, 0, 0)
+			end
+		layout:draw()
+
+	love.graphics.print(string.format('Memory usage: %ikb', collectgarbage 'count'))
 end

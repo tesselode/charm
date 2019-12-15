@@ -151,6 +151,100 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
-charm.Rectangle = Rectangle
+local elementClasses = {
+	element = Element,
+	shape = Shape,
+	rectangle = Rectangle,
+}
+
+local Layout = {}
+
+function Layout:__index(k)
+	if Layout[k] then return Layout[k] end
+	self._functionCache[k] = self._functionCache[k] or function(_, ...)
+		local element = self:_getSelectedElement()
+		element[k](element, ...)
+		return self
+	end
+	return self._functionCache[k]
+end
+
+function Layout:_clearElement(element)
+	for key, value in pairs(element) do
+		if type(value) == 'table' then
+			for k in pairs(value) do value[k] = nil end
+		elseif type(value) ~= 'function' then
+			element[key] = nil
+		end
+	end
+end
+
+function Layout:_getSelectedElement()
+	return self._groups[self._currentGroupIndex].current
+end
+
+function Layout:getElement(name)
+	if type(name) == 'table' then return name end
+end
+
+function Layout:get(elementName, propertyName, ...)
+	local element = self:getElement(elementName)
+	return element.get[propertyName](element, ...)
+end
+
+function Layout:select(name)
+	local element = self:getElement(name)
+	local group = self._groups[self._currentGroupIndex]
+	group.previous = group.current
+	group.current = element
+	return self
+end
+
+function Layout:new(elementClass, ...)
+	-- get the appropriate element class
+	if type(elementClass) == 'string' then
+		elementClass = elementClasses[elementClass]
+	end
+	local element
+	-- try to reuse an unused element
+	for _, e in ipairs(self._elementPool) do
+		if not e._used then
+			self:_clearElement(e)
+			element = e
+		end
+	end
+	-- if there are none, create a new one and add it to the pool
+	if not element then
+		element = {}
+		table.insert(self._elementPool, element)
+	end
+	-- initialize the element
+	element._used = true
+	setmetatable(element, elementClass)
+	element:new(...)
+	-- add it to the tree and select it
+	table.insert(self._elements, element)
+	self:select(element)
+	return self
+end
+
+function Layout:draw()
+	for elementIndex, element in ipairs(self._elements) do
+		element:draw()
+		element._used = false
+		self._elements[elementIndex] = nil
+	end
+	return self
+end
+
+function charm.new()
+	return setmetatable({
+		_elementPool = {},
+		_elements = {},
+		_groups = {{}},
+		_currentGroupIndex = 1,
+		_functionCache = {},
+	}, Layout)
+end
 
 return charm
