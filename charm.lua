@@ -82,12 +82,26 @@ function Element:size(width, height)
 	self:height(height)
 end
 
+function Element:addChild(child)
+	self._children = self._children or {}
+	table.insert(self._children, child)
+end
+
+function Element:onAddChild(child)
+	self:addChild(child)
+end
+
 function Element:drawSelf() end
 
 function Element:draw()
 	love.graphics.push 'all'
 	love.graphics.translate(self.get.x(self), self.get.y(self))
 	self:drawSelf()
+	if self._children then
+		for _, child in ipairs(self._children) do
+			child:draw()
+		end
+	end
 	love.graphics.pop()
 end
 
@@ -186,6 +200,8 @@ function Layout:getElement(name)
 		return self._groups[self._currentGroupIndex].current
 	elseif name == '@previous' then
 		return self._groups[self._currentGroupIndex].previous
+	elseif name == '@parent' then
+		return self._groups[self._currentGroupIndex].parent
 	end
 	return self._named[name]
 end
@@ -226,7 +242,12 @@ function Layout:new(elementClass, ...)
 	setmetatable(element, elementClass)
 	element:new(...)
 	-- add it to the tree and select it
-	table.insert(self._elements, element)
+	local group = self._groups[self._currentGroupIndex]
+	if group.parent then
+		group.parent:onAddChild(element)
+	else
+		table.insert(self._elements, element)
+	end
 	self:select(element)
 	return self
 end
@@ -236,12 +257,30 @@ function Layout:name(name)
 	return self
 end
 
+function Layout:beginChildren(name)
+	local element = self:getElement(name)
+	self._currentGroupIndex = self._currentGroupIndex + 1
+	self._groups[self._currentGroupIndex] = self._groups[self._currentGroupIndex] or {}
+	local group = self._groups[self._currentGroupIndex]
+	for k in pairs(group) do group[k] = nil end
+	group.parent = element
+	return self
+end
+
+function Layout:endChildren()
+	self._currentGroupIndex = self._currentGroupIndex - 1
+	return self
+end
+
 function Layout:draw()
 	-- draw each element and remove it from the tree
 	for elementIndex, element in ipairs(self._elements) do
 		element:draw()
-		element._used = false
 		self._elements[elementIndex] = nil
+	end
+	-- mark all elements as unused
+	for _, element in ipairs(self._elementPool) do
+		element._used = false
 	end
 	-- clear named elements
 	for name in pairs(self._named) do self._named[name] = nil end
