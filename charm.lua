@@ -187,6 +187,7 @@ function Layout:getElement(name)
 	elseif name == '@previous' then
 		return self._groups[self._currentGroupIndex].previous
 	end
+	return self._named[name]
 end
 
 function Layout:get(elementName, propertyName, ...)
@@ -230,12 +231,20 @@ function Layout:new(elementClass, ...)
 	return self
 end
 
+function Layout:name(name)
+	self._named[name] = self:getElement '@current'
+	return self
+end
+
 function Layout:draw()
+	-- draw each element and remove it from the tree
 	for elementIndex, element in ipairs(self._elements) do
 		element:draw()
 		element._used = false
 		self._elements[elementIndex] = nil
 	end
+	-- clear named elements
+	for name in pairs(self._named) do self._named[name] = nil end
 	return self
 end
 
@@ -245,6 +254,7 @@ function charm.new()
 		_elements = {},
 		_groups = {{}},
 		_currentGroupIndex = 1,
+		_named = {},
 		_functionCache = {},
 	}, Layout)
 end
