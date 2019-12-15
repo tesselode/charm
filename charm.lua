@@ -82,6 +82,68 @@ function Element:size(width, height)
 	self:height(height)
 end
 
-charm.Element = Element
+function Element:drawSelf() end
+
+function Element:draw()
+	love.graphics.push 'all'
+	love.graphics.translate(self.get.x(self), self.get.y(self))
+	self:drawSelf()
+	love.graphics.pop()
+end
+
+local Rectangle = newElementClass(Element)
+
+function Rectangle:fillColor(r, g, b, a)
+	if type(r) == 'table' then
+		self._fillColor = r
+	else
+		self._fillColor = self._fillColor or {}
+		self._fillColor[1] = r
+		self._fillColor[2] = g
+		self._fillColor[3] = b
+		self._fillColor[4] = a
+	end
+end
+
+function Rectangle:outlineColor(r, g, b, a)
+	if type(r) == 'table' then
+		self._outlineColor = r
+	else
+		self._outlineColor = self._outlineColor or {}
+		self._outlineColor[1] = r
+		self._outlineColor[2] = g
+		self._outlineColor[3] = b
+		self._outlineColor[4] = a
+	end
+end
+
+function Rectangle:outlineWidth(width) self._outlineWidth = width end
+
+function Rectangle:cornerRadius(radiusX, radiusY)
+	self._cornerRadiusX = radiusX
+	self._cornerRadiusY = radiusY
+end
+
+function Rectangle:cornerSegments(segments) self._cornerSegments = segments end
+
+function Rectangle:drawSelf()
+	love.graphics.push 'all'
+	if self._fillColor and #self._fillColor > 0 then
+		love.graphics.setColor(self._fillColor)
+		love.graphics.rectangle('fill', 0, 0, self.get.width(self), self.get.height(self),
+			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
+	end
+	if self._outlineColor and #self._outlineColor > 0 then
+		love.graphics.setColor(self._outlineColor)
+		if self._outlineWidth then
+			love.graphics.setLineWidth(self._outlineWidth)
+		end
+		love.graphics.rectangle('line', 0, 0, self.get.width(self), self.get.height(self),
+			self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
+	end
+	love.graphics.pop()
+end
+
+charm.Rectangle = Rectangle
 
 return charm
