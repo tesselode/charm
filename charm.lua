@@ -82,6 +82,10 @@ function Element:size(width, height)
 	self:height(height)
 end
 
+function Element:clip()
+	self._clip = true
+end
+
 function Element:addChild(child)
 	self._children = self._children or {}
 	table.insert(self._children, child)
@@ -93,13 +97,32 @@ end
 
 function Element:drawSelf() end
 
-function Element:draw()
+function Element:stencil() end
+
+function Element:draw(stencilValue)
+	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
 	love.graphics.translate(self.get.x(self), self.get.y(self))
 	self:drawSelf()
 	if self._children then
+		-- if clipping is enabled, push a stencil to the "stack"
+		if self._clip then
+			stencilValue = stencilValue + 1
+			love.graphics.push 'all'
+			self._stencilFunction = self._stencilFunction or function()
+				self:stencil()
+			end
+			love.graphics.stencil(self._stencilFunction, 'increment', 1, true)
+			love.graphics.setStencilTest('gequal', stencilValue)
+		end
+		-- draw children
 		for _, child in ipairs(self._children) do
-			child:draw()
+			child:draw(stencilValue)
+		end
+		-- if clipping is enabled, pop a stencil from the "stack"
+		if self._clip then
+			love.graphics.stencil(self._stencilFunction, 'decrement', 1, true)
+			love.graphics.pop()
 		end
 	end
 	love.graphics.pop()
@@ -134,6 +157,8 @@ end
 function Shape:outlineWidth(width) self._outlineWidth = width end
 
 function Shape:drawShape(mode) end
+
+function Shape:stencil() self:drawShape 'fill' end
 
 function Shape:drawSelf()
 	love.graphics.push 'all'

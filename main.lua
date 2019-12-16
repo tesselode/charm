@@ -9,13 +9,13 @@ function love.draw()
 			:beginChildren()
 				:new 'rectangle'
 					:size(50, 50)
-					:right(layout:get('@parent', 'width'))
-					:bottom(layout:get('@parent', 'height'))
+					:center(layout:get('@parent', 'width')/2 + 400 * math.sin(love.timer.getTime()))
+					:middle(layout:get('@parent', 'height')/2)
 					:outlineColor(1, 0, 0)
 					:name 'child'
 			:endChildren()
-		print(layout:get('child', 'right'))
-		layout:draw()
+			:clip()
+		:draw()
 
 	love.graphics.print(string.format('Memory usage: %ikb', collectgarbage 'count'))
 end
