@@ -28,6 +28,7 @@ end
 
 local function newElementClass(parent)
 	local class = {
+		parent = parent,
 		get = setmetatable({}, {__index = parent and parent.get})
 	}
 	class.__index = class
@@ -67,6 +68,22 @@ function Element.get:height() return self._height or 0 end
 
 function Element.get:size()
 	return self.get.width(self), self.get.height(self)
+end
+
+function Element.get:childrenBounds()
+	if not self._children then return end
+	local left, top, right, bottom
+	for _, child in ipairs(self._children) do
+		local childLeft = child.get.left(child)
+		local childTop = child.get.top(child)
+		local childRight = child.get.right(child)
+		local childBottom = child.get.bottom(child)
+		left = left and math.min(left, childLeft) or childLeft
+		top = top and math.min(top, childTop) or childTop
+		right = right and math.max(right, childRight) or childRight
+		bottom = bottom and math.max(bottom, childBottom) or childBottom
+	end
+	return left, top, right, bottom
 end
 
 function Element:x(x, anchor)
@@ -122,25 +139,26 @@ function Element:addChild(child)
 	table.insert(self._children, child)
 end
 
+function Element:onBeginChildren(...) end
+
 function Element:onAddChild(child)
 	self:addChild(child)
 end
 
+function Element:onEndChildren(...) end
+
+function Element:shiftChildren(dx, dy)
+	if not self._children then return end
+	for _, child in ipairs(self._children) do
+		child:shift(dx, dy)
+	end
+end
+
 function Element:wrap(padding)
-	if not self._children then return self end
+	if not self._children then return end
 	padding = padding or 0
 	-- get the bounds of the children
-	local left, top, right, bottom
-	for _, child in ipairs(self._children) do
-		local childLeft = child.get.left(child)
-		local childTop = child.get.top(child)
-		local childRight = child.get.right(child)
-		local childBottom = child.get.bottom(child)
-		left = left and math.min(left, childLeft) or childLeft
-		top = top and math.min(top, childTop) or childTop
-		right = right and math.max(right, childRight) or childRight
-		bottom = bottom and math.max(bottom, childBottom) or childBottom
-	end
+	local left, top, right, bottom = self.get.childrenBounds(self)
 	-- apply padding
 	left = left - padding
 	top = top - padding
@@ -165,6 +183,65 @@ function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
 	love.graphics.translate(self.get.x(self), self.get.y(self))
+	self:drawSelf()
+	if self._children then
+		-- if clipping is enabled, push a stencil to the "stack"
+		if self._clip then
+			stencilValue = stencilValue + 1
+			love.graphics.push 'all'
+			self._stencilFunction = self._stencilFunction or function()
+				self:stencil()
+			end
+			love.graphics.stencil(self._stencilFunction, 'increment', 1, true)
+			love.graphics.setStencilTest('gequal', stencilValue)
+		end
+		-- draw children
+		for _, child in ipairs(self._children) do
+			child:draw(stencilValue)
+		end
+		-- if clipping is enabled, pop a stencil from the "stack"
+		if self._clip then
+			love.graphics.stencil(self._stencilFunction, 'decrement', 1, true)
+			love.graphics.pop()
+		end
+	end
+	love.graphics.pop()
+end
+
+local Transform = newElementClass(Element)
+
+function Transform:new(x, y, angle, sx, sy, ox, oy, kx, ky)
+	self.transform = self.transform or love.math.newTransform()
+	self.transform:setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky)
+end
+
+function Transform:_updateDimensions()
+	local childrenLeft, childrenTop, childrenRight, childrenBottom = self.get.childrenBounds(self)
+	local x1, y1 = self.transform:transformPoint(0, 0)
+	local x2, y2 = self.transform:transformPoint(childrenRight - childrenLeft, 0)
+	local x3, y3 = self.transform:transformPoint(childrenRight - childrenLeft, childrenBottom - childrenTop)
+	local x4, y4 = self.transform:transformPoint(0, childrenBottom - childrenTop)
+	local left = math.min(x1, x2, x3, x4)
+	local top = math.min(y1, y2, y3, y4)
+	local right = math.max(x1, x2, x3, x4)
+	local bottom = math.max(y1, y2, y3, y4)
+	self:left(childrenLeft + left)
+	self:top(childrenTop + top)
+	self:width(right - left)
+	self:height(bottom - top)
+end
+
+function Transform:onEndChildren(...)
+	self:_updateDimensions()
+end
+
+function Transform:draw(stencilValue)
+	stencilValue = stencilValue or 0
+	love.graphics.push 'all'
+	local left, top = self.get.childrenBounds(self)
+	love.graphics.translate(left, top)
+	love.graphics.applyTransform(self.transform)
+	love.graphics.translate(-left, -top)
 	self:drawSelf()
 	if self._children then
 		-- if clipping is enabled, push a stencil to the "stack"
@@ -323,6 +400,7 @@ end
 
 local elementClasses = {
 	element = Element,
+	transform = Transform,
 	shape = Shape,
 	rectangle = Rectangle,
 	text = Text,
@@ -414,8 +492,9 @@ function Layout:name(name)
 	return self
 end
 
-function Layout:beginChildren(name)
+function Layout:beginChildren(name, ...)
 	local element = self:getElement(name)
+	element:onBeginChildren(...)
 	self._currentGroupIndex = self._currentGroupIndex + 1
 	self._groups[self._currentGroupIndex] = self._groups[self._currentGroupIndex] or {}
 	local group = self._groups[self._currentGroupIndex]
@@ -424,7 +503,9 @@ function Layout:beginChildren(name)
 	return self
 end
 
-function Layout:endChildren()
+function Layout:endChildren(...)
+	local group = self._groups[self._currentGroupIndex]
+	group.parent:onEndChildren(...)
 	self._currentGroupIndex = self._currentGroupIndex - 1
 	return self
 end

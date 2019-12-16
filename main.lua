@@ -1,26 +1,24 @@
 local charm = require 'charm'
 
-local font = love.graphics.newFont(32)
-
 local layout = charm.new()
+
+local angle = 0
+
+function love.update(dt)
+	angle = angle + dt
+end
 
 function love.draw()
 	layout
-		:new('rectangle', 400 + 100 * math.sin(love.timer.getTime()), 50, 100, 150)
-			:fillColor(.5, .5, .5)
+		:new('transform', 0, 0, angle, 2, 1.5)
 			:beginChildren()
-				:new 'rectangle'
-					:size(50, 50)
-					:center(layout:get('@parent', 'width')/2 + 400 * math.sin(love.timer.getTime()))
-					:middle(layout:get('@parent', 'height')/2)
-					:outlineColor(1, 0, 0)
-					:name 'child'
-				:new('text', font, 'hi there!')
-					:center(layout:get('@previous', 'center'))
-					:bottom(layout:get('@previous', 'top'))
+				:new('rectangle', 300, 300, 100, 50)
+					:fillColor(.5, .5, .5)
 			:endChildren()
-			:clip()
-		:draw()
+		love.graphics.rectangle('line', layout:get('@current', 'x'), layout:get('@current', 'y'),
+			layout:get('@current', 'width'), layout:get('@current', 'height'))
+		layout:draw()
+
 
 	love.graphics.print(string.format('Memory usage: %ikb', collectgarbage 'count'))
 end
