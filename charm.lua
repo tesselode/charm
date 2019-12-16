@@ -1,5 +1,31 @@
 local charm = {}
 
+-- gets the total number of lines in a string
+local function numberOfLines(s)
+	local _, newlines = s:gsub('\n', '\n')
+	return newlines + 1
+end
+
+-- gets the total height of a text string drawn with a certain font
+local function getTextHeight(font, text)
+	return font:getHeight() * font:getLineHeight() * numberOfLines(text)
+end
+
+--[[
+	gets the total height of a text string drawn with a certain font
+	and maximum width.
+
+	note:
+	currently this uses love's built in function for getting
+	wrapping info, which returns a table. since getParagraphHeight
+	is called every frame, this creates a lot of garbage, so it would be
+	nice to find another way to do this.
+]]
+local function getParagraphHeight(font, text, limit)
+	local _, lines = font:getWrap(text, limit)
+	return #lines * font:getHeight() * font:getLineHeight()
+end
+
 local function newElementClass(parent)
 	local class = {
 		get = setmetatable({}, {__index = parent and parent.get})
@@ -226,10 +252,77 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
+local Text = newElementClass(Element)
+
+function Text:new(font, text, x, y)
+	self._font = font
+	self._text = text
+	self._naturalWidth = font:getWidth(text)
+	self._naturalHeight = getTextHeight(font, text)
+	self._x = x
+	self._y = y
+	self._width = self._naturalWidth
+	self._height = self._naturalHeight
+end
+
+function Text:color(r, g, b, a)
+	if type(r) == 'table' then
+		self._color = r
+	else
+		self._color = self._color or {}
+		self._color[1] = r
+		self._color[2] = g
+		self._color[3] = b
+		self._color[4] = a
+	end
+end
+
+function Text:shadowColor(r, g, b, a)
+	if type(r) == 'table' then
+		self._shadowColor = r
+	else
+		self._shadowColor = self._shadowColor or {}
+		self._shadowColor[1] = r
+		self._shadowColor[2] = g
+		self._shadowColor[3] = b
+		self._shadowColor[4] = a
+	end
+end
+
+function Text:shadowOffset(offsetX, offsetY)
+	self._shadowOffsetX = offsetX
+	self._shadowOffsetY = offsetY or offsetX
+end
+
+function Text:stencil()
+	love.graphics.push 'all'
+	love.graphics.setFont(self._font)
+	love.graphics.print(self._text, 0, 0, 0,
+		self._width / self._naturalWidth, self._height / self._naturalHeight)
+	love.graphics.pop()
+end
+
+function Text:drawSelf()
+	love.graphics.push 'all'
+	if self._color and #self._color > 0 then
+		love.graphics.setColor(self._color)
+	end
+	love.graphics.setFont(self._font)
+	love.graphics.print(self._text, 0, 0, 0,
+		self._width / self._naturalWidth, self._height / self._naturalHeight)
+	if self._shadowColor and #self._shadowColor > 0 then
+		love.graphics.setColor(self._shadowColor)
+		love.graphics.print(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1), 0,
+			self._width / self._naturalWidth, self._height / self._naturalHeight)
+	end
+	love.graphics.pop()
+end
+
 local elementClasses = {
 	element = Element,
 	shape = Shape,
 	rectangle = Rectangle,
+	text = Text,
 }
 
 local Layout = {}
