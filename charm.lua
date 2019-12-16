@@ -46,7 +46,7 @@ end
 
 function Element.get:x(anchor)
 	anchor = anchor or 0
-	return (self._x or 0) + (self._width or 0) * anchor
+	return (self._x or 0) + self.get.width(self) * anchor
 end
 
 function Element.get:left() return self.get.x(self, 0) end
@@ -55,7 +55,7 @@ function Element.get:right() return self.get.x(self, 1) end
 
 function Element.get:y(anchor)
 	anchor = anchor or 0
-	return (self._y or 0) + (self._height or 0) * anchor
+	return (self._y or 0) + self.get.height(self) * anchor
 end
 
 function Element.get:top() return self.get.y(self, 0) end
@@ -298,7 +298,8 @@ function Text:stencil()
 	love.graphics.push 'all'
 	love.graphics.setFont(self._font)
 	love.graphics.print(self._text, 0, 0, 0,
-		self._width / self._naturalWidth, self._height / self._naturalHeight)
+		self.get.width(self) / self._naturalWidth,
+		self.get.height(self) / self._naturalHeight)
 	love.graphics.pop()
 end
 
@@ -309,11 +310,13 @@ function Text:drawSelf()
 	end
 	love.graphics.setFont(self._font)
 	love.graphics.print(self._text, 0, 0, 0,
-		self._width / self._naturalWidth, self._height / self._naturalHeight)
+		self.get.width(self) / self._naturalWidth,
+		self.get.height(self) / self._naturalHeight)
 	if self._shadowColor and #self._shadowColor > 0 then
 		love.graphics.setColor(self._shadowColor)
 		love.graphics.print(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1), 0,
-			self._width / self._naturalWidth, self._height / self._naturalHeight)
+			self.get.width(self) / self._naturalWidth,
+			self.get.height(self) / self._naturalHeight)
 	end
 	love.graphics.pop()
 end
