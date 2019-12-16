@@ -10,7 +10,9 @@ end
 
 function love.draw()
 	layout
-		:new('transform', 0, 0, angle, 2, 1.5)
+		:new 'transform'
+			:angle(angle)
+			:shear(1, 0)
 			:beginChildren()
 				:new('rectangle', 300, 300, 100, 50)
 					:fillColor(.5, .5, .5)
@@ -18,7 +20,6 @@ function love.draw()
 		love.graphics.rectangle('line', layout:get('@current', 'x'), layout:get('@current', 'y'),
 			layout:get('@current', 'width'), layout:get('@current', 'height'))
 		layout:draw()
-
 
 	love.graphics.print(string.format('Memory usage: %ikb', collectgarbage 'count'))
 end

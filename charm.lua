@@ -86,6 +86,12 @@ function Element.get:childrenBounds()
 	return left, top, right, bottom
 end
 
+function Element.get:childrenRectangle()
+	local left, top, right, bottom = self.get.childrenBounds(self)
+	if not left and top and right and bottom then return end
+	return left, top, right - left, bottom - top
+end
+
 function Element:x(x, anchor)
 	anchor = anchor or 0
 	self._anchorX = anchor
@@ -208,61 +214,110 @@ function Element:draw(stencilValue)
 	love.graphics.pop()
 end
 
+-- TODO: stop recreating self.transform every frame
 local Transform = newElementClass(Element)
 
-function Transform:new(x, y, angle, sx, sy, ox, oy, kx, ky)
+function Transform:new()
 	self.transform = self.transform or love.math.newTransform()
-	self.transform:setTransformation(x, y, angle, sx, sy, ox, oy, kx, ky)
+end
+
+function Transform:_updateTransform()
+	self.transform:reset()
+	local childrenLeft, childrenTop, childrenWidth, childrenHeight = self.get.childrenRectangle(self)
+	local originX = childrenLeft + childrenWidth * (self._originX or .5)
+	local originY = childrenTop + childrenHeight * (self._originY or .5)
+	self.transform:translate(originX, originY)
+	self.transform:rotate(self._angle or 0)
+	self.transform:scale(self._scaleX or 1, self._scaleY or 1)
+	self.transform:shear(self._shearX or 0, self._shearY or 0)
+	self.transform:translate(-originX, -originY)
 end
 
 function Transform:_updateDimensions()
 	local childrenLeft, childrenTop, childrenRight, childrenBottom = self.get.childrenBounds(self)
-	local x1, y1 = self.transform:transformPoint(0, 0)
-	local x2, y2 = self.transform:transformPoint(childrenRight - childrenLeft, 0)
-	local x3, y3 = self.transform:transformPoint(childrenRight - childrenLeft, childrenBottom - childrenTop)
-	local x4, y4 = self.transform:transformPoint(0, childrenBottom - childrenTop)
+	local x1, y1 = self.transform:transformPoint(childrenLeft, childrenTop)
+	local x2, y2 = self.transform:transformPoint(childrenRight, childrenTop)
+	local x3, y3 = self.transform:transformPoint(childrenRight, childrenBottom)
+	local x4, y4 = self.transform:transformPoint(childrenLeft, childrenBottom)
 	local left = math.min(x1, x2, x3, x4)
 	local top = math.min(y1, y2, y3, y4)
 	local right = math.max(x1, x2, x3, x4)
 	local bottom = math.max(y1, y2, y3, y4)
-	self:left(childrenLeft + left)
-	self:top(childrenTop + top)
+	self:left(left)
+	self:top(top)
 	self:width(right - left)
 	self:height(bottom - top)
 end
 
-function Transform:onEndChildren(...)
+function Transform:_update()
+	if not (self._children and #self._children > 0) then return end
+	self:_updateTransform()
 	self:_updateDimensions()
 end
 
+function Transform:angle(angle)
+	self._angle = angle
+	self:_update()
+end
+
+function Transform:originX(origin)
+	self._originX = origin
+	self:_update()
+end
+
+function Transform:originY(origin)
+	self._originY = origin
+	self:_update()
+end
+
+function Transform:origin(originX, originY)
+	self._originX = originX
+	self._originY = originY or originX
+	self:_update()
+end
+
+function Transform:scaleX(scale)
+	self._scaleX = scale
+	self:_update()
+end
+
+function Transform:scaleY(scale)
+	self._scaleY = scale
+	self:_update()
+end
+
+function Transform:scale(scaleX, scaleY)
+	self._scaleX = scaleX
+	self._scaleY = scaleY or scaleX
+	self:_update()
+end
+
+function Transform:shearX(shear)
+	self._shearX = shear
+	self:_update()
+end
+
+function Transform:shearY(shear)
+	self._shearY = shear
+	self:_update()
+end
+
+function Transform:shear(shearX, shearY)
+	self._shearX = shearX
+	self._shearY = shearY or shearX
+	self:_update()
+end
+
+function Transform:onEndChildren(...)
+	self:_update()
+end
+
 function Transform:draw(stencilValue)
-	stencilValue = stencilValue or 0
+	if not self._children then return end
 	love.graphics.push 'all'
-	local left, top = self.get.childrenBounds(self)
-	love.graphics.translate(left, top)
 	love.graphics.applyTransform(self.transform)
-	love.graphics.translate(-left, -top)
-	self:drawSelf()
-	if self._children then
-		-- if clipping is enabled, push a stencil to the "stack"
-		if self._clip then
-			stencilValue = stencilValue + 1
-			love.graphics.push 'all'
-			self._stencilFunction = self._stencilFunction or function()
-				self:stencil()
-			end
-			love.graphics.stencil(self._stencilFunction, 'increment', 1, true)
-			love.graphics.setStencilTest('gequal', stencilValue)
-		end
-		-- draw children
-		for _, child in ipairs(self._children) do
-			child:draw(stencilValue)
-		end
-		-- if clipping is enabled, pop a stencil from the "stack"
-		if self._clip then
-			love.graphics.stencil(self._stencilFunction, 'decrement', 1, true)
-			love.graphics.pop()
-		end
+	for _, child in ipairs(self._children) do
+		child:draw(stencilValue)
 	end
 	love.graphics.pop()
 end
