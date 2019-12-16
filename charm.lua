@@ -63,6 +63,11 @@ function Element:top(y) self:y(y, 0) end
 function Element:middle(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
+function Element:shift(dx, dy)
+	self:x(self.get.x(self) + (dx or 0))
+	self:y(self.get.y(self) + (dy or 0))
+end
+
 function Element:width(width)
 	local anchor = self._anchorX or 0
 	local x = self.get.x(self, anchor)
@@ -93,6 +98,37 @@ end
 
 function Element:onAddChild(child)
 	self:addChild(child)
+end
+
+function Element:wrap(padding)
+	if not self._children then return self end
+	padding = padding or 0
+	-- get the bounds of the children
+	local left, top, right, bottom
+	for _, child in ipairs(self._children) do
+		local childLeft = child.get.left(child)
+		local childTop = child.get.top(child)
+		local childRight = child.get.right(child)
+		local childBottom = child.get.bottom(child)
+		left = left and math.min(left, childLeft) or childLeft
+		top = top and math.min(top, childTop) or childTop
+		right = right and math.max(right, childRight) or childRight
+		bottom = bottom and math.max(bottom, childBottom) or childBottom
+	end
+	-- apply padding
+	left = left - padding
+	top = top - padding
+	right = right + padding
+	bottom = bottom + padding
+	-- change the parent position and size
+	self:left(left)
+	self:top(top)
+	self:width(right - left)
+	self:height(bottom - top)
+	-- adjust the children's positions
+	for _, child in ipairs(self._children) do
+		child:shift(-left, -top)
+	end
 end
 
 function Element:drawSelf() end
