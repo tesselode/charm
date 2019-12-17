@@ -29,7 +29,8 @@ end
 local function newElementClass(parent)
 	local class = {
 		parent = parent,
-		get = setmetatable({}, {__index = parent and parent.get})
+		get = setmetatable({}, {__index = parent and parent.get}),
+		preserve = setmetatable({}, {__index = parent and parent.preserve}),
 	}
 	class.__index = class
 	setmetatable(class, {__index = parent})
@@ -37,6 +38,8 @@ local function newElementClass(parent)
 end
 
 local Element = newElementClass()
+
+Element.preserve._stencilFunction = true
 
 function Element:new(x, y, width, height)
 	self._x = x
@@ -230,31 +233,32 @@ function Element:draw(stencilValue)
 	love.graphics.pop()
 end
 
--- TODO: stop recreating self.transform every frame
 local Transform = newElementClass(Element)
+
+Transform.preserve._transform = true
 
 function Transform:new(x, y)
 	self._x = x
 	self._y = y
-	self.transform = self.transform or love.math.newTransform()
+	self._transform = self._transform or love.math.newTransform()
 	self._childrenLeft = 0
 	self._childrenTop = 0
 end
 
 function Transform:_updateTransform()
-	self.transform:reset()
-	self.transform:rotate(self._angle or 0)
-	self.transform:scale(self._scaleX or 1, self._scaleY or 1)
-	self.transform:shear(self._shearX or 0, self._shearY or 0)
+	self._transform:reset()
+	self._transform:rotate(self._angle or 0)
+	self._transform:scale(self._scaleX or 1, self._scaleY or 1)
+	self._transform:shear(self._shearX or 0, self._shearY or 0)
 end
 
 function Transform:_getTransformedChildrenBounds()
 	if not (self._children and #self._children > 0) then return end
 	local childrenLeft, childrenTop, childrenRight, childrenBottom = self.get.childrenBounds(self)
-	local x1, y1 = self.transform:transformPoint(childrenLeft, childrenTop)
-	local x2, y2 = self.transform:transformPoint(childrenRight, childrenTop)
-	local x3, y3 = self.transform:transformPoint(childrenRight, childrenBottom)
-	local x4, y4 = self.transform:transformPoint(childrenLeft, childrenBottom)
+	local x1, y1 = self._transform:transformPoint(childrenLeft, childrenTop)
+	local x2, y2 = self._transform:transformPoint(childrenRight, childrenTop)
+	local x3, y3 = self._transform:transformPoint(childrenRight, childrenBottom)
+	local x4, y4 = self._transform:transformPoint(childrenLeft, childrenBottom)
 	local left = math.min(x1, x2, x3, x4)
 	local top = math.min(y1, y2, y3, y4)
 	local right = math.max(x1, x2, x3, x4)
@@ -317,7 +321,7 @@ function Transform:draw(stencilValue)
 	love.graphics.push 'all'
 	love.graphics.translate(self.get.x(self), self.get.y(self))
 	love.graphics.translate(-self._childrenLeft, -self._childrenTop)
-	love.graphics.applyTransform(self.transform)
+	love.graphics.applyTransform(self._transform)
 	for _, child in ipairs(self._children) do
 		child:draw(stencilValue)
 	end
@@ -445,10 +449,12 @@ end
 
 function Layout:_clearElement(element)
 	for key, value in pairs(element) do
-		if type(value) == 'table' then
-			for k in pairs(value) do value[k] = nil end
-		elseif type(value) ~= 'function' then
-			element[key] = nil
+		if not element.preserve[key] then
+			if type(value) == 'table' then
+				for k in pairs(value) do value[k] = nil end
+			else
+				element[key] = nil
+			end
 		end
 	end
 end
