@@ -45,6 +45,22 @@ function Element:new(x, y, width, height)
 	self._height = height
 end
 
+function Element:setColor(propertyName, r, g, b, a)
+	if type(r) == 'table' then
+		self[propertyName] = r
+	else
+		self[propertyName] = self[propertyName] or {}
+		self[propertyName][1] = r
+		self[propertyName][2] = g
+		self[propertyName][3] = b
+		self[propertyName][4] = a
+	end
+end
+
+function Element:isColorSet(color)
+	return color and #color > 0
+end
+
 function Element.get:x(anchor)
 	anchor = anchor or 0
 	return (self._x or 0) + self.get.width(self) * anchor
@@ -325,27 +341,11 @@ end
 local Shape = newElementClass(Element)
 
 function Shape:fillColor(r, g, b, a)
-	if type(r) == 'table' then
-		self._fillColor = r
-	else
-		self._fillColor = self._fillColor or {}
-		self._fillColor[1] = r
-		self._fillColor[2] = g
-		self._fillColor[3] = b
-		self._fillColor[4] = a
-	end
+	self:setColor('_fillColor', r, g, b, a)
 end
 
 function Shape:outlineColor(r, g, b, a)
-	if type(r) == 'table' then
-		self._outlineColor = r
-	else
-		self._outlineColor = self._outlineColor or {}
-		self._outlineColor[1] = r
-		self._outlineColor[2] = g
-		self._outlineColor[3] = b
-		self._outlineColor[4] = a
-	end
+	self:setColor('_outlineColor', r, g, b, a)
 end
 
 function Shape:outlineWidth(width) self._outlineWidth = width end
@@ -356,11 +356,11 @@ function Shape:stencil() self:drawShape 'fill' end
 
 function Shape:drawSelf()
 	love.graphics.push 'all'
-	if self._fillColor and #self._fillColor > 0 then
+	if self:isColorSet(self._fillColor) then
 		love.graphics.setColor(self._fillColor)
 		self:drawShape 'fill'
 	end
-	if self._outlineColor and #self._outlineColor > 0 then
+	if self:isColorSet(self._outlineColor) then
 		love.graphics.setColor(self._outlineColor)
 		if self._outlineWidth then
 			love.graphics.setLineWidth(self._outlineWidth)
@@ -398,27 +398,11 @@ function Text:new(font, text, x, y)
 end
 
 function Text:color(r, g, b, a)
-	if type(r) == 'table' then
-		self._color = r
-	else
-		self._color = self._color or {}
-		self._color[1] = r
-		self._color[2] = g
-		self._color[3] = b
-		self._color[4] = a
-	end
+	self:setColor('_color', r, g, b, a)
 end
 
 function Text:shadowColor(r, g, b, a)
-	if type(r) == 'table' then
-		self._shadowColor = r
-	else
-		self._shadowColor = self._shadowColor or {}
-		self._shadowColor[1] = r
-		self._shadowColor[2] = g
-		self._shadowColor[3] = b
-		self._shadowColor[4] = a
-	end
+	self:setColor('_shadowColor', r, g, b, a)
 end
 
 function Text:shadowOffset(offsetX, offsetY)
@@ -437,14 +421,14 @@ end
 
 function Text:drawSelf()
 	love.graphics.push 'all'
-	if self._color and #self._color > 0 then
+	if self:isColorSet(self._color) then
 		love.graphics.setColor(self._color)
 	end
 	love.graphics.setFont(self._font)
 	love.graphics.print(self._text, 0, 0, 0,
 		self.get.width(self) / self._naturalWidth,
 		self.get.height(self) / self._naturalHeight)
-	if self._shadowColor and #self._shadowColor > 0 then
+	if self:isColorSet(self._shadowColor) then
 		love.graphics.setColor(self._shadowColor)
 		love.graphics.print(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1), 0,
 			self.get.width(self) / self._naturalWidth,
