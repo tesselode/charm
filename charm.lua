@@ -233,23 +233,23 @@ end
 -- TODO: stop recreating self.transform every frame
 local Transform = newElementClass(Element)
 
-function Transform:new()
+function Transform:new(x, y)
+	self._x = x
+	self._y = y
 	self.transform = self.transform or love.math.newTransform()
+	self._childrenLeft = 0
+	self._childrenTop = 0
 end
 
 function Transform:_updateTransform()
 	self.transform:reset()
-	local childrenLeft, childrenTop, childrenWidth, childrenHeight = self.get.childrenRectangle(self)
-	local originX = childrenLeft + childrenWidth * (self._originX or .5)
-	local originY = childrenTop + childrenHeight * (self._originY or .5)
-	self.transform:translate(originX, originY)
 	self.transform:rotate(self._angle or 0)
 	self.transform:scale(self._scaleX or 1, self._scaleY or 1)
 	self.transform:shear(self._shearX or 0, self._shearY or 0)
-	self.transform:translate(-originX, -originY)
 end
 
-function Transform:_updateDimensions()
+function Transform:_getTransformedChildrenBounds()
+	if not (self._children and #self._children > 0) then return end
 	local childrenLeft, childrenTop, childrenRight, childrenBottom = self.get.childrenBounds(self)
 	local x1, y1 = self.transform:transformPoint(childrenLeft, childrenTop)
 	local x2, y2 = self.transform:transformPoint(childrenRight, childrenTop)
@@ -259,78 +259,64 @@ function Transform:_updateDimensions()
 	local top = math.min(y1, y2, y3, y4)
 	local right = math.max(x1, x2, x3, x4)
 	local bottom = math.max(y1, y2, y3, y4)
-	self:left(left)
-	self:top(top)
+	return left, top, right, bottom
+end
+
+function Transform:_updateDimensions()
+	if not (self._children and #self._children > 0) then return end
+	local left, top, right, bottom = self:_getTransformedChildrenBounds()
+	self._childrenLeft = left
+	self._childrenTop = top
 	self:width(right - left)
 	self:height(bottom - top)
 end
 
-function Transform:_update()
-	if not (self._children and #self._children > 0) then return end
-	self:_updateTransform()
-	self:_updateDimensions()
-end
-
 function Transform:angle(angle)
 	self._angle = angle
-	self:_update()
-end
-
-function Transform:originX(origin)
-	self._originX = origin
-	self:_update()
-end
-
-function Transform:originY(origin)
-	self._originY = origin
-	self:_update()
-end
-
-function Transform:origin(originX, originY)
-	self._originX = originX
-	self._originY = originY or originX
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:scaleX(scale)
 	self._scaleX = scale
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:scaleY(scale)
 	self._scaleY = scale
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:scale(scaleX, scaleY)
 	self._scaleX = scaleX
 	self._scaleY = scaleY or scaleX
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:shearX(shear)
 	self._shearX = shear
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:shearY(shear)
 	self._shearY = shear
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:shear(shearX, shearY)
 	self._shearX = shearX
 	self._shearY = shearY or shearX
-	self:_update()
+	self:_updateTransform()
 end
 
 function Transform:onEndChildren(...)
-	self:_update()
+	self:_updateDimensions()
 end
 
 function Transform:draw(stencilValue)
 	if not self._children then return end
 	love.graphics.push 'all'
+	love.graphics.translate(self.get.x(self), self.get.y(self))
+	love.graphics.translate(-self._childrenLeft, -self._childrenTop)
 	love.graphics.applyTransform(self.transform)
 	for _, child in ipairs(self._children) do
 		child:draw(stencilValue)
