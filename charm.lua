@@ -381,6 +381,19 @@ function Text:new(font, text, x, y)
 	self._height = self._naturalHeight
 end
 
+function Text:scaleX(scale)
+	self:width(self._naturalWidth * scale)
+end
+
+function Text:scaleY(scale)
+	self:height(self._naturalHeight * scale)
+end
+
+function Text:scale(scaleX, scaleY)
+	self:scaleX(scaleX)
+	self:scaleY(scaleY)
+end
+
 function Text:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 end
@@ -389,9 +402,17 @@ function Text:shadowColor(r, g, b, a)
 	self:setColor('_shadowColor', r, g, b, a)
 end
 
+function Text:shadowOffsetX(offset)
+	self._shadowOffsetX = offset
+end
+
+function Text:shadowOffsetY(offset)
+	self._shadowOffsetY = offset
+end
+
 function Text:shadowOffset(offsetX, offsetY)
-	self._shadowOffsetX = offsetX
-	self._shadowOffsetY = offsetY or offsetX
+	self:shadowOffsetX(offsetX)
+	self:shadowOffsetY(offsetY)
 end
 
 function Text:stencil()
