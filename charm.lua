@@ -724,4 +724,10 @@ function charm.new()
 	}, Layout)
 end
 
+function charm.extend(parent)
+	if type(parent) == 'string' then parent = elementClasses[parent] end
+	parent = parent or elementClasses.element
+	return newElementClass(parent)
+end
+
 return charm
