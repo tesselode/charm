@@ -411,19 +411,21 @@ end
 
 function Text:drawSelf()
 	love.graphics.push 'all'
-	if self:isColorSet(self._color) then
-		love.graphics.setColor(self._color)
-	end
 	love.graphics.setFont(self._font)
-	love.graphics.print(self._text, 0, 0, 0,
-		self.get.width(self) / self._naturalWidth,
-		self.get.height(self) / self._naturalHeight)
 	if self:isColorSet(self._shadowColor) then
 		love.graphics.setColor(self._shadowColor)
 		love.graphics.print(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1), 0,
 			self.get.width(self) / self._naturalWidth,
 			self.get.height(self) / self._naturalHeight)
 	end
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	else
+		love.graphics.setColor(1, 1, 1)
+	end
+	love.graphics.print(self._text, 0, 0, 0,
+		self.get.width(self) / self._naturalWidth,
+		self.get.height(self) / self._naturalHeight)
 	love.graphics.pop()
 end
 
