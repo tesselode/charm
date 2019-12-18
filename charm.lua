@@ -368,6 +368,17 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
+local Ellipse = newElementClass(Shape)
+
+function Ellipse:segments(segments) self._segments = segments end
+
+function Ellipse:drawShape(mode)
+	love.graphics.ellipse(mode,
+		self.get.width(self) / 2, self.get.height(self) / 2,
+		self.get.width(self) / 2, self.get.height(self) / 2,
+		self._segments)
+end
+
 local Image = newElementClass(Element)
 
 function Image:new(image, x, y)
@@ -570,6 +581,7 @@ local elementClasses = {
 	transform = Transform,
 	shape = Shape,
 	rectangle = Rectangle,
+	ellipse = Ellipse,
 	image = Image,
 	text = Text,
 	paragraph = Paragraph,

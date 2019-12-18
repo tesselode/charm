@@ -9,7 +9,7 @@ local layout = charm.new()
 function love.draw()
 	local time = love.timer.getTime()
 	layout
-		:new 'rectangle'
+		:new 'ellipse'
 			:beginChildren()
 				:new 'transform'
 					:center(love.graphics.getWidth()/2)
@@ -25,7 +25,6 @@ function love.draw()
 			:wrap(32)
 			:outlineColor(.2, .2, .8)
 			:outlineWidth(5)
-			:cornerRadius(10)
 		:new('paragraph', testFont, 'this is some long text to test out paragraphs. make sure lines are breaking.', 300, 'right')
 			:center(layout:get('@previous', 'center'))
 			:top(layout:get('@previous', 'bottom') + 8)
