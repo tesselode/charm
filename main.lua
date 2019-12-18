@@ -1,35 +1,27 @@
 local charm = require 'charm'
 
-local testFont = love.graphics.newFont(32)
-
 local beanMan = love.graphics.newImage 'bean man.png'
+
+local FramedBeanMan = charm.extend()
+
+function FramedBeanMan:render(layout)
+	layout
+		:new 'rectangle'
+			:beginChildren()
+				:new('image', beanMan)
+					:scale(1/8)
+			:endChildren()
+			:wrap(16)
+			:centerX(0):centerY(0)
+			:fillColor(1, 1, 1)
+end
 
 local layout = charm.new()
 
 function love.draw()
-	local time = love.timer.getTime()
 	layout
-		:new 'ellipse'
-			:beginChildren()
-				:new 'transform'
-					:centerX(love.graphics.getWidth()/2)
-					:centerY(love.graphics.getHeight()/2)
-					:angle(time % (2 * math.pi))
-					:shearX(1 + .5 * math.sin(time * 1.1))
-					:shearY(.5 * math.cos(time * 1.3))
-					:beginChildren()
-						:new('image', beanMan)
-							:scale(.125)
-					:endChildren()
-			:endChildren()
-			:wrap(32)
-			:outlineColor(.2, .2, .8)
-			:outlineWidth(5)
-		:new('paragraph', testFont, 'this is some long text to test out paragraphs. make sure lines are breaking.', 300, 'right')
-			:centerX(layout:get('@previous', 'centerX'))
-			:top(layout:get('@previous', 'bottom') + 8)
-			:shadowColor(1, 0, 0)
+		:new(FramedBeanMan)
+			:centerX(love.graphics.getWidth()/2)
+			:centerY(love.graphics.getHeight()/2)
 		:draw()
-
-	love.graphics.print(string.format('Memory usage: %ikb', collectgarbage 'count'))
 end

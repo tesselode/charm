@@ -203,6 +203,8 @@ function Element:drawSelf() end
 
 function Element:stencil() end
 
+function Element:render(ui) end
+
 function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
@@ -699,6 +701,12 @@ function Layout:endChildren(...)
 end
 
 function Layout:draw()
+	-- allow each element to render new elements
+	for _, element in ipairs(self._elements) do
+		self:beginChildren(element)
+		element:render(self)
+		self:endChildren()
+	end
 	-- draw each element and remove it from the tree
 	for elementIndex, element in ipairs(self._elements) do
 		element:draw()
