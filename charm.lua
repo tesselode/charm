@@ -75,7 +75,7 @@ function Element.get:x(anchor)
 end
 
 function Element.get:left() return self:get('x', 0) end
-function Element.get:center() return self:get('x', .5) end
+function Element.get:centerX() return self:get('x', .5) end
 function Element.get:right() return self:get('x', 1) end
 
 function Element.get:y(anchor)
@@ -84,7 +84,7 @@ function Element.get:y(anchor)
 end
 
 function Element.get:top() return self:get('y', 0) end
-function Element.get:middle() return self:get('y', .5) end
+function Element.get:centerY() return self:get('y', .5) end
 function Element.get:bottom() return self:get('y', 1) end
 
 function Element.get:width() return self._width or 0 end
@@ -117,7 +117,7 @@ function Element:x(x, anchor)
 end
 
 function Element:left(x) self:x(x, 0) end
-function Element:center(x) self:x(x, .5) end
+function Element:centerX(x) self:x(x, .5) end
 function Element:right(x) self:x(x, 1) end
 
 function Element:y(y, anchor)
@@ -127,7 +127,7 @@ function Element:y(y, anchor)
 end
 
 function Element:top(y) self:y(y, 0) end
-function Element:middle(y) self:y(y, .5) end
+function Element:centerY(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
 function Element:shift(dx, dy)
