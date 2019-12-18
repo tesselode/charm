@@ -484,6 +484,87 @@ function Text:drawSelf()
 	love.graphics.pop()
 end
 
+local Paragraph = newElementClass(Element)
+
+function Paragraph:new(font, text, limit, align, x, y)
+	self._font = font
+	self._text = text
+	self._limit = limit
+	self._align = align
+	self._naturalWidth = limit
+	self._naturalHeight = getParagraphHeight(font, text, limit)
+	self._x = x
+	self._y = y
+	self._width = self._naturalWidth
+	self._height = self._naturalHeight
+end
+
+function Paragraph:scaleX(scale)
+	self:width(self._naturalWidth * scale)
+end
+
+function Paragraph:scaleY(scale)
+	self:height(self._naturalHeight * scale)
+end
+
+function Paragraph:scale(scaleX, scaleY)
+	self:scaleX(scaleX)
+	self:scaleY(scaleY)
+end
+
+function Paragraph:color(r, g, b, a)
+	self:setColor('_color', r, g, b, a)
+end
+
+function Paragraph:shadowColor(r, g, b, a)
+	self:setColor('_shadowColor', r, g, b, a)
+end
+
+function Paragraph:shadowOffsetX(offset)
+	self._shadowOffsetX = offset
+end
+
+function Paragraph:shadowOffsetY(offset)
+	self._shadowOffsetY = offset
+end
+
+function Paragraph:shadowOffset(offsetX, offsetY)
+	self:shadowOffsetX(offsetX)
+	self:shadowOffsetY(offsetY)
+end
+
+function Paragraph:stencil()
+	love.graphics.push 'all'
+	love.graphics.setFont(self._font)
+	love.graphics.printf(self._text, 0, 0,
+		self._limit, self._align, 0,
+		self.get.width(self) / self._naturalWidth,
+		self.get.height(self) / self._naturalHeight)
+	love.graphics.pop()
+end
+
+function Paragraph:drawSelf()
+	love.graphics.push 'all'
+	love.graphics.setFont(self._font)
+	if self:isColorSet(self._shadowColor) then
+		love.graphics.setColor(self._shadowColor)
+		love.graphics.printf(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1),
+			self._limit, self._align, 0,
+			self.get.width(self) / self._naturalWidth,
+			self.get.height(self) / self._naturalHeight)
+	end
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	else
+		love.graphics.setColor(1, 1, 1)
+	end
+	love.graphics.printf(self._text, 0, 0,
+		self._limit, self._align, 0,
+		self.get.width(self) / self._naturalWidth,
+		self.get.height(self) / self._naturalHeight)
+	love.graphics.pop()
+end
+
 local elementClasses = {
 	element = Element,
 	transform = Transform,
@@ -491,6 +572,7 @@ local elementClasses = {
 	rectangle = Rectangle,
 	image = Image,
 	text = Text,
+	paragraph = Paragraph,
 }
 
 local Layout = {}
