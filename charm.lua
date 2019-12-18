@@ -368,6 +368,46 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
+local Image = newElementClass(Element)
+
+function Image:new(image, x, y)
+	self._image = image
+	self._naturalWidth = image:getWidth()
+	self._naturalHeight = image:getHeight()
+	self._x = x
+	self._y = y
+	self._width = self._naturalWidth
+	self._height = self._naturalHeight
+end
+
+function Image:scaleX(scale)
+	self:width(self._naturalWidth * scale)
+end
+
+function Image:scaleY(scale)
+	self:height(self._naturalHeight * scale)
+end
+
+function Image:scale(scaleX, scaleY)
+	self:scaleX(scaleX)
+	self:scaleY(scaleY or scaleX)
+end
+
+function Image:color(r, g, b, a)
+	self:setColor('_color', r, g, b, a)
+end
+
+function Image:drawSelf()
+	love.graphics.push 'all'
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	end
+	love.graphics.draw(self._image, 0, 0, 0,
+		self.get.width(self) / self._naturalWidth,
+		self.get.height(self) / self._naturalHeight)
+	love.graphics.pop()
+end
+
 local Text = newElementClass(Element)
 
 function Text:new(font, text, x, y)
@@ -449,6 +489,7 @@ local elementClasses = {
 	transform = Transform,
 	shape = Shape,
 	rectangle = Rectangle,
+	image = Image,
 	text = Text,
 }
 
