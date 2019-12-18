@@ -644,6 +644,17 @@ function Layout:select(name)
 	return self
 end
 
+function Layout:add(element)
+	-- add it to the tree and select it
+	local group = self._groups[self._currentGroupIndex]
+	if group.parent then
+		group.parent:onAddChild(element)
+	else
+		table.insert(self._elements, element)
+	end
+	self:select(element)
+end
+
 function Layout:new(elementClass, ...)
 	-- get the appropriate element class
 	if type(elementClass) == 'string' then
@@ -667,13 +678,7 @@ function Layout:new(elementClass, ...)
 	setmetatable(element, elementClass)
 	element:new(...)
 	-- add it to the tree and select it
-	local group = self._groups[self._currentGroupIndex]
-	if group.parent then
-		group.parent:onAddChild(element)
-	else
-		table.insert(self._elements, element)
-	end
-	self:select(element)
+	self:add(element)
 	return self
 end
 
