@@ -105,12 +105,6 @@ function Element.get:childrenBounds()
 	return left, top, right, bottom
 end
 
-function Element.get:childrenRectangle()
-	local left, top, right, bottom = self.get.childrenBounds(self)
-	if not left and top and right and bottom then return end
-	return left, top, right - left, bottom - top
-end
-
 function Element:x(x, anchor)
 	anchor = anchor or 0
 	self._anchorX = anchor
