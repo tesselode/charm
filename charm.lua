@@ -29,7 +29,12 @@ end
 local function newElementClass(parent)
 	local class = {
 		parent = parent,
-		get = setmetatable({}, {__index = parent and parent.get}),
+		get = setmetatable({}, {
+			__index = parent and parent.get,
+			__call = function(_, self, propertyName, ...)
+				return self.get[propertyName](self, ...)
+			end
+		}),
 		preserve = setmetatable({}, {__index = parent and parent.preserve}),
 	}
 	class.__index = class
@@ -66,27 +71,27 @@ end
 
 function Element.get:x(anchor)
 	anchor = anchor or 0
-	return (self._x or 0) + self.get.width(self) * anchor
+	return (self._x or 0) + self:get 'width' * anchor
 end
 
-function Element.get:left() return self.get.x(self, 0) end
-function Element.get:center() return self.get.x(self, .5) end
-function Element.get:right() return self.get.x(self, 1) end
+function Element.get:left() return self:get('x', 0) end
+function Element.get:center() return self:get('x', .5) end
+function Element.get:right() return self:get('x', 1) end
 
 function Element.get:y(anchor)
 	anchor = anchor or 0
-	return (self._y or 0) + self.get.height(self) * anchor
+	return (self._y or 0) + self:get 'height' * anchor
 end
 
-function Element.get:top() return self.get.y(self, 0) end
-function Element.get:middle() return self.get.y(self, .5) end
-function Element.get:bottom() return self.get.y(self, 1) end
+function Element.get:top() return self:get('y', 0) end
+function Element.get:middle() return self:get('y', .5) end
+function Element.get:bottom() return self:get('y', 1) end
 
 function Element.get:width() return self._width or 0 end
 function Element.get:height() return self._height or 0 end
 
 function Element.get:size()
-	return self.get.width(self), self.get.height(self)
+	return self:get 'width', self:get 'height'
 end
 
 function Element.get:childrenBounds()
@@ -108,7 +113,7 @@ end
 function Element:x(x, anchor)
 	anchor = anchor or 0
 	self._anchorX = anchor
-	self._x = x - self.get.width(self) * anchor
+	self._x = x - self:get 'width' * anchor
 end
 
 function Element:left(x) self:x(x, 0) end
@@ -118,7 +123,7 @@ function Element:right(x) self:x(x, 1) end
 function Element:y(y, anchor)
 	anchor = anchor or 0
 	self._anchorY = anchor
-	self._y = y - self.get.height(self) * anchor
+	self._y = y - self:get 'height' * anchor
 end
 
 function Element:top(y) self:y(y, 0) end
@@ -126,20 +131,20 @@ function Element:middle(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
 function Element:shift(dx, dy)
-	self:x(self.get.x(self) + (dx or 0))
-	self:y(self.get.y(self) + (dy or 0))
+	self:x(self:get 'x' + (dx or 0))
+	self:y(self:get 'y' + (dy or 0))
 end
 
 function Element:width(width)
 	local anchor = self._anchorX or 0
-	local x = self.get.x(self, anchor)
+	local x = self:get('x', anchor)
 	self._width = width
 	self:x(x, anchor)
 end
 
 function Element:height(height)
 	local anchor = self._anchorY or 0
-	local y = self.get.y(self, anchor)
+	local y = self:get('y', anchor)
 	self._height = height
 	self:y(y, anchor)
 end
@@ -177,7 +182,7 @@ function Element:wrap(padding)
 	if not self._children then return end
 	padding = padding or 0
 	-- get the bounds of the children
-	local left, top, right, bottom = self.get.childrenBounds(self)
+	local left, top, right, bottom = self:get 'childrenBounds'
 	-- apply padding
 	left = left - padding
 	top = top - padding
@@ -201,7 +206,7 @@ function Element:stencil() end
 function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
-	love.graphics.translate(self.get.x(self), self.get.y(self))
+	love.graphics.translate(self:get 'x', self:get 'y')
 	self:drawSelf()
 	if self._children then
 		-- if clipping is enabled, push a stencil to the "stack"
@@ -248,7 +253,7 @@ end
 
 function Transform:_getTransformedChildrenBounds()
 	if not (self._children and #self._children > 0) then return end
-	local childrenLeft, childrenTop, childrenRight, childrenBottom = self.get.childrenBounds(self)
+	local childrenLeft, childrenTop, childrenRight, childrenBottom = self:get 'childrenBounds'
 	local x1, y1 = self._transform:transformPoint(childrenLeft, childrenTop)
 	local x2, y2 = self._transform:transformPoint(childrenRight, childrenTop)
 	local x3, y3 = self._transform:transformPoint(childrenRight, childrenBottom)
@@ -313,7 +318,7 @@ end
 function Transform:draw(stencilValue)
 	if not self._children then return end
 	love.graphics.push 'all'
-	love.graphics.translate(self.get.x(self), self.get.y(self))
+	love.graphics.translate(self:get 'x', self:get 'y')
 	love.graphics.translate(-self._childrenLeft, -self._childrenTop)
 	love.graphics.applyTransform(self._transform)
 	for _, child in ipairs(self._children) do
@@ -364,7 +369,7 @@ end
 function Rectangle:cornerSegments(segments) self._cornerSegments = segments end
 
 function Rectangle:drawShape(mode)
-	love.graphics.rectangle(mode, 0, 0, self.get.width(self), self.get.height(self),
+	love.graphics.rectangle(mode, 0, 0, self:get 'width', self:get 'height',
 		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
@@ -374,8 +379,8 @@ function Ellipse:segments(segments) self._segments = segments end
 
 function Ellipse:drawShape(mode)
 	love.graphics.ellipse(mode,
-		self.get.width(self) / 2, self.get.height(self) / 2,
-		self.get.width(self) / 2, self.get.height(self) / 2,
+		self:get 'width' / 2, self:get 'height' / 2,
+		self:get 'width' / 2, self:get 'height' / 2,
 		self._segments)
 end
 
@@ -414,8 +419,8 @@ function Image:drawSelf()
 		love.graphics.setColor(self._color)
 	end
 	love.graphics.draw(self._image, 0, 0, 0,
-		self.get.width(self) / self._naturalWidth,
-		self.get.height(self) / self._naturalHeight)
+		self:get 'width' / self._naturalWidth,
+		self:get 'height' / self._naturalHeight)
 	love.graphics.pop()
 end
 
@@ -470,8 +475,8 @@ function Text:stencil()
 	love.graphics.push 'all'
 	love.graphics.setFont(self._font)
 	love.graphics.print(self._text, 0, 0, 0,
-		self.get.width(self) / self._naturalWidth,
-		self.get.height(self) / self._naturalHeight)
+		self:get 'width' / self._naturalWidth,
+		self:get 'height' / self._naturalHeight)
 	love.graphics.pop()
 end
 
@@ -481,8 +486,8 @@ function Text:drawSelf()
 	if self:isColorSet(self._shadowColor) then
 		love.graphics.setColor(self._shadowColor)
 		love.graphics.print(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1), 0,
-			self.get.width(self) / self._naturalWidth,
-			self.get.height(self) / self._naturalHeight)
+			self:get 'width' / self._naturalWidth,
+			self:get 'height' / self._naturalHeight)
 	end
 	if self:isColorSet(self._color) then
 		love.graphics.setColor(self._color)
@@ -490,8 +495,8 @@ function Text:drawSelf()
 		love.graphics.setColor(1, 1, 1)
 	end
 	love.graphics.print(self._text, 0, 0, 0,
-		self.get.width(self) / self._naturalWidth,
-		self.get.height(self) / self._naturalHeight)
+		self:get 'width' / self._naturalWidth,
+		self:get 'height' / self._naturalHeight)
 	love.graphics.pop()
 end
 
@@ -549,8 +554,8 @@ function Paragraph:stencil()
 	love.graphics.setFont(self._font)
 	love.graphics.printf(self._text, 0, 0,
 		self._limit, self._align, 0,
-		self.get.width(self) / self._naturalWidth,
-		self.get.height(self) / self._naturalHeight)
+		self:get 'width' / self._naturalWidth,
+		self:get 'height' / self._naturalHeight)
 	love.graphics.pop()
 end
 
@@ -561,8 +566,8 @@ function Paragraph:drawSelf()
 		love.graphics.setColor(self._shadowColor)
 		love.graphics.printf(self._text, (self._shadowOffsetX or 1), (self._shadowOffsetY or 1),
 			self._limit, self._align, 0,
-			self.get.width(self) / self._naturalWidth,
-			self.get.height(self) / self._naturalHeight)
+			self:get 'width' / self._naturalWidth,
+			self:get 'height' / self._naturalHeight)
 	end
 	if self:isColorSet(self._color) then
 		love.graphics.setColor(self._color)
@@ -571,8 +576,8 @@ function Paragraph:drawSelf()
 	end
 	love.graphics.printf(self._text, 0, 0,
 		self._limit, self._align, 0,
-		self.get.width(self) / self._naturalWidth,
-		self.get.height(self) / self._naturalHeight)
+		self:get 'width' / self._naturalWidth,
+		self:get 'height' / self._naturalHeight)
 	love.graphics.pop()
 end
 
