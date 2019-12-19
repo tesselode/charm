@@ -131,8 +131,8 @@ function Element:centerY(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
 function Element:shift(dx, dy)
-	self:x(self:get 'x' + (dx or 0))
-	self:y(self:get 'y' + (dy or 0))
+	self._x = self:get 'x' + (dx or 0)
+	self._y = self:get 'y' + (dy or 0)
 end
 
 function Element:width(width)
@@ -189,8 +189,8 @@ function Element:wrap(padding)
 	right = right + padding
 	bottom = bottom + padding
 	-- change the parent position and size
-	self:left(left)
-	self:top(top)
+	self._x = left
+	self._y = top
 	self:width(right - left)
 	self:height(bottom - top)
 	-- adjust the children's positions
