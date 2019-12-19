@@ -26,8 +26,9 @@ function PictureFrame:render(layout)
 					layout:add(self._content[i])
 				end
 			layout:endChildren()
-			:wrap(16)
+			:wrap()
 			:centerX(0):centerY(0)
+			:pad(100)
 			:fillColor(1, 1, 1)
 	self._rendering = false
 end

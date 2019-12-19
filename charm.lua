@@ -178,16 +178,45 @@ function Element:shiftChildren(dx, dy)
 	end
 end
 
-function Element:wrap(padding)
+function Element:padLeft(padding)
+	self._x = self:get 'x' - padding
+	self:shiftChildren(padding, 0)
+	self._width = self:get 'width' + padding
+end
+
+function Element:padTop(padding)
+	self._y = self:get 'y' - padding
+	self:shiftChildren(0, padding)
+	self._height = self:get 'height' + padding
+end
+
+function Element:padRight(padding)
+	self._width = self:get 'width' + padding
+end
+
+function Element:padBottom(padding)
+	self._height = self:get 'height' + padding
+end
+
+function Element:padX(padding)
+	self:padLeft(padding)
+	self:padRight(padding)
+end
+
+function Element:padY(padding)
+	self:padTop(padding)
+	self:padBottom(padding)
+end
+
+function Element:pad(padding)
+	self:padX(padding)
+	self:padY(padding)
+end
+
+function Element:wrap()
 	if not self._children then return end
-	padding = padding or 0
 	-- get the bounds of the children
 	local left, top, right, bottom = self:get 'childrenBounds'
-	-- apply padding
-	left = left - padding
-	top = top - padding
-	right = right + padding
-	bottom = bottom + padding
 	-- change the parent position and size
 	self._x = left
 	self._y = top
