@@ -69,18 +69,18 @@ function Element:isColorSet(color)
 	return color and #color > 0
 end
 
-function Element.get:x(anchor)
-	anchor = anchor or 0
-	return (self._x or 0) + self:get 'width' * anchor
+function Element.get:x(origin)
+	origin = origin or 0
+	return (self._x or 0) + self:get 'width' * origin
 end
 
 function Element.get:left() return self:get('x', 0) end
 function Element.get:centerX() return self:get('x', .5) end
 function Element.get:right() return self:get('x', 1) end
 
-function Element.get:y(anchor)
-	anchor = anchor or 0
-	return (self._y or 0) + self:get 'height' * anchor
+function Element.get:y(origin)
+	origin = origin or 0
+	return (self._y or 0) + self:get 'height' * origin
 end
 
 function Element.get:top() return self:get('y', 0) end
@@ -110,20 +110,20 @@ function Element.get:childrenBounds()
 	return left, top, right, bottom
 end
 
-function Element:x(x, anchor)
-	anchor = anchor or 0
-	self._anchorX = anchor
-	self._x = x - self:get 'width' * anchor
+function Element:x(x, origin)
+	origin = origin or 0
+	self._originX = origin
+	self._x = x - self:get 'width' * origin
 end
 
 function Element:left(x) self:x(x, 0) end
 function Element:centerX(x) self:x(x, .5) end
 function Element:right(x) self:x(x, 1) end
 
-function Element:y(y, anchor)
-	anchor = anchor or 0
-	self._anchorY = anchor
-	self._y = y - self:get 'height' * anchor
+function Element:y(y, origin)
+	origin = origin or 0
+	self._originY = origin
+	self._y = y - self:get 'height' * origin
 end
 
 function Element:top(y) self:y(y, 0) end
@@ -136,17 +136,17 @@ function Element:shift(dx, dy)
 end
 
 function Element:width(width)
-	local anchor = self._anchorX or 0
-	local x = self:get('x', anchor)
+	local origin = self._originX or 0
+	local x = self:get('x', origin)
 	self._width = width
-	self:x(x, anchor)
+	self:x(x, origin)
 end
 
 function Element:height(height)
-	local anchor = self._anchorY or 0
-	local y = self:get('y', anchor)
+	local origin = self._originY or 0
+	local y = self:get('y', origin)
 	self._height = height
-	self:y(y, anchor)
+	self:y(y, origin)
 end
 
 function Element:size(width, height)
