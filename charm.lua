@@ -154,6 +154,13 @@ function Element:size(width, height)
 	self:height(height)
 end
 
+function Element:bounds(left, top, right, bottom)
+	self._x = left
+	self._y = top
+	self:width(right - left)
+	self:height(bottom - top)
+end
+
 function Element:clip()
 	self._clip = true
 end
@@ -213,19 +220,22 @@ function Element:pad(padding)
 	self:padY(padding)
 end
 
+function Element:expand()
+	if not self._children then return end
+	local childrenLeft, childrenTop, childrenRight, childrenBottom = self:get 'childrenBounds'
+	local left = math.min(self:get 'left', childrenLeft)
+	local top = math.min(self:get 'top', childrenTop)
+	local right = math.max(self:get 'right', childrenRight)
+	local bottom = math.max(self:get 'bottom', childrenBottom)
+	self:shiftChildren(self:get 'left' - left, self:get 'top' - top)
+	self:bounds(left, top, right, bottom)
+end
+
 function Element:wrap()
 	if not self._children then return end
-	-- get the bounds of the children
 	local left, top, right, bottom = self:get 'childrenBounds'
-	-- change the parent position and size
-	self._x = left
-	self._y = top
-	self:width(right - left)
-	self:height(bottom - top)
-	-- adjust the children's positions
-	for _, child in ipairs(self._children) do
-		child:shift(-left, -top)
-	end
+	self:shiftChildren(-left, -top)
+	self:bounds(left, top, right, bottom)
 end
 
 function Element:drawSelf() end
