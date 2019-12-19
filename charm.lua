@@ -150,15 +150,15 @@ function Element:height(height)
 end
 
 function Element:size(width, height)
-	self:width(width)
-	self:height(height)
+	self._width = width
+	self._height = height
 end
 
 function Element:bounds(left, top, right, bottom)
 	self._x = left
 	self._y = top
-	self:width(right - left)
-	self:height(bottom - top)
+	self._width = right - left
+	self._height = bottom - top
 end
 
 function Element:clip()
@@ -311,8 +311,8 @@ function Transform:_updateDimensions()
 	local left, top, right, bottom = self:_getTransformedChildrenBounds()
 	self._childrenLeft = left
 	self._childrenTop = top
-	self:width(right - left)
-	self:height(bottom - top)
+	self._width = right - left
+	self._height = bottom - top
 end
 
 function Transform:angle(angle)
