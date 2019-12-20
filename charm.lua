@@ -692,6 +692,7 @@ function Layout:add(element)
 		table.insert(self._elements, element)
 	end
 	self:select(element)
+	return self
 end
 
 function Layout:new(elementClass, ...)
