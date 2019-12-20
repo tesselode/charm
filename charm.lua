@@ -281,15 +281,9 @@ function Transform:new(x, y)
 	self._x = x
 	self._y = y
 	self._transform = self._transform or love.math.newTransform()
+	self._transform:reset()
 	self._childrenLeft = 0
 	self._childrenTop = 0
-end
-
-function Transform:_updateTransform()
-	self._transform:reset()
-	self._transform:rotate(self._angle or 0)
-	self._transform:scale(self._scaleX or 1, self._scaleY or 1)
-	self._transform:shear(self._shearX or 0, self._shearY or 0)
 end
 
 function Transform:_getTransformedChildrenBounds()
@@ -311,8 +305,16 @@ function Transform:_updateDimensions()
 	local left, top, right, bottom = self:_getTransformedChildrenBounds()
 	self._childrenLeft = left
 	self._childrenTop = top
-	self._width = right - left
-	self._height = bottom - top
+	self:width(right - left)
+	self:height(bottom - top)
+end
+
+function Transform:_updateTransform()
+	self._transform:reset()
+	self._transform:rotate(self._angle or 0)
+	self._transform:scale(self._scaleX or 1, self._scaleY or 1)
+	self._transform:shear(self._shearX or 0, self._shearY or 0)
+	self:_updateDimensions()
 end
 
 function Transform:angle(angle)
