@@ -1,5 +1,63 @@
 local charm = {}
 
+-- error tools
+local function getUserErrorLevel()
+	local source = debug.getinfo(1).source
+	local level = 1
+	while debug.getinfo(level).source == source do
+		level = level + 1
+	end
+	return level - 1
+end
+
+local function getUserCalledFunctionName()
+	return debug.getinfo(getUserErrorLevel() - 1).name
+end
+
+local function checkCondition(condition, message)
+	if condition then return end
+	error(message, getUserErrorLevel())
+end
+
+local function getAllowedTypesText(...)
+	local numberOfArguments = select('#', ...)
+	if numberOfArguments >= 3 then
+		local text = ''
+		for i = 1, numberOfArguments - 1 do
+			text = text .. string.format('%s, ', select(i, ...))
+		end
+		text = text .. string.format('or %s', select(numberOfArguments, ...))
+		return text
+	elseif numberOfArguments == 2 then
+		return string.format('%s or %s', select(1, ...), select(2, ...))
+	end
+	return select(1, ...)
+end
+
+local function checkArgument(argumentIndex, argument, ...)
+	for i = 1, select('#', ...) do
+		if type(argument) == select(i, ...) then
+			return
+		end
+	end
+	error(
+		string.format(
+			"bad argument #%i to '%s' (expected %s, got %s)",
+			argumentIndex,
+			getUserCalledFunctionName(),
+			getAllowedTypesText(...),
+			type(argument)
+		),
+		getUserErrorLevel()
+	)
+end
+
+local function checkArguments(argumentSet, ...)
+	for i = 1, select('#', ...) do
+		checkArgument(i, select(i, ...), unpack(argumentSet[i]))
+	end
+end
+
 -- gets the total number of lines in a string
 local function numberOfLines(s)
 	local _, newlines = s:gsub('\n', '\n')
@@ -635,12 +693,21 @@ local elementClasses = {
 	paragraph = Paragraph,
 }
 
+local function validateElementClass(class)
+	checkArgument(1, class, 'string', 'table')
+	if type(class) == 'string' then
+		checkCondition(elementClasses[class], string.format("no built-in element class called '%s'", class))
+	end
+end
+
 local Layout = {}
 
 function Layout:__index(k)
 	if Layout[k] then return Layout[k] end
 	self._functionCache[k] = self._functionCache[k] or function(_, ...)
 		local element = self:getElement '@current'
+		checkCondition(element, string.format("no element to call function '%s' on", k))
+		checkCondition(element[k], string.format("currently selected element has no function '%s'", k))
 		element[k](element, ...)
 		return self
 	end
@@ -659,7 +726,24 @@ function Layout:_clearElement(element)
 	end
 end
 
+function Layout:_validateElement(name, additionalText)
+	checkArgument(1, name, 'string', 'table')
+	local element = self:getElement(name)
+	local message = name == '@current' and 'No element is currently selected. Have you created any elements yet?'
+		or name == '@previous' and 'no previous element to get'
+		or name == '@parent' and 'No parent element to get. This keyword should be used '
+			.. 'within layout:beginChildren() and layout:endChildren() calls.'
+		or string.format("no element named '%s'", name)
+	if additionalText then
+		message = message .. additionalText
+	end
+	checkCondition(element, message)
+end
+
 function Layout:getElement(name)
+	if name ~= nil then
+		checkArgument(1, name, 'string', 'table')
+	end
 	name = name or '@current'
 	if type(name) == 'table' then return name end
 	if name == '@current' then
@@ -673,11 +757,16 @@ function Layout:getElement(name)
 end
 
 function Layout:get(elementName, propertyName, ...)
+	self:_validateElement(elementName, '\n\nThis function is for getting properties of elements. '
+		.. 'If you meant to get the element itself, use layout.getElement.')
+	checkArgument(2, propertyName, 'string')
 	local element = self:getElement(elementName)
+	checkCondition(element.get[propertyName], string.format("element has no property named '%s'", propertyName))
 	return element.get[propertyName](element, ...)
 end
 
 function Layout:select(name)
+	self:_validateElement(name)
 	local element = self:getElement(name)
 	local group = self._groups[self._currentGroupIndex]
 	group.previous = group.current
@@ -686,6 +775,7 @@ function Layout:select(name)
 end
 
 function Layout:add(element)
+	checkArgument(1, element, 'table')
 	-- add it to the tree and select it
 	local group = self._groups[self._currentGroupIndex]
 	if group.parent then
@@ -698,6 +788,7 @@ function Layout:add(element)
 end
 
 function Layout:new(elementClass, ...)
+	validateElementClass(elementClass)
 	-- get the appropriate element class
 	if type(elementClass) == 'string' then
 		elementClass = elementClasses[elementClass]
@@ -725,6 +816,7 @@ function Layout:new(elementClass, ...)
 end
 
 function Layout:name(name)
+	checkArgument(1, name, 'string')
 	self._named[name] = self:getElement '@current'
 	return self
 end
@@ -780,6 +872,7 @@ function charm.new()
 end
 
 function charm.extend(parent)
+	validateElementClass(parent)
 	if type(parent) == 'string' then parent = elementClasses[parent] end
 	parent = parent or elementClasses.element
 	return newElementClass(parent)
