@@ -262,8 +262,8 @@ function Element:height(height)
 end
 
 function Element:size(width, height)
-	self._width = width
-	self._height = height
+	self:width(width)
+	self:height(height)
 end
 
 function Element:bounds(left, top, right, bottom)
