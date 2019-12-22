@@ -375,7 +375,8 @@ function Element:wrap()
 	self._height = bottom - top
 end
 
-function Element:drawSelf() end
+function Element:drawBottom() end
+function Element:drawTop() end
 
 function Element:stencil() end
 
@@ -385,7 +386,7 @@ function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
-	self:drawSelf()
+	self:drawBottom()
 	if self._children then
 		-- sort children
 		if #self._children > 1 then
@@ -411,6 +412,7 @@ function Element:draw(stencilValue)
 			love.graphics.pop()
 		end
 	end
+	self:drawTop()
 	love.graphics.pop()
 end
 
@@ -556,12 +558,17 @@ function Shape:drawShape(mode) end
 
 function Shape:stencil() self:drawShape 'fill' end
 
-function Shape:drawSelf()
+function Shape:drawBottom()
 	love.graphics.push 'all'
 	if self:isColorSet(self._fillColor) then
 		love.graphics.setColor(self._fillColor)
 		self:drawShape 'fill'
 	end
+	love.graphics.pop()
+end
+
+function Shape:drawTop()
+	love.graphics.push 'all'
 	if self:isColorSet(self._outlineColor) then
 		love.graphics.setColor(self._outlineColor)
 		if self._outlineWidth then
@@ -626,7 +633,7 @@ function Image:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 end
 
-function Image:drawSelf()
+function Image:drawBottom()
 	love.graphics.push 'all'
 	if self:isColorSet(self._color) then
 		love.graphics.setColor(self._color)
@@ -693,7 +700,7 @@ function Text:stencil()
 	love.graphics.pop()
 end
 
-function Text:drawSelf()
+function Text:drawBottom()
 	love.graphics.push 'all'
 	love.graphics.setFont(self._font)
 	if self:isColorSet(self._shadowColor) then
@@ -772,7 +779,7 @@ function Paragraph:stencil()
 	love.graphics.pop()
 end
 
-function Paragraph:drawSelf()
+function Paragraph:drawBottom()
 	love.graphics.push 'all'
 	love.graphics.setFont(self._font)
 	if self:isColorSet(self._shadowColor) then
