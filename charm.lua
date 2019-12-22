@@ -1,15 +1,27 @@
 local charm = {}
 
--- error tools
+-- gets the error level needed to make an error appear
+-- in the user's code, not the library code
 local function getUserErrorLevel()
 	local source = debug.getinfo(1).source
 	local level = 1
 	while debug.getinfo(level).source == source do
 		level = level + 1
 	end
+	--[[
+		we return level - 1 here and not just level
+		because the level was calculated one function
+		deeper than the function that will actually
+		use this value. if we produced an error *inside*
+		this function, level would be correct, but
+		for the function calling this function, level - 1
+		is correct.
+	]]
 	return level - 1
 end
 
+-- gets the name of the function that the user called
+-- that eventually caused an error
 local function getUserCalledFunctionName()
 	return debug.getinfo(getUserErrorLevel() - 1).name
 end
@@ -19,6 +31,8 @@ local function checkCondition(condition, message)
 	error(message, getUserErrorLevel())
 end
 
+-- changes a list of types into a human-readable phrase
+-- i.e. string, table, number -> "string, table, or number"
 local function getAllowedTypesText(...)
 	local numberOfArguments = select('#', ...)
 	if numberOfArguments >= 3 then
@@ -34,6 +48,9 @@ local function getAllowedTypesText(...)
 	return select(1, ...)
 end
 
+-- checks if an argument is of the correct type, and if not,
+-- throws a "bad argument" error consistent with the ones
+-- lua and love produce
 local function checkArgument(argumentIndex, argument, ...)
 	for i = 1, select('#', ...) do
 		if type(argument) == select(i, ...) then
