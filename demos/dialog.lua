@@ -46,5 +46,5 @@ function love.draw()
 			:left(100):top(100)
 			:scale(animationProgress)
 			:angle((1 + animationProgress) * math.pi)
-		layout:draw()
+		:draw()
 end
