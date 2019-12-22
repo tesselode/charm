@@ -100,6 +100,10 @@ local function getParagraphHeight(font, text, limit)
 	return #lines * font:getHeight() * font:getLineHeight()
 end
 
+local function sortChildren(a, b)
+	return a:get 'z' < b:get 'z'
+end
+
 local function newElementClass(parent)
 	local class = {
 		parent = parent,
@@ -191,6 +195,8 @@ function Element.get:top() return self:get('y', 0) end
 function Element.get:centerY() return self:get('y', .5) end
 function Element.get:bottom() return self:get('y', 1) end
 
+function Element.get:z() return self._z or 0 end
+
 function Element.get:width() return self._width or 0 end
 function Element.get:height() return self._height or 0 end
 
@@ -237,6 +243,8 @@ end
 function Element:top(y) self:y(y, 0) end
 function Element:centerY(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
+
+function Element:z(z) self._z = z end
 
 function Element:shift(dx, dy)
 	checkOptionalArgument(1, dx, 'number')
@@ -353,7 +361,9 @@ function Element:expand()
 	local right = math.max(self:get 'right', childrenRight)
 	local bottom = math.max(self:get 'bottom', childrenBottom)
 	self:shiftChildren(self:get 'left' - left, self:get 'top' - top)
-	self:bounds(left, top, right, bottom)
+	self:shift(left, top)
+	self._width = right - left
+	self._height = bottom - top
 end
 
 function Element:wrap()
@@ -377,6 +387,10 @@ function Element:draw(stencilValue)
 	love.graphics.translate(self:get 'x', self:get 'y')
 	self:drawSelf()
 	if self._children then
+		-- sort children
+		if #self._children > 1 then
+			table.sort(self._children, sortChildren)
+		end
 		-- if clipping is enabled, push a stencil to the "stack"
 		if self._clip then
 			stencilValue = stencilValue + 1
