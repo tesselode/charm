@@ -355,12 +355,12 @@ end
 
 function Element:expand()
 	if not self._children then return end
-	local childrenLeft, childrenTop, childrenRight, childrenBottom = self:get 'childrenBounds'
-	local left = math.min(self:get 'left', childrenLeft)
-	local top = math.min(self:get 'top', childrenTop)
-	local right = math.max(self:get 'right', childrenRight)
-	local bottom = math.max(self:get 'bottom', childrenBottom)
-	self:shiftChildren(self:get 'left' - left, self:get 'top' - top)
+	local left, top, right, bottom = self:get 'childrenBounds'
+	left = math.min(left, 0)
+	top = math.min(top, 0)
+	right = math.max(right, self:get 'width')
+	bottom = math.max(bottom, self:get 'height')
+	self:shiftChildren(-left, -top)
 	self:shift(left, top)
 	self._width = right - left
 	self._height = bottom - top
