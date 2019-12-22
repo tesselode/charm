@@ -1,5 +1,62 @@
 local charm = {}
 
+-- error tools
+local function getUserErrorLevel()
+	local source = debug.getinfo(1).source
+	local level = 1
+	while debug.getinfo(level).source == source do
+		level = level + 1
+	end
+	return level - 1
+end
+
+local function getUserCalledFunctionName()
+	return debug.getinfo(getUserErrorLevel() - 1).name
+end
+
+local function checkCondition(condition, message)
+	if condition then return end
+	error(message, getUserErrorLevel())
+end
+
+local function getAllowedTypesText(...)
+	local numberOfArguments = select('#', ...)
+	if numberOfArguments >= 3 then
+		local text = ''
+		for i = 1, numberOfArguments - 1 do
+			text = text .. string.format('%s, ', select(i, ...))
+		end
+		text = text .. string.format('or %s', select(numberOfArguments, ...))
+		return text
+	elseif numberOfArguments == 2 then
+		return string.format('%s or %s', select(1, ...), select(2, ...))
+	end
+	return select(1, ...)
+end
+
+local function checkArgument(argumentIndex, argument, ...)
+	for i = 1, select('#', ...) do
+		if type(argument) == select(i, ...) then
+			return
+		end
+	end
+	error(
+		string.format(
+			"bad argument #%i to '%s' (expected %s, got %s)",
+			argumentIndex,
+			getUserCalledFunctionName(),
+			getAllowedTypesText(...),
+			type(argument)
+		),
+		getUserErrorLevel()
+	)
+end
+
+local function checkOptionalArgument(argumentIndex, argument, ...)
+	if argument == nil then return end
+	checkArgument(argumentIndex, argument, ...)
+end
+
 -- gets the total number of lines in a string
 local function numberOfLines(s)
 	local _, newlines = s:gsub('\n', '\n')
@@ -67,6 +124,10 @@ local Element = newElementClass()
 Element.preserve._stencilFunction = true
 
 function Element:new(x, y, width, height)
+	checkOptionalArgument(2, x, 'number')
+	checkOptionalArgument(3, y, 'number')
+	checkOptionalArgument(4, width, 'number')
+	checkOptionalArgument(5, height, 'number')
 	self._x = x
 	self._y = y
 	self._width = width
@@ -74,6 +135,10 @@ function Element:new(x, y, width, height)
 end
 
 function Element:setColor(propertyName, r, g, b, a)
+	checkArgument(1, r, 'number', 'table')
+	checkOptionalArgument(2, g, 'number')
+	checkOptionalArgument(3, b, 'number')
+	checkOptionalArgument(4, a, 'number')
 	if type(r) == 'table' then
 		self[propertyName] = r
 	else
@@ -90,6 +155,7 @@ function Element:isColorSet(color)
 end
 
 function Element.get:x(origin)
+	checkOptionalArgument(3, origin, 'number')
 	origin = origin or 0
 	return (self._x or 0) + self:get 'width' * origin
 end
@@ -99,6 +165,7 @@ function Element.get:centerX() return self:get('x', .5) end
 function Element.get:right() return self:get('x', 1) end
 
 function Element.get:y(origin)
+	checkOptionalArgument(3, origin, 'number')
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
 end
@@ -131,6 +198,8 @@ function Element.get:childrenBounds()
 end
 
 function Element:x(x, origin)
+	checkArgument(1, x, 'number')
+	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	self._originX = origin
 	self._x = x - self:get 'width' * origin
@@ -141,6 +210,8 @@ function Element:centerX(x) self:x(x, .5) end
 function Element:right(x) self:x(x, 1) end
 
 function Element:y(y, origin)
+	checkArgument(1, y, 'number')
+	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	self._originY = origin
 	self._y = y - self:get 'height' * origin
@@ -151,11 +222,14 @@ function Element:centerY(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
 function Element:shift(dx, dy)
+	checkOptionalArgument(1, dx, 'number')
+	checkOptionalArgument(2, dy, 'number')
 	self._x = self:get 'x' + (dx or 0)
 	self._y = self:get 'y' + (dy or 0)
 end
 
 function Element:width(width)
+	checkArgument(1, width, 'number')
 	local origin = self._originX or 0
 	local x = self:get('x', origin)
 	self._width = width
@@ -163,6 +237,7 @@ function Element:width(width)
 end
 
 function Element:height(height)
+	checkArgument(1, height, 'number')
 	local origin = self._originY or 0
 	local y = self:get('y', origin)
 	self._height = height
@@ -175,6 +250,10 @@ function Element:size(width, height)
 end
 
 function Element:bounds(left, top, right, bottom)
+	checkArgument(1, left, 'number')
+	checkArgument(2, top, 'number')
+	checkArgument(3, right, 'number')
+	checkArgument(4, bottom, 'number')
 	self._x = left
 	self._y = top
 	self._width = right - left
@@ -199,6 +278,8 @@ end
 function Element:onEndChildren(...) end
 
 function Element:shiftChildren(dx, dy)
+	checkOptionalArgument(1, dx, 'number')
+	checkOptionalArgument(2, dy, 'number')
 	if not self._children then return end
 	for _, child in ipairs(self._children) do
 		child:shift(dx, dy)
@@ -206,36 +287,43 @@ function Element:shiftChildren(dx, dy)
 end
 
 function Element:padLeft(padding)
+	checkArgument(1, padding, 'number')
 	self._x = self:get 'x' - padding
 	self:shiftChildren(padding, 0)
 	self._width = self:get 'width' + padding
 end
 
 function Element:padTop(padding)
+	checkArgument(1, padding, 'number')
 	self._y = self:get 'y' - padding
 	self:shiftChildren(0, padding)
 	self._height = self:get 'height' + padding
 end
 
 function Element:padRight(padding)
+	checkArgument(1, padding, 'number')
 	self._width = self:get 'width' + padding
 end
 
 function Element:padBottom(padding)
+	checkArgument(1, padding, 'number')
 	self._height = self:get 'height' + padding
 end
 
 function Element:padX(padding)
+	checkArgument(1, padding, 'number')
 	self:padLeft(padding)
 	self:padRight(padding)
 end
 
 function Element:padY(padding)
+	checkArgument(1, padding, 'number')
 	self:padTop(padding)
 	self:padBottom(padding)
 end
 
 function Element:pad(padding)
+	checkArgument(1, padding, 'number')
 	self:padX(padding)
 	self:padY(padding)
 end
@@ -684,12 +772,21 @@ local elementClasses = {
 	paragraph = Paragraph,
 }
 
+local function validateElementClass(class)
+	checkArgument(1, class, 'string', 'table')
+	if type(class) == 'string' then
+		checkCondition(elementClasses[class], string.format("no built-in element class called '%s'", class))
+	end
+end
+
 local Layout = {}
 
 function Layout:__index(k)
 	if Layout[k] then return Layout[k] end
 	self._functionCache[k] = self._functionCache[k] or function(_, ...)
 		local element = self:getElement '@current'
+		checkCondition(element, string.format("no element to call function '%s' on", k))
+		checkCondition(element[k], string.format("currently selected element has no function '%s'", k))
 		element[k](element, ...)
 		return self
 	end
@@ -708,7 +805,22 @@ function Layout:_clearElement(element)
 	end
 end
 
+function Layout:_validateElement(name, additionalText)
+	checkArgument(1, name, 'string', 'table')
+	local element = self:getElement(name)
+	local message = name == '@current' and 'No element is currently selected. Have you created any elements yet?'
+		or name == '@previous' and 'no previous element to get'
+		or name == '@parent' and 'No parent element to get. This keyword should be used '
+			.. 'within layout:beginChildren() and layout:endChildren() calls.'
+		or string.format("no element named '%s'", name)
+	if additionalText then
+		message = message .. additionalText
+	end
+	checkCondition(element, message)
+end
+
 function Layout:getElement(name)
+	checkOptionalArgument(1, name, 'string', 'table')
 	name = name or '@current'
 	if type(name) == 'table' then return name end
 	if name == '@current' then
@@ -722,11 +834,16 @@ function Layout:getElement(name)
 end
 
 function Layout:get(elementName, propertyName, ...)
+	self:_validateElement(elementName, '\n\nThis function is for getting properties of elements. '
+		.. 'If you meant to get the element itself, use layout.getElement.')
+	checkArgument(2, propertyName, 'string')
 	local element = self:getElement(elementName)
+	checkCondition(element.get[propertyName], string.format("element has no property named '%s'", propertyName))
 	return element.get[propertyName](element, ...)
 end
 
 function Layout:select(name)
+	self:_validateElement(name)
 	local element = self:getElement(name)
 	local group = self._groups[self._currentGroupIndex]
 	group.previous = group.current
@@ -735,6 +852,7 @@ function Layout:select(name)
 end
 
 function Layout:add(element)
+	checkArgument(1, element, 'table')
 	-- add it to the tree and select it
 	local group = self._groups[self._currentGroupIndex]
 	if group.parent then
@@ -747,6 +865,7 @@ function Layout:add(element)
 end
 
 function Layout:new(elementClass, ...)
+	validateElementClass(elementClass)
 	-- get the appropriate element class
 	if type(elementClass) == 'string' then
 		elementClass = elementClasses[elementClass]
@@ -774,6 +893,7 @@ function Layout:new(elementClass, ...)
 end
 
 function Layout:name(name)
+	checkArgument(1, name, 'string')
 	self._named[name] = self:getElement '@current'
 	return self
 end
@@ -829,6 +949,7 @@ function charm.new()
 end
 
 function charm.extend(parent)
+	validateElementClass(parent)
 	if type(parent) == 'string' then parent = elementClasses[parent] end
 	parent = parent or elementClasses.element
 	return newElementClass(parent)
