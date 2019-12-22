@@ -155,6 +155,14 @@ function Element:new(x, y, width, height)
 	self._height = height
 end
 
+function Element:hasChildren()
+	return self._children and #self._children > 0
+end
+
+function Element:isColorSet(color)
+	return color and #color > 0
+end
+
 function Element:setColor(propertyName, r, g, b, a)
 	checkArgument(1, r, 'number', 'table')
 	checkOptionalArgument(2, g, 'number')
@@ -169,10 +177,6 @@ function Element:setColor(propertyName, r, g, b, a)
 		self[propertyName][3] = b
 		self[propertyName][4] = a
 	end
-end
-
-function Element:isColorSet(color)
-	return color and #color > 0
 end
 
 function Element.get:x(origin)
@@ -205,7 +209,7 @@ function Element.get:size()
 end
 
 function Element.get:childrenBounds()
-	if not self._children then return end
+	if not self:hasChildren() then return end
 	local left, top, right, bottom
 	for _, child in ipairs(self._children) do
 		local childLeft = child.get.left(child)
@@ -305,7 +309,7 @@ function Element:onEndChildren(...) end
 function Element:shiftChildren(dx, dy)
 	checkOptionalArgument(1, dx, 'number')
 	checkOptionalArgument(2, dy, 'number')
-	if not self._children then return end
+	if not self:hasChildren() then return end
 	for _, child in ipairs(self._children) do
 		child:shift(dx, dy)
 	end
@@ -354,7 +358,7 @@ function Element:pad(padding)
 end
 
 function Element:expand()
-	if not self._children then return end
+	if not self:hasChildren() then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
 	left = math.min(left, 0)
 	top = math.min(top, 0)
@@ -367,7 +371,7 @@ function Element:expand()
 end
 
 function Element:wrap()
-	if not self._children then return end
+	if not self:hasChildren() then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
 	self:shiftChildren(-left, -top)
 	self:shift(left, top)
@@ -531,7 +535,7 @@ function Transform:onEndChildren(...)
 end
 
 function Transform:draw(stencilValue)
-	if not self._children then return end
+	if not self:hasChildren() then return end
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
 	love.graphics.translate(-self._childrenShiftX, -self._childrenShiftY)
