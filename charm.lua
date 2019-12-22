@@ -360,7 +360,9 @@ function Element:wrap()
 	if not self._children then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
 	self:shiftChildren(-left, -top)
-	self:bounds(left, top, right, bottom)
+	self:shift(left, top)
+	self._width = right - left
+	self._height = bottom - top
 end
 
 function Element:drawSelf() end
