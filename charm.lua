@@ -42,6 +42,26 @@ local function newElementClass(parent)
 	return class
 end
 
+--[[
+	A note on how data is managed in Charm:
+
+	Charm aims to be as memory-efficient as possible. You'll
+	see a couple of principles throughout the code:
+	- Tables are only created when they're first needed
+	- Tables are cleared out and reused whenever possible
+
+	This is how the Layout class is able to recreate the
+	element tree every frame without creating a lot of
+	garbage - a pool of previously created element tables
+	is kept around, and when a frame is finished, they're
+	cleared out and reused. Nested tables are also
+	cleared out one level deep.
+
+	What this means for the code for element classes:
+	- We cannot rely on a value still being there next frame
+	(unless the key is listed in the preserve table)
+	- We treat empty tables or nonexistent tables as being "unset"
+]]
 local Element = newElementClass()
 
 Element.preserve._stencilFunction = true
