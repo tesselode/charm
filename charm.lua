@@ -206,7 +206,7 @@ function Element:setColor(propertyName, r, g, b, a)
 end
 
 function Element.get:x(origin)
-	checkOptionalArgument(3, origin, 'number')
+	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	return (self._x or 0) + self:get 'width' * origin
 end
@@ -216,7 +216,7 @@ function Element.get:centerX() return self:get('x', .5) end
 function Element.get:right() return self:get('x', 1) end
 
 function Element.get:y(origin)
-	checkOptionalArgument(3, origin, 'number')
+	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
 end
@@ -867,7 +867,7 @@ function Layout:_clearElement(element)
 	end
 end
 
-function Layout:_validateElement(name, additionalText)
+function Layout:_validateElement(name)
 	checkArgument(1, name, 'string', 'table')
 	local element = self:getElement(name)
 	local message = name == '@current' and 'No element is currently selected. Have you created any elements yet?'
@@ -875,9 +875,6 @@ function Layout:_validateElement(name, additionalText)
 		or name == '@parent' and 'No parent element to get. This keyword should be used '
 			.. 'within layout:beginChildren() and layout:endChildren() calls.'
 		or string.format("no element named '%s'", name)
-	if additionalText then
-		message = message .. additionalText
-	end
 	checkCondition(element, message)
 end
 
@@ -895,10 +892,12 @@ function Layout:getElement(name)
 	return self._named[name]
 end
 
-function Layout:get(elementName, propertyName, ...)
-	self:_validateElement(elementName, '\n\nThis function is for getting properties of elements. '
-		.. 'If you meant to get the element itself, use layout.getElement.')
-	checkArgument(2, propertyName, 'string')
+function Layout:get(property, ...)
+	checkArgument(1, property, 'string')
+	local elementName, propertyName = property:match '(.+)%.(.+)'
+	checkCondition(elementName and propertyName,
+		"first argument to 'get' must be in the form [element name].[property name]")
+	self:_validateElement(elementName)
 	local element = self:getElement(elementName)
 	checkCondition(element.get[propertyName], string.format("element has no property named '%s'", propertyName))
 	return element.get[propertyName](element, ...)
