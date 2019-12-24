@@ -497,14 +497,8 @@ function Transform:_updateDimensions()
 	left = math.min(left, 0)
 	top = math.min(top, 0)
 	self:shift(left, top)
-	--[[
-		I'm not sure why I have to shift the children twice as much
-		as the amount the transform element moved. I would think that
-		1x would be correct...if you understand this better than I do,
-		please let me know.
-	]]
-	self._childrenShiftX = left * 2
-	self._childrenShiftY = top * 2
+	self._childrenShiftX = left
+	self._childrenShiftY = top
 	self:width(right - left)
 	self:height(bottom - top)
 end
