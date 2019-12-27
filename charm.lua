@@ -26,6 +26,12 @@ local charm = {
 	]]
 }
 
+-- gets the type of a value
+-- also works with LOVE types
+local function getType(value)
+	return type(value) == 'userdata' and value.type and value:type() or type(value)
+end
+
 -- gets the error level needed to make an error appear
 -- in the user's code, not the library code
 local function getUserErrorLevel()
@@ -79,9 +85,7 @@ end
 -- lua and love produce
 local function checkArgument(argumentIndex, argument, ...)
 	for i = 1, select('#', ...) do
-		if type(argument) == select(i, ...) then
-			return
-		end
+		if getType(argument) == select(i, ...) then return end
 	end
 	error(
 		string.format(
@@ -89,7 +93,7 @@ local function checkArgument(argumentIndex, argument, ...)
 			argumentIndex,
 			getUserCalledFunctionName(),
 			getAllowedTypesText(...),
-			type(argument)
+			getType(argument)
 		),
 		getUserErrorLevel()
 	)
@@ -190,10 +194,12 @@ function Element:isColorSet(color)
 end
 
 function Element:setColor(propertyName, r, g, b, a)
-	checkArgument(1, r, 'number', 'table')
-	checkOptionalArgument(2, g, 'number')
-	checkOptionalArgument(3, b, 'number')
-	checkOptionalArgument(4, a, 'number')
+	if type(r) ~= 'table' then
+		checkArgument(1, r, 'number', 'table')
+		checkArgument(2, g, 'number')
+		checkArgument(3, b, 'number')
+		checkOptionalArgument(4, a, 'number')
+	end
 	if type(r) == 'table' then
 		self[propertyName] = r
 	else
@@ -469,6 +475,8 @@ local Transform = newElementClass(Element)
 Transform.preserve._transform = true
 
 function Transform:new(x, y)
+	checkOptionalArgument(2, x, 'number')
+	checkOptionalArgument(3, y, 'number')
 	self._x = x
 	self._y = y
 	self._transform = self._transform or love.math.newTransform()
@@ -512,37 +520,46 @@ function Transform:_updateTransform()
 end
 
 function Transform:angle(angle)
+	checkArgument(1, angle, 'number')
 	self._angle = angle
 	self:_updateTransform()
 end
 
 function Transform:scaleX(scale)
+	checkArgument(1, scale, 'number')
 	self._scaleX = scale
 	self:_updateTransform()
 end
 
 function Transform:scaleY(scale)
+	checkArgument(1, scale, 'number')
 	self._scaleY = scale
 	self:_updateTransform()
 end
 
 function Transform:scale(scaleX, scaleY)
+	checkArgument(1, scaleX, 'number')
+	checkOptionalArgument(2, scaleY, 'number')
 	self._scaleX = scaleX
 	self._scaleY = scaleY or scaleX
 	self:_updateTransform()
 end
 
 function Transform:shearX(shear)
+	checkArgument(1, shear, 'number')
 	self._shearX = shear
 	self:_updateTransform()
 end
 
 function Transform:shearY(shear)
+	checkArgument(1, shear, 'number')
 	self._shearY = shear
 	self:_updateTransform()
 end
 
 function Transform:shear(shearX, shearY)
+	checkArgument(1, shearX, 'number')
+	checkOptionalArgument(2, shearY, 'number')
 	self._shearX = shearX
 	self._shearY = shearY or shearX
 	self:_updateTransform()
@@ -574,7 +591,10 @@ function Shape:outlineColor(r, g, b, a)
 	self:setColor('_outlineColor', r, g, b, a)
 end
 
-function Shape:outlineWidth(width) self._outlineWidth = width end
+function Shape:outlineWidth(width)
+	checkArgument(1, width, 'number')
+	self._outlineWidth = width
+end
 
 function Shape:drawShape(mode) end
 
@@ -604,11 +624,16 @@ end
 local Rectangle = newElementClass(Shape)
 
 function Rectangle:cornerRadius(radiusX, radiusY)
+	checkArgument(1, radiusX, 'number')
+	checkArgument(2, radiusY, 'number')
 	self._cornerRadiusX = radiusX
 	self._cornerRadiusY = radiusY
 end
 
-function Rectangle:cornerSegments(segments) self._cornerSegments = segments end
+function Rectangle:cornerSegments(segments)
+	checkArgument(1, segments, 'number')
+	self._cornerSegments = segments
+end
 
 function Rectangle:drawShape(mode)
 	love.graphics.rectangle(mode, 0, 0, self:get 'width', self:get 'height',
@@ -617,7 +642,10 @@ end
 
 local Ellipse = newElementClass(Shape)
 
-function Ellipse:segments(segments) self._segments = segments end
+function Ellipse:segments(segments)
+	checkArgument(1, segments, 'number')
+	self._segments = segments
+end
 
 function Ellipse:drawShape(mode)
 	love.graphics.ellipse(mode,
@@ -629,6 +657,9 @@ end
 local Image = newElementClass(Element)
 
 function Image:new(image, x, y)
+	checkArgument(2, image, 'Image')
+	checkOptionalArgument(3, x, 'number')
+	checkOptionalArgument(4, y, 'number')
 	self._image = image
 	self._naturalWidth = image:getWidth()
 	self._naturalHeight = image:getHeight()
@@ -639,14 +670,18 @@ function Image:new(image, x, y)
 end
 
 function Image:scaleX(scale)
+	checkArgument(1, scale, 'number')
 	self:width(self._naturalWidth * scale)
 end
 
 function Image:scaleY(scale)
+	checkArgument(1, scale, 'number')
 	self:height(self._naturalHeight * scale)
 end
 
 function Image:scale(scaleX, scaleY)
+	checkArgument(1, scaleX, 'number')
+	checkOptionalArgument(2, scaleY, 'number')
 	self:scaleX(scaleX)
 	self:scaleY(scaleY or scaleX)
 end
@@ -669,6 +704,10 @@ end
 local Text = newElementClass(Element)
 
 function Text:new(font, text, x, y)
+	checkArgument(2, font, 'Font')
+	checkArgument(3, text, 'string')
+	checkOptionalArgument(4, x, 'number')
+	checkOptionalArgument(5, y, 'number')
 	self._font = font
 	self._text = text
 	self._naturalWidth = font:getWidth(text)
@@ -680,16 +719,20 @@ function Text:new(font, text, x, y)
 end
 
 function Text:scaleX(scale)
+	checkArgument(1, scale, 'number')
 	self:width(self._naturalWidth * scale)
 end
 
 function Text:scaleY(scale)
+	checkArgument(1, scale, 'number')
 	self:height(self._naturalHeight * scale)
 end
 
 function Text:scale(scaleX, scaleY)
+	checkArgument(1, scaleX, 'number')
+	checkOptionalArgument(2, scaleY, 'number')
 	self:scaleX(scaleX)
-	self:scaleY(scaleY)
+	self:scaleY(scaleY or scaleX)
 end
 
 function Text:color(r, g, b, a)
@@ -701,16 +744,20 @@ function Text:shadowColor(r, g, b, a)
 end
 
 function Text:shadowOffsetX(offset)
+	checkArgument(1, offset, 'number')
 	self._shadowOffsetX = offset
 end
 
 function Text:shadowOffsetY(offset)
+	checkArgument(1, offset, 'number')
 	self._shadowOffsetY = offset
 end
 
 function Text:shadowOffset(offsetX, offsetY)
+	checkArgument(1, offsetX, 'number')
+	checkOptionalArgument(2, offsetY, 'number')
 	self:shadowOffsetX(offsetX)
-	self:shadowOffsetY(offsetY)
+	self:shadowOffsetY(offsetY or offsetX)
 end
 
 function Text:stencil()
@@ -745,6 +792,12 @@ end
 local Paragraph = newElementClass(Element)
 
 function Paragraph:new(font, text, limit, align, x, y)
+	checkArgument(2, font, 'Font')
+	checkArgument(3, text, 'string')
+	checkArgument(4, limit, 'number')
+	checkOptionalArgument(5, align, 'string')
+	checkOptionalArgument(6, x, 'number')
+	checkOptionalArgument(7, y, 'number')
 	self._font = font
 	self._text = text
 	self._limit = limit
@@ -758,16 +811,20 @@ function Paragraph:new(font, text, limit, align, x, y)
 end
 
 function Paragraph:scaleX(scale)
+	checkArgument(1, scale, 'number')
 	self:width(self._naturalWidth * scale)
 end
 
 function Paragraph:scaleY(scale)
+	checkArgument(1, scale, 'number')
 	self:height(self._naturalHeight * scale)
 end
 
 function Paragraph:scale(scaleX, scaleY)
+	checkArgument(1, scaleX, 'number')
+	checkOptionalArgument(2, scaleY, 'number')
 	self:scaleX(scaleX)
-	self:scaleY(scaleY)
+	self:scaleY(scaleY or scaleX)
 end
 
 function Paragraph:color(r, g, b, a)
@@ -779,16 +836,20 @@ function Paragraph:shadowColor(r, g, b, a)
 end
 
 function Paragraph:shadowOffsetX(offset)
+	checkArgument(1, offset, 'number')
 	self._shadowOffsetX = offset
 end
 
 function Paragraph:shadowOffsetY(offset)
+	checkArgument(1, offset, 'number')
 	self._shadowOffsetY = offset
 end
 
 function Paragraph:shadowOffset(offsetX, offsetY)
+	checkArgument(1, offsetX, 'number')
+	checkOptionalArgument(2, offsetY, 'number')
 	self:shadowOffsetX(offsetX)
-	self:shadowOffsetY(offsetY)
+	self:shadowOffsetY(offsetY or offsetX)
 end
 
 function Paragraph:stencil()
