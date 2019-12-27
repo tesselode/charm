@@ -234,7 +234,7 @@ function Element:setColor(propertyName, r, g, b, a)
 end
 
 --- Gets the x position of the element.
--- @number[opt] origin the origin to get the x position with respect to. 0 = left, .5 = center, 1 = right
+-- @number[opt=0] origin the origin to get the x position with respect to. 0 = left, .5 = center, 1 = right
 -- @treturn number
 function Element.get:x(origin)
 	checkOptionalArgument(2, origin, 'number')
@@ -255,7 +255,7 @@ function Element.get:centerX() return self:get('x', .5) end
 function Element.get:right() return self:get('x', 1) end
 
 --- Gets the y position of the element.
--- @number[opt] origin the origin to get the y position with respect to. 0 = top, .5 = center, 1 = bottom
+-- @number[opt=0] origin the origin to get the y position with respect to. 0 = top, .5 = center, 1 = bottom
 -- @treturn number
 function Element.get:y(origin)
 	checkOptionalArgument(2, origin, 'number')
@@ -317,6 +317,9 @@ function Element.get:childrenBounds()
 	return left, top, right, bottom
 end
 
+--- Sets the x position of the element.
+-- @number x the new x position of the element
+-- @number[opt=0] origin the origin to set the position with respect to. 0 = left, .5 = center, 1 = right
 function Element:x(x, origin)
 	checkArgument(1, x, 'number')
 	checkOptionalArgument(2, origin, 'number')
@@ -325,10 +328,21 @@ function Element:x(x, origin)
 	self._x = x - self:get 'width' * origin
 end
 
+--- Moves the left edge of the element to the specified x position.
+-- @number x
 function Element:left(x) self:x(x, 0) end
+
+--- Moves the horizontal center of the element to the specified x position.
+-- @number x
 function Element:centerX(x) self:x(x, .5) end
+
+--- Moves the right edge of the element to the specified x position.
+-- @number x
 function Element:right(x) self:x(x, 1) end
 
+--- Sets the y position of the element.
+-- @number y the new y position of the element
+-- @number[opt=0] origin the origin to set the position with respect to. 0 = top, .5 = center, 1 = bottom
 function Element:y(y, origin)
 	checkArgument(1, y, 'number')
 	checkOptionalArgument(2, origin, 'number')
@@ -337,12 +351,25 @@ function Element:y(y, origin)
 	self._y = y - self:get 'height' * origin
 end
 
+--- Moves the top of the element to the specified y position.
+-- @number y
 function Element:top(y) self:y(y, 0) end
+
+--- Moves the vertical center of the element to the specified y position.
+-- @number y
 function Element:centerY(y) self:y(y, .5) end
+
+--- Moves the bottom of the element to the specified y position.
+-- @number y
 function Element:bottom(y) self:y(y, 1) end
 
+--- Sets the z position of the element.
+-- @number z
 function Element:z(z) self._z = z end
 
+--- Moves the element.
+-- @number dx the amount to move the element horizontally
+-- @number dy the amount to move the element vertically
 function Element:shift(dx, dy)
 	checkOptionalArgument(1, dx, 'number')
 	checkOptionalArgument(2, dy, 'number')
@@ -350,6 +377,8 @@ function Element:shift(dx, dy)
 	self._y = self:get 'y' + (dy or 0)
 end
 
+--- Sets the width of the element.
+-- @number width
 function Element:width(width)
 	checkArgument(1, width, 'number')
 	local origin = self._originX or 0
@@ -358,6 +387,8 @@ function Element:width(width)
 	self:x(x, origin)
 end
 
+--- Sets the height of the element.
+-- @number height
 function Element:height(height)
 	checkArgument(1, height, 'number')
 	local origin = self._originY or 0
@@ -366,11 +397,19 @@ function Element:height(height)
 	self:y(y, origin)
 end
 
+--- Sets the width and height of the element.
+-- @number width
+-- @number height
 function Element:size(width, height)
 	self:width(width)
 	self:height(height)
 end
 
+--- Sets the element's position and size to match the specified bounds.
+-- @number left
+-- @number top
+-- @number right
+-- @number bottom
 function Element:bounds(left, top, right, bottom)
 	checkArgument(1, left, 'number')
 	checkArgument(2, top, 'number')
@@ -382,23 +421,36 @@ function Element:bounds(left, top, right, bottom)
 	self._height = bottom - top
 end
 
+--- Enables clipping for this element, meaning that children will be cropped
+-- to the visible area of the element.
 function Element:clip()
 	self._clip = true
 end
 
+--- Adds a child to the element.
+-- @tparam Element child
 function Element:addChild(child)
 	self._children = self._children or {}
 	table.insert(self._children, child)
 end
 
+--- Called when a @{Layout} starts assigning children to this element.
+-- @param ... additional arguments passed to layout.beginChildren
 function Element:onBeginChildren(...) end
 
+--- Called when a @{Layout} adds a child to this element.
+-- @tparam Element child the child to add
 function Element:onAddChild(child)
 	self:addChild(child)
 end
 
+--- Called when a @{Layout} stops assigning children to this element.
+-- @param ... additional arguments passed to layout.endChildren
 function Element:onEndChildren(...) end
 
+--- Moves the element's children.
+-- @number dx the amount to move the children horizontally
+-- @number dy the amount to move the children vertically
 function Element:shiftChildren(dx, dy)
 	checkOptionalArgument(1, dx, 'number')
 	checkOptionalArgument(2, dy, 'number')
@@ -450,6 +502,9 @@ function Element:pad(padding)
 	self:padY(padding)
 end
 
+--- Grows an element until it contains all of its children.
+-- The children's positions will be adjusted as necessary
+-- to maintain the same position on screen.
 function Element:expand()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
@@ -463,6 +518,9 @@ function Element:expand()
 	self._height = bottom - top
 end
 
+--- Adjusts the element's dimensions so that it perfectly
+-- surrounds its children. The children's positions will be
+-- adjusted to maintain the same position on screen.
 function Element:wrap()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
@@ -472,11 +530,17 @@ function Element:wrap()
 	self._height = bottom - top
 end
 
+--- Called before drawing the element's children.
 function Element:drawBottom() end
+
+--- Called after drawing the element's children.
 function Element:drawTop() end
 
+--- Defines the area to crop the element's children to
+-- if clipping is enabled.
 function Element:stencil() end
 
+--- Draws the element.
 function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
@@ -1002,6 +1066,8 @@ function Layout:_validateElement(name)
 	checkCondition(element, message)
 end
 
+--- Gets an element table.
+-- @string name the name of the element to get
 function Layout:getElement(name)
 	checkOptionalArgument(1, name, 'string', 'table')
 	name = name or '@current'
@@ -1016,6 +1082,10 @@ function Layout:getElement(name)
 	return self._named[name]
 end
 
+--- Gets the value of an element's property.
+-- @string property the property to get. The string should be in the form 'elementName.propertyName'.
+-- @param ... additional arguments to pass to the element's property getter
+-- @return the property value
 function Layout:get(property, ...)
 	checkArgument(1, property, 'string')
 	local elementName, propertyName = property:match '(.+)%.(.+)'
@@ -1027,6 +1097,8 @@ function Layout:get(property, ...)
 	return element.get[propertyName](element, ...)
 end
 
+--- Selects an element for future operations to affect.
+-- @tparam string|table name the name of the element to select, or the element table itself
 function Layout:select(name)
 	self:_validateElement(name)
 	local element = self:getElement(name)
@@ -1036,6 +1108,8 @@ function Layout:select(name)
 	return self
 end
 
+--- Adds an existing element to the element tree.
+-- @tparam Element element
 function Layout:add(element)
 	checkArgument(1, element, 'table')
 	-- add it to the tree and select it
@@ -1049,6 +1123,9 @@ function Layout:add(element)
 	return self
 end
 
+--- Creates a new element and adds it to the element tree.
+-- @tparam string|table elementClass the type of element to create
+-- @param ... additional arguments to pass to the new element's constructor
 function Layout:new(elementClass, ...)
 	validateElementClass(elementClass)
 	-- get the appropriate element class
@@ -1077,12 +1154,16 @@ function Layout:new(elementClass, ...)
 	return self
 end
 
+--- Names the currently selected element.
+-- @string name
 function Layout:name(name)
 	checkArgument(1, name, 'string')
 	self._named[name] = self:getElement '@current'
 	return self
 end
 
+--- Starts adding children to the currently selected element.
+-- @param ... additional arguments to pass to the parent element's onBeginChildren callback
 function Layout:beginChildren(...)
 	local element = self:getElement '@current'
 	element:onBeginChildren(...)
@@ -1094,6 +1175,8 @@ function Layout:beginChildren(...)
 	return self
 end
 
+--- Finishes adding children to the current parent element.
+-- @param ... additional arguments to pass to the parent element's onEndChildren callback
 function Layout:endChildren(...)
 	local group = self._groups[self._currentGroupIndex]
 	group.parent:onEndChildren(...)
