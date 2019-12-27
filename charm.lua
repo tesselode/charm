@@ -1,3 +1,4 @@
+--- Layout library for LÖVE.
 local charm = {
 	_VERSION = 'charm',
 	_DESCRIPTION = 'Layout library for LÖVE.',
@@ -170,10 +171,20 @@ end
 	(unless the key is listed in the preserve table)
 	- We treat empty tables or nonexistent tables as being "unset"
 ]]
+
+--- The base class for all elements.
+-- @type Element
 local Element = newElementClass()
 
+--- A list of keys that should not be niled out at the end of a draw frame.
+-- @table preserve
 Element.preserve._stencilFunction = true
 
+--- Initializes the element.
+-- @number[opt=0] x the x position of the element
+-- @number[opt=0] y the y position of the element
+-- @number[opt=0] width the width of the element
+-- @number[opt=0] height the height of the element
 function Element:new(x, y, width, height)
 	checkOptionalArgument(2, x, 'number')
 	checkOptionalArgument(3, y, 'number')
@@ -185,14 +196,25 @@ function Element:new(x, y, width, height)
 	self._height = height
 end
 
+--- Returns whether the element has any children.
+-- @treturn boolean
 function Element:hasChildren()
 	return self._children and #self._children > 0
 end
 
+--- Returns whether a color is set.
+-- @string color the name of the color to check
+-- @treturn boolean
 function Element:isColorSet(color)
 	return color and #color > 0
 end
 
+--- Sets a color property on an element.
+-- @string propertyName the name of the property to set
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Element:setColor(propertyName, r, g, b, a)
 	if type(r) ~= 'table' then
 		checkArgument(1, r, 'number', 'table')
@@ -211,35 +233,74 @@ function Element:setColor(propertyName, r, g, b, a)
 	end
 end
 
+--- Gets the x position of the element.
+-- @number[opt] origin the origin to get the x position with respect to. 0 = left, .5 = center, 1 = right
+-- @treturn number
 function Element.get:x(origin)
 	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	return (self._x or 0) + self:get 'width' * origin
 end
 
+--- Gets the x position of the left edge of the element.
+-- @treturn number
 function Element.get:left() return self:get('x', 0) end
+
+--- Gets the x position of the horizontal center of the element.
+-- @treturn number
 function Element.get:centerX() return self:get('x', .5) end
+
+--- Gets the x position of the right edge of the element.
+-- @treturn number
 function Element.get:right() return self:get('x', 1) end
 
+--- Gets the y position of the element.
+-- @number[opt] origin the origin to get the y position with respect to. 0 = top, .5 = center, 1 = bottom
+-- @treturn number
 function Element.get:y(origin)
 	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
 end
 
+--- Gets the y position of the top of the element.
+-- @treturn number
 function Element.get:top() return self:get('y', 0) end
+
+--- Gets the y position of the vertical center of the element.
+-- @treturn number
 function Element.get:centerY() return self:get('y', .5) end
+
+--- Gets the y position of the bottom of the element.
+-- @treturn number
 function Element.get:bottom() return self:get('y', 1) end
 
+--- Gets the z position of the element.
+-- @treturn number
 function Element.get:z() return self._z or 0 end
 
+--- Gets the width of the element.
+-- @treturn number
 function Element.get:width() return self._width or 0 end
+
+--- Gets the height of the element.
+-- @treturn number
 function Element.get:height() return self._height or 0 end
 
+--- Gets the width and height of the element.
+-- @treturn number the width of the element
+-- @treturn number the height of the element
 function Element.get:size()
 	return self:get 'width', self:get 'height'
 end
 
+--- Gets the bounds of the rectangle surrounding all of
+-- the elements children (relative to the top-left corner
+-- of the element).
+-- @treturn number the left bound of the children
+-- @treturn number the top bound of the children
+-- @treturn number the right bound of the children
+-- @treturn number the bottom bound of the children
 function Element.get:childrenBounds()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom
@@ -902,6 +963,8 @@ local function validateElementClass(class)
 	end
 end
 
+--- Creates, manages, and draws elements.
+-- @type Layout
 local Layout = {}
 
 function Layout:__index(k)
@@ -1038,6 +1101,7 @@ function Layout:endChildren(...)
 	return self
 end
 
+--- Draws and clears out the element tree.
 function Layout:draw()
 	-- draw each element and remove it from the tree
 	for elementIndex, element in ipairs(self._elements) do
@@ -1053,6 +1117,10 @@ function Layout:draw()
 	return self
 end
 
+--- @section end
+
+--- Creates a new layout.
+-- @treturn Layout
 function charm.new()
 	return setmetatable({
 		_elementPool = {},
@@ -1064,6 +1132,11 @@ function charm.new()
 	}, Layout)
 end
 
+--- Creates a new element class.
+-- @tparam[opt='base'] table|string parent the element class to extend from.
+-- This can be the element class table itself, or the name of a built-in
+-- element class.
+-- @treturn table
 function charm.extend(parent)
 	validateElementClass(parent)
 	if type(parent) == 'string' then parent = elementClasses[parent] end
