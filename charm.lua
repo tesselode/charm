@@ -1020,8 +1020,8 @@ function Layout:name(name)
 	return self
 end
 
-function Layout:beginChildren(name, ...)
-	local element = self:getElement(name)
+function Layout:beginChildren(...)
+	local element = self:getElement '@current'
 	element:onBeginChildren(...)
 	self._currentGroupIndex = self._currentGroupIndex + 1
 	self._groups[self._currentGroupIndex] = self._groups[self._currentGroupIndex] or {}
