@@ -460,6 +460,10 @@ function Element:shiftChildren(dx, dy)
 	end
 end
 
+--- Expands the element to the left. Children's positions
+-- will be adjusted as necessary to maintain their position
+-- on screen.
+-- @number padding the amount to expand the element
 function Element:padLeft(padding)
 	checkArgument(1, padding, 'number')
 	self._x = self:get 'x' - padding
@@ -467,6 +471,10 @@ function Element:padLeft(padding)
 	self._width = self:get 'width' + padding
 end
 
+--- Expands the element upward. Children's positions
+-- will be adjusted as necessary to maintain their position
+-- on screen.
+-- @number padding the amount to expand the element
 function Element:padTop(padding)
 	checkArgument(1, padding, 'number')
 	self._y = self:get 'y' - padding
@@ -474,28 +482,44 @@ function Element:padTop(padding)
 	self._height = self:get 'height' + padding
 end
 
+--- Expands the element to the right.
+-- @number padding the amount to expand the element
 function Element:padRight(padding)
 	checkArgument(1, padding, 'number')
 	self._width = self:get 'width' + padding
 end
 
+--- Expands the element downward.
+-- @number padding the amount to expand the element
 function Element:padBottom(padding)
 	checkArgument(1, padding, 'number')
 	self._height = self:get 'height' + padding
 end
 
+--- Expands the element equally to the left and right.
+-- Children's positions will be adjusted as necessary to
+-- maintain their position on screen.
+-- @number padding the amount to expand the element
 function Element:padX(padding)
 	checkArgument(1, padding, 'number')
 	self:padLeft(padding)
 	self:padRight(padding)
 end
 
+--- Expands the element equally upwards and downwards.
+-- Children's positions will be adjusted as necessary to
+-- maintain their position on screen.
+-- @number padding the amount to expand the element
 function Element:padY(padding)
 	checkArgument(1, padding, 'number')
 	self:padTop(padding)
 	self:padBottom(padding)
 end
 
+--- Expands the element on all sides.
+-- Children's positions will be adjusted as necessary to
+-- maintain their position on screen.
+-- @number padding the amount to expand the element
 function Element:pad(padding)
 	checkArgument(1, padding, 'number')
 	self:padX(padding)
@@ -540,7 +564,12 @@ function Element:drawTop() end
 -- if clipping is enabled.
 function Element:stencil() end
 
---- Draws the element.
+--- Draws the element. In most cases, you won't need
+-- to manually call this function or override it in
+-- custom element classes.
+-- @number stencilValue the pixel value to use to mask the
+-- element. This should increase by 1 for every nested
+-- child element.
 function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
@@ -595,10 +624,18 @@ end
 	This is also why we don't change the position of the children elements
 	using shiftChildren.)
 ]]
+
+--- Applies arbitrary transformations to child elements.
+--
+-- Extends the @{Element} class.
+-- @type Transform
 local Transform = newElementClass(Element)
 
 Transform.preserve._transform = true
 
+--- Initializes the element.
+-- @number x the horizontal position of the transform
+-- @number y the vertical position of the transform
 function Transform:new(x, y)
 	checkOptionalArgument(2, x, 'number')
 	checkOptionalArgument(3, y, 'number')
@@ -644,24 +681,33 @@ function Transform:_updateTransform()
 	self:_updateDimensions()
 end
 
+--- Sets the angle of the transform.
+-- @number angle
 function Transform:angle(angle)
 	checkArgument(1, angle, 'number')
 	self._angle = angle
 	self:_updateTransform()
 end
 
+--- Sets the horizontal scaling factor of the transform.
+-- @number scale
 function Transform:scaleX(scale)
 	checkArgument(1, scale, 'number')
 	self._scaleX = scale
 	self:_updateTransform()
 end
 
+--- Sets the vertical scaling factor of the transform.
+-- @number scale
 function Transform:scaleY(scale)
 	checkArgument(1, scale, 'number')
 	self._scaleY = scale
 	self:_updateTransform()
 end
 
+--- Sets the horizontal and vertical scaling factor of the transform.
+-- @number scaleX
+-- @number[opt=scaleX] scaleY
 function Transform:scale(scaleX, scaleY)
 	checkArgument(1, scaleX, 'number')
 	checkOptionalArgument(2, scaleY, 'number')
@@ -670,18 +716,25 @@ function Transform:scale(scaleX, scaleY)
 	self:_updateTransform()
 end
 
+--- Sets the horizontal shearing factor of the transform.
+-- @number shear
 function Transform:shearX(shear)
 	checkArgument(1, shear, 'number')
 	self._shearX = shear
 	self:_updateTransform()
 end
 
+--- Sets the vertical shearing factor of the transform.
+-- @number shear
 function Transform:shearY(shear)
 	checkArgument(1, shear, 'number')
 	self._shearY = shear
 	self:_updateTransform()
 end
 
+--- Sets the horizontal and vertical shearing factor of the transform.
+-- @number shearX
+-- @number[opt=shearX] shearY
 function Transform:shear(shearX, shearY)
 	checkArgument(1, shearX, 'number')
 	checkOptionalArgument(2, shearY, 'number')
@@ -706,21 +759,44 @@ function Transform:draw(stencilValue)
 	love.graphics.pop()
 end
 
+--- A base class for elements that draw love.graphics
+-- primitives with a fill color and an outline color.
+-- This class isn't useful on its own; it's meant to be
+-- extended by custom classes.
+--
+-- Extends the @{Element} class.
+-- @type Shape
 local Shape = newElementClass(Element)
 
+--- Sets the fill color of the shape.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Shape:fillColor(r, g, b, a)
 	self:setColor('_fillColor', r, g, b, a)
 end
 
+--- Sets the outline color of the shape.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Shape:outlineColor(r, g, b, a)
 	self:setColor('_outlineColor', r, g, b, a)
 end
 
+--- Sets the width of the shape's outline.
+-- @number width
 function Shape:outlineWidth(width)
 	checkArgument(1, width, 'number')
 	self._outlineWidth = width
 end
 
+--- Draws the shape. Override this to define how the shape
+-- will be drawn.
+-- @string mode the drawing mode for the shape. Will be either
+-- "fill" or "line".
 function Shape:drawShape(mode) end
 
 function Shape:stencil() self:drawShape 'fill' end
@@ -746,8 +822,15 @@ function Shape:drawTop()
 	love.graphics.pop()
 end
 
+--- Draws a rectangle.
+--
+-- Extends the @{Shape} class.
+-- @type Rectangle
 local Rectangle = newElementClass(Shape)
 
+--- Sets the radius of the corners of the rectangle.
+-- @number radiusX the horizontal radius
+-- @number radiusY the vertical radius
 function Rectangle:cornerRadius(radiusX, radiusY)
 	checkArgument(1, radiusX, 'number')
 	checkArgument(2, radiusY, 'number')
@@ -755,6 +838,8 @@ function Rectangle:cornerRadius(radiusX, radiusY)
 	self._cornerRadiusY = radiusY
 end
 
+--- Sets the number of segments used to draw the corners.
+-- @number segments
 function Rectangle:cornerSegments(segments)
 	checkArgument(1, segments, 'number')
 	self._cornerSegments = segments
@@ -765,8 +850,14 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
+--- Draws an ellipse.
+--
+-- Extends the @{Shape} class.
+-- @type Ellipse
 local Ellipse = newElementClass(Shape)
 
+--- Sets the number of segments used to draw the ellipse.
+-- @number segments
 function Ellipse:segments(segments)
 	checkArgument(1, segments, 'number')
 	self._segments = segments
@@ -779,8 +870,16 @@ function Ellipse:drawShape(mode)
 		self._segments)
 end
 
+--- Draws an image.
+--
+-- Extends the @{Element} class.
+-- @type Image
 local Image = newElementClass(Element)
 
+--- Initializes the image.
+-- @tparam Image image the image to use
+-- @number x the horizontal position of the image
+-- @number y the vertical position of the image
 function Image:new(image, x, y)
 	checkArgument(2, image, 'Image')
 	checkOptionalArgument(3, x, 'number')
@@ -794,16 +893,23 @@ function Image:new(image, x, y)
 	self._height = self._naturalHeight
 end
 
+--- Sets the width of the image relative to its original width.
+-- @number scale
 function Image:scaleX(scale)
 	checkArgument(1, scale, 'number')
 	self:width(self._naturalWidth * scale)
 end
 
+--- Sets the height of the image relative to its original width.
+-- @number scale
 function Image:scaleY(scale)
 	checkArgument(1, scale, 'number')
 	self:height(self._naturalHeight * scale)
 end
 
+--- Sets the width and height of the image relative to its original dimensions.
+-- @number scaleX
+-- @number[opt=scaleX] scaleY
 function Image:scale(scaleX, scaleY)
 	checkArgument(1, scaleX, 'number')
 	checkOptionalArgument(2, scaleY, 'number')
@@ -811,6 +917,11 @@ function Image:scale(scaleX, scaleY)
 	self:scaleY(scaleY or scaleX)
 end
 
+--- Sets the blend color of the image.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Image:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 end
@@ -826,8 +937,17 @@ function Image:drawBottom()
 	love.graphics.pop()
 end
 
+--- Draws text.
+--
+-- Extends the @{Element} class.
+-- @type Text
 local Text = newElementClass(Element)
 
+--- Initializes the text.
+-- @tparam Font font the font to use
+-- @string text the text to draw
+-- @number x the horizontal position of the text
+-- @number y the vertical position of the text
 function Text:new(font, text, x, y)
 	checkArgument(2, font, 'Font')
 	checkArgument(3, text, 'string')
@@ -843,16 +963,23 @@ function Text:new(font, text, x, y)
 	self._height = self._naturalHeight
 end
 
+--- Sets the width of the text relative to its original width.
+-- @number scale
 function Text:scaleX(scale)
 	checkArgument(1, scale, 'number')
 	self:width(self._naturalWidth * scale)
 end
 
+--- Sets the height of the text relative to its original width.
+-- @number scale
 function Text:scaleY(scale)
 	checkArgument(1, scale, 'number')
 	self:height(self._naturalHeight * scale)
 end
 
+--- Sets the width and height of the text relative to its original dimensions.
+-- @number scaleX
+-- @number[opt=scaleX] scaleY
 function Text:scale(scaleX, scaleY)
 	checkArgument(1, scaleX, 'number')
 	checkOptionalArgument(2, scaleY, 'number')
@@ -860,24 +987,41 @@ function Text:scale(scaleX, scaleY)
 	self:scaleY(scaleY or scaleX)
 end
 
+--- Sets the color of the text.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Text:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 end
 
+--- Sets the color of the text's shadow.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Text:shadowColor(r, g, b, a)
 	self:setColor('_shadowColor', r, g, b, a)
 end
 
+--- Sets the horizontal offset of the text's shadow.
+-- @number offset
 function Text:shadowOffsetX(offset)
 	checkArgument(1, offset, 'number')
 	self._shadowOffsetX = offset
 end
 
+--- Sets the vertical offset of the text's shadow.
+-- @number offset
 function Text:shadowOffsetY(offset)
 	checkArgument(1, offset, 'number')
 	self._shadowOffsetY = offset
 end
 
+--- Sets the horizontal and vertical offset of the text's shadow.
+-- @number offsetX
+-- @number[opt=offsetX] offsetY
 function Text:shadowOffset(offsetX, offsetY)
 	checkArgument(1, offsetX, 'number')
 	checkOptionalArgument(2, offsetY, 'number')
@@ -914,8 +1058,23 @@ function Text:drawBottom()
 	love.graphics.pop()
 end
 
+--- Draws a paragraph of text. In contrast to the @{Text}
+-- element, this element automatically inserts line breaks
+-- to stay within a certain width. It also supports
+-- different align modes.
+--
+-- Extends the @{Element} class.
+-- @type Paragraph
 local Paragraph = newElementClass(Element)
 
+--- Initializes the paragraph.
+-- @tparam Font font the font to use
+-- @string text the text to draw
+-- @number limit the amount of horizontal space the text
+-- can span before a line break occurs
+-- @string align how to align the text. Can be "left", "center", "right", or "justify".
+-- @number x the horizontal position of the paragraph
+-- @number y the vertical position of the paragraph
 function Paragraph:new(font, text, limit, align, x, y)
 	checkArgument(2, font, 'Font')
 	checkArgument(3, text, 'string')
@@ -935,16 +1094,23 @@ function Paragraph:new(font, text, limit, align, x, y)
 	self._height = self._naturalHeight
 end
 
+--- Sets the width of the paragraph relative to its original width.
+-- @number scale
 function Paragraph:scaleX(scale)
 	checkArgument(1, scale, 'number')
 	self:width(self._naturalWidth * scale)
 end
 
+--- Sets the height of the paragraph relative to its original width.
+-- @number scale
 function Paragraph:scaleY(scale)
 	checkArgument(1, scale, 'number')
 	self:height(self._naturalHeight * scale)
 end
 
+--- Sets the width and height of the paragraph relative to its original dimensions.
+-- @number scaleX
+-- @number[opt=scaleX] scaleY
 function Paragraph:scale(scaleX, scaleY)
 	checkArgument(1, scaleX, 'number')
 	checkOptionalArgument(2, scaleY, 'number')
@@ -952,24 +1118,41 @@ function Paragraph:scale(scaleX, scaleY)
 	self:scaleY(scaleY or scaleX)
 end
 
+--- Sets the color of the paragraph.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Paragraph:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 end
 
+--- Sets the color of the paragraph's shadow.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Paragraph:shadowColor(r, g, b, a)
 	self:setColor('_shadowColor', r, g, b, a)
 end
 
+--- Sets the horizontal offset of the paragraph's shadow.
+-- @number offset
 function Paragraph:shadowOffsetX(offset)
 	checkArgument(1, offset, 'number')
 	self._shadowOffsetX = offset
 end
 
+--- Sets the vertical offset of the paragraph's shadow.
+-- @number offset
 function Paragraph:shadowOffsetY(offset)
 	checkArgument(1, offset, 'number')
 	self._shadowOffsetY = offset
 end
 
+--- Sets the horizontal and vertical offset of the paragraph's shadow.
+-- @number offsetX
+-- @number[opt=offsetX] offsetY
 function Paragraph:shadowOffset(offsetX, offsetY)
 	checkArgument(1, offsetX, 'number')
 	checkOptionalArgument(2, offsetY, 'number')
