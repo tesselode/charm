@@ -1293,7 +1293,8 @@ end
 ]]
 
 --- Gets the value of an element's property.
--- @string property the property to get. The string should be in the form 'elementName.propertyName'.
+-- @tparam string|table elementName the name of the element to get the property from, or the element table itself
+-- @string propertyName the name of the property to get
 -- @param ... additional arguments to pass to the element's property getter
 -- @return the property value
 function Layout:get(elementName, propertyName, ...)
