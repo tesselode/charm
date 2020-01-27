@@ -1432,7 +1432,7 @@ end
 -- element class.
 -- @treturn table
 function charm.extend(parent)
-	validateElementClass(parent)
+	if parent then validateElementClass(parent) end
 	if type(parent) == 'string' then parent = elementClasses[parent] end
 	parent = parent or elementClasses.element
 	return newElementClass(parent)
