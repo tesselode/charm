@@ -47,7 +47,7 @@ function love.draw()
 			:name 'eleanor'
 			:fillColor(.5, .5, .5)
 		:draw()
-	print(layout:get('eleanor.x', .5), layout:get('eleanor.y', 1))
+	print(layout:get('eleanor', 'x', .5), layout:get('eleanor', 'y', 1))
 end
 ```
 `get` takes at least two arguments:
@@ -64,7 +64,7 @@ function love.draw()
 			:name 'eleanor'
 			:fillColor(.5, .5, .5)
 		:draw()
-	print(layout:get 'eleanor.left', layout:get 'eleanor.bottom')
+	print(layout:get('eleanor', 'left'), layout:get('eleanor', 'bottom'))
 end
 ```
 We can also set the positions of elements that we've created. `layout.x` and `layout.y` take two arguments: the target position and the origin to set to that position. Note that the position setter functions do *not* take a name argument, as they will always modify the position of the most recently created element.
@@ -104,8 +104,8 @@ function love.draw()
 			:fillColor(1, 1, 1)
 		:new 'rectangle'
 			:width(50):height(50)
-			:left(layout:get 'eleanor.right')
-			:middle(layout:get 'eleanor.middle')
+			:left(layout:get('eleanor', 'right'))
+			:middle(layout:get('eleanor', 'middle'))
 		:draw()
 end
 ```
@@ -164,7 +164,7 @@ function love.draw()
 				:new('rectangle', 0, 0, 100, 100)
 					:fillColor(1/2, 1/2, 1/2)
 				:new 'rectangle'
-					:left(layout:get '@previous.right' + 10)
+					:left(layout:get('@previous', 'right') + 10)
 					:y(0)
 					:size(100, 100)
 					:fillColor(1/2, 1/2, 1/2)
