@@ -38,7 +38,7 @@ function love.draw()
 					:beginChildren()
 						:new('paragraph', font, text, 280, 'left', 10, 10 - textScrollY)
 							:color(0, 0, 0)
-						textHeight = layout:get '@current.height'
+						textHeight = layout:get('@current', 'height')
 					layout:endChildren()
 					:fillColor(.8, .8, .8)
 					:clip()

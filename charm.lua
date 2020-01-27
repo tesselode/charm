@@ -237,7 +237,7 @@ end
 -- @number[opt=0] origin the origin to get the x position with respect to. 0 = left, .5 = center, 1 = right
 -- @treturn number
 function Element.get:x(origin)
-	checkOptionalArgument(2, origin, 'number')
+	checkOptionalArgument(3, origin, 'number')
 	origin = origin or 0
 	return (self._x or 0) + self:get 'width' * origin
 end
@@ -258,7 +258,7 @@ function Element.get:right() return self:get('x', 1) end
 -- @number[opt=0] origin the origin to get the y position with respect to. 0 = top, .5 = center, 1 = bottom
 -- @treturn number
 function Element.get:y(origin)
-	checkOptionalArgument(2, origin, 'number')
+	checkOptionalArgument(3, origin, 'number')
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
 end
@@ -1238,7 +1238,7 @@ function Layout:_clearElement(element)
 	end
 end
 
-function Layout:_validateElement(name)
+function Layout:_validateElement(name, additionalText)
 	checkArgument(1, name, 'string', 'table')
 	local element = self:getElement(name)
 	local message = name == '@current' and 'No element is currently selected. Have you created any elements yet?'
@@ -1246,6 +1246,9 @@ function Layout:_validateElement(name)
 		or name == '@parent' and 'No parent element to get. This keyword should be used '
 			.. 'within layout:beginChildren() and layout:endChildren() calls.'
 		or string.format("no element named '%s'", name)
+	if additionalText then
+		message = message .. additionalText
+	end
 	checkCondition(element, message)
 end
 
@@ -1265,16 +1268,27 @@ function Layout:getElement(name)
 	return self._named[name]
 end
 
+--[[
+	A note to self about layout.get:
+
+	It might be tempting to use a more compact syntax for
+	layout.get, like
+
+		layout.get 'elementName.propertyName'
+
+	But this doesn't work when you need to get an element by its
+	table and not its name! So don't make this mistake again!
+	It's not a good API choice!
+]]
+
 --- Gets the value of an element's property.
 -- @string property the property to get. The string should be in the form 'elementName.propertyName'.
 -- @param ... additional arguments to pass to the element's property getter
 -- @return the property value
-function Layout:get(property, ...)
-	checkArgument(1, property, 'string')
-	local elementName, propertyName = property:match '(.+)%.(.+)'
-	checkCondition(elementName and propertyName,
-		"first argument to 'get' must be in the form [element name].[property name]")
-	self:_validateElement(elementName)
+function Layout:get(elementName, propertyName, ...)
+	self:_validateElement(elementName, '\n\nThis function is for getting properties of elements. '
+		.. 'If you meant to get the element itself, use layout.getElement.')
+	checkArgument(2, propertyName, 'string')
 	local element = self:getElement(elementName)
 	checkCondition(element.get[propertyName], string.format("element has no property named '%s'", propertyName))
 	return element.get[propertyName](element, ...)

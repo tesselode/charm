@@ -5,7 +5,7 @@ local menuPadding = 10
 local menuHeight = 300
 
 local function renderMenuItem(layout, text, selected)
-	local limit = layout:get '@parent.y' - menuPadding * 2
+	local limit = layout:get('@parent', 'width') - menuPadding * 2
 	layout:new 'rectangle'
 		-- draw text
 		:beginChildren()
@@ -19,7 +19,7 @@ local function renderMenuItem(layout, text, selected)
 		if selected then
 			layout:beginChildren()
 				:new 'rectangle'
-					:size(layout:get '@parent.size')
+					:size(layout:get('@parent', 'size'))
 					:fillColor(.5, .5, .5)
 					:z(-1)
 			:endChildren()
@@ -74,7 +74,7 @@ function love.draw()
 			:beginChildren()
 				-- this rectangle holds all the menu items and handles scrolling
 				:new 'rectangle'
-					:width(layout:get '@parent.width')
+					:width(layout:get('@parent', 'width'))
 					:top(-menuScrollY)
 					:beginChildren()
 						local previousBottom = 0
@@ -83,9 +83,9 @@ function love.draw()
 							renderMenuItem(layout, choice, selected)
 								:top(previousBottom)
 							if selected then
-								targetMenuScrollY = layout:get '@current.centerY' - menuHeight/2
+								targetMenuScrollY = layout:get('@current', 'centerY') - menuHeight/2
 							end
-							previousBottom = layout:get '@current.bottom'
+							previousBottom = layout:get('@current', 'bottom')
 						end
 						menuChoicesHeight = previousBottom
 					layout:endChildren()
