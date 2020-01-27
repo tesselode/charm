@@ -48,6 +48,10 @@ love . dialog
 love . menu
 ```
 
+Documentation
+-------------
+### [Tutorial](https://tesselode.github.io/charm/tutorials/01-basic-usage.md.html) | [API Reference](https://tesselode.github.io/charm/)
+
 Contributing
 ------------
 Charm is in very early development. Feel free to ask questions, point out bugs, and even make some pull requests! If you use this library in a game, let me know how it goes.
