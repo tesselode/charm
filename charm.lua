@@ -1252,7 +1252,7 @@ function Layout:_clearElement(element)
 	end
 end
 
-function Layout:_validateElement(name, additionalText)
+function Layout:_validateElement(name)
 	checkArgument(1, name, 'string', 'table')
 	local element = self:getElement(name)
 	local message = name == '@current' and 'No element is currently selected. Have you created any elements yet?'
@@ -1260,9 +1260,6 @@ function Layout:_validateElement(name, additionalText)
 		or name == '@parent' and 'No parent element to get. This keyword should be used '
 			.. 'within layout:beginChildren() and layout:endChildren() calls.'
 		or string.format("no element named '%s'", name)
-	if additionalText then
-		message = message .. additionalText
-	end
 	checkCondition(element, message)
 end
 
@@ -1300,8 +1297,7 @@ end
 -- @param ... additional arguments to pass to the element's property getter
 -- @return the property value
 function Layout:get(elementName, propertyName, ...)
-	self:_validateElement(elementName, '\n\nThis function is for getting properties of elements. '
-		.. 'If you meant to get the element itself, use layout.getElement.')
+	self:_validateElement(elementName)
 	checkArgument(2, propertyName, 'string')
 	local element = self:getElement(elementName)
 	checkCondition(element.get[propertyName], string.format("element has no property named '%s'", propertyName))
