@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Charm Manual</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Charm</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Installation">Installation </a></li>
+<li><a href="#Drawing_elements">Drawing elements </a></li>
+<li><a href="#Positioning_elements_relative_to_each_other">Positioning elements relative to each other </a></li>
+<li><a href="#Grouping_elements_together">Grouping elements together </a></li>
+<li><a href="#Element_selectors">Element selectors </a></li>
+</ul>
+
+
+<h2>Tutorials</h2>
+<ul class="nowrap">
+  <li><strong>Basic usage
+</strong></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">charm</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Basic usage</h1>
+
+<p><a name="Installation"></a></p>
+<h2>Installation</h2>
+<p>To use Charm, place charm.lua in your project, and then <a href="https://www.lua.org/manual/5.1/manual.html#pdf-require">require</a> it in each file where you need to use it:</p>
+
+
+<pre>
+<span class="keyword">local</span> charm = <span class="global">require</span> <span class="string">'charm'</span> <span class="comment">-- if your charm.lua is in the root directory
+</span><span class="keyword">local</span> charm = <span class="global">require</span> <span class="string">'path.to.charm'</span> <span class="comment">-- if it's in subfolders</span>
+</pre>
+
+
+<p><a name="Drawing_elements"></a></p>
+<h2>Drawing elements</h2>
+<p>To use Charm, first we need to create a layout object.</p>
+
+<pre>
+<span class="keyword">local</span> layout = charm.new()
+</pre>
+
+<p>This object is responsible for arranging and drawing graphics. In <code>love.draw</code>, we tell the layout object what to draw, and once we're done, we call the <a href="../index.html#Layout:draw">draw</a> function to display those graphics on screen.</p>
+
+<p>This code will draw a grey rectangle on the screen:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout:new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">150</span>)
+    layout:fillColor(.<span class="number">5</span>, .<span class="number">5</span>, .<span class="number">5</span>)
+    layout:draw()
+<span class="keyword">end</span>
+</pre>
+
+<p>- The <a href="../index.html#new">new</a> function defines a new <strong>element</strong>. The first argument is always the type of the element. The arguments after that depend on what type of element we created. For rectangles, we can specify an x position, y position, width and height.
+- Functions like <a href="../index.html#Shape:fillColor">fillColor</a> set a property on the most recently created element. Which properties are available depends on what element we're modifying. In this case we're specifying a fill color for the rectangle (otherwise it would be invisible).
+- The <a href="../index.html#Layout:draw">draw</a> function tells the layout object that we're done specifying our elements and we can actually display them now.</p>
+
+<p>Most of the layout object's functions return the layout object itself, so we can chain the methods together and write the same code like this:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">150</span>)
+            :fillColor(.<span class="number">5</span>, .<span class="number">5</span>, .<span class="number">5</span>)
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+<p>You don't have to use method chaining, I just think it looks nice.</p>
+
+<p><a name="Positioning_elements_relative_to_each_other"></a></p>
+<h2>Positioning elements relative to each other</h2>
+<p>Once we define an element, we can get any point along the x or y axis using <code>layout.get</code>:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">150</span>)
+            :name <span class="string">'eleanor'</span>
+            :fillColor(.<span class="number">5</span>, .<span class="number">5</span>, .<span class="number">5</span>)
+        :draw()
+    <span class="global">print</span>(layout:get(<span class="string">'eleanor'</span>, <span class="string">'x'</span>, .<span class="number">5</span>), layout:get(<span class="string">'eleanor'</span>, <span class="string">'y'</span>, <span class="number">1</span>))
+<span class="keyword">end</span>
+</pre>
+
+<p><a href="../index.html#Layout:get">get</a> takes at least two arguments:
+- The first is the <strong>name</strong> of the element to get a point on. Elements don't have names by default, so in this example, I named the rectangle Eleanor, because sometimes abstract concepts should have human names.
+- The second is the name of the <strong>property</strong> we want to get. In this case, we're getting "x" and "y".</p>
+
+<p>The next arguments depend on the property we're getting. In this case, the third argument is the <strong>origin</strong>, which is a number from 0-1 that represents how far along the axis we should travel to find the point. So <code>get(name, &apos;x&apos;, 0)</code> would get the x position of the left edge of the box, <code>get(name, &apos;x&apos;, 0.5)</code> would get the x position of the horizontal center of the box, and <code>get(name, &apos;x&apos;, 1)</code> would get the x position of the right edge of the box. We can also use any origin in between.</p>
+
+<p>There's also some shortcut properties for getting x and y positions: <a href="../index.html#Element:left">left</a>, <code>center</code>, and <a href="../index.html#Element:right">right</a> return the left edge, horizontal center, and right edge of a box respectively, and <a href="../index.html#Element.get:top">top</a>, <code>middle</code>, and <a href="../index.html#Element.get:bottom">bottom</a> return the top edge, vertical center, and bottom edge of a box respectively. So we could write the above code like this:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">150</span>)
+            :name <span class="string">'eleanor'</span>
+            :fillColor(.<span class="number">5</span>, .<span class="number">5</span>, .<span class="number">5</span>)
+        :draw()
+    <span class="global">print</span>(layout:get(<span class="string">'eleanor'</span>, <span class="string">'left'</span>), layout:get(<span class="string">'eleanor'</span>, <span class="string">'bottom'</span>))
+<span class="keyword">end</span>
+</pre>
+
+<p>We can also set the positions of elements that we've created. <code>layout.x</code> and <code>layout.y</code> take two arguments: the target position and the origin to set to that position. Note that the position setter functions do <em>not</em> take a name argument, as they will always modify the position of the most recently created element.</p>
+
+<p>This code will draw a rectangle that's always flush with the bottom-right corner of the screen:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new <span class="string">'rectangle'</span> <span class="comment">-- we can leave off the x, y, width, and height arguments, as they will default to 0
+</span>         :width(<span class="number">100</span>) <span class="comment">-- surprise! there are also "width" and "height" functions
+</span>         :height(<span class="number">150</span>)
+            :x(love.graphics.getWidth(), <span class="number">1</span>)
+            :y(love.graphics.getHeight(), <span class="number">1</span>)
+            :fillColor(.<span class="number">5</span>, .<span class="number">5</span>, .<span class="number">5</span>)
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+<p>Like with the position getter functions, we have shortcut functions for setting the position of an element: <a href="../index.html#Element:left">left</a>, <code>center</code>, <a href="../index.html#Element:right">right</a>, <a href="../index.html#Element.get:top">top</a>, <code>middle</code>, and <a href="../index.html#Element.get:bottom">bottom</a>. So we could write the above code like this:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new <span class="string">'rectangle'</span>
+            :width(<span class="number">100</span>)
+            :height(<span class="number">150</span>)
+            :right(love.graphics.getWidth())
+            :bottom(love.graphics.getHeight())
+            :fillColor(.<span class="number">5</span>, .<span class="number">5</span>, .<span class="number">5</span>)
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+<p>We can use the getters and setters to easily position graphics relative to each other without having to do a lot of math. The following code will display a white rectangle and a red rectangle that's 50 pixels to the right and vertically aligned:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">150</span>)
+            :name <span class="string">'eleanor'</span>
+            :fillColor(<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>)
+        :new <span class="string">'rectangle'</span>
+            :width(<span class="number">50</span>):height(<span class="number">50</span>)
+            :left(layout:get(<span class="string">'eleanor'</span>, <span class="string">'right'</span>))
+            :middle(layout:get(<span class="string">'eleanor'</span>, <span class="string">'middle'</span>))
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+
+<p><a name="Grouping_elements_together"></a></p>
+<h2>Grouping elements together</h2>
+<p>Any element can have any number of <strong>child elements</strong>. We can assign elements to a parent by placing them between a <a href="../index.html#Layout:beginChildren">beginChildren</a> and an <a href="../index.html#Layout:endChildren">endChildren</a> call.</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">100</span>, <span class="number">150</span>)
+            :beginChildren()
+                :new(<span class="string">'rectangle'</span>, <span class="number">10</span>, <span class="number">10</span>, <span class="number">25</span>, <span class="number">25</span>)
+                    :fillColor(<span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>)
+                :new(<span class="string">'rectangle'</span>, <span class="number">50</span>, <span class="number">50</span>, <span class="number">25</span>, <span class="number">25</span>)
+                    :fillColor(<span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>)
+            :endChildren()
+            :fillColor(<span class="number">1</span>/<span class="number">4</span>, <span class="number">1</span>/<span class="number">4</span>, <span class="number">1</span>/<span class="number">4</span>)
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+<p>Child elements are positioned relative to their parent, so in this example, the two child rectangles would appear on screen at (60, 60) and (100, 100) respectively.</p>
+
+<p>Earlier I said that setter functions always modify the most recently created element. There is one exception: when <a href="../index.html#Layout:endChildren">endChildren</a> is called, the parent element is selected. So you can add children to an element and then modify the parent element after.</p>
+
+<p>Sometimes you might want to position multiple elements as a single group. Charm provides a <a href="../index.html#Element:wrap">wrap</a> function which adjusts the dimensions of a parent element to perfectly surround all its child elements. Then the parent element can be positioned, which moves the children as well. The following code will group two rectangles together and then center the whole group on screen.</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new <span class="string">'rectangle'</span>
+            :beginChildren()
+                :new(<span class="string">'rectangle'</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>)
+                    :fillColor(<span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>)
+                :new(<span class="string">'rectangle'</span>, <span class="number">110</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>)
+                    :fillColor(<span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>)
+            :endChildren()
+            :wrap()
+            :center(love.graphics.getWidth()/<span class="number">2</span>)
+            :middle(love.graphics.getHeight()/<span class="number">2</span>)
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+
+<p><a name="Element_selectors"></a></p>
+<h2>Element selectors</h2>
+<p>Rather than using the names of an element to get information about it, we can use special keywords to select an element without having to give it a name first. Charm provides three keywords:
+- <code>@current</code> - the element currently being modified
+- <code>@previous</code> - the previously selected element
+- <code>@parent</code> - the parent of the currently modified element</p>
+
+<p>Here's a modified version of the above example that uses <code>@previous</code>, the most commonly useful keyword:</p>
+
+<pre>
+<span class="keyword">function</span> love.draw()
+    layout
+        :new <span class="string">'rectangle'</span>
+            :width(<span class="number">100</span>)
+            :beginChildren()
+                :new(<span class="string">'rectangle'</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">100</span>, <span class="number">100</span>)
+                    :fillColor(<span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>)
+                :new <span class="string">'rectangle'</span>
+                    :left(layout:get(<span class="string">'@previous'</span>, <span class="string">'right'</span>) + <span class="number">10</span>)
+                    :y(<span class="number">0</span>)
+                    :size(<span class="number">100</span>, <span class="number">100</span>)
+                    :fillColor(<span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>, <span class="number">1</span>/<span class="number">2</span>)
+            :endChildren()
+            :wrap()
+            :center(love.graphics.getWidth()/<span class="number">2</span>)
+            :middle(love.graphics.getHeight()/<span class="number">2</span>)
+        :draw()
+<span class="keyword">end</span>
+</pre>
+
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-01-27 01:18:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

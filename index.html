@@ -1,0 +1,3099 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Charm Manual</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Charm</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Element">Element </a></li>
+<li><a href="#Transform">Transform </a></li>
+<li><a href="#Shape">Shape </a></li>
+<li><a href="#Rectangle">Rectangle </a></li>
+<li><a href="#Ellipse">Ellipse </a></li>
+<li><a href="#Image">Image </a></li>
+<li><a href="#Text">Text </a></li>
+<li><a href="#Paragraph">Paragraph </a></li>
+<li><a href="#Layout">Layout </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>charm</strong></li>
+</ul>
+<h2>Tutorials</h2>
+<ul class="nowrap">
+  <li><a href="tutorials/01-basic-usage.md.html">Basic usage
+</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>charm</code></h1>
+<p>Layout library for LÖVE.</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#new">new ()</a></td>
+	<td class="summary">Creates a new layout.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#extend">extend ([parent='base'])</a></td>
+	<td class="summary">Creates a new element class.</td>
+	</tr>
+</table>
+<h2><a href="#Element">Element </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Element.preserve">Element.preserve</a></td>
+	<td class="summary">A list of keys that should not be niled out at the end of a draw frame.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:new">Element:new ([x=0][, y=0][, width=0][, height=0])</a></td>
+	<td class="summary">Initializes the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:hasChildren">Element:hasChildren ()</a></td>
+	<td class="summary">Returns whether the element has any children.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:isColorSet">Element:isColorSet (color)</a></td>
+	<td class="summary">Returns whether a color is set.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:setColor">Element:setColor (propertyName, r[, g][, b][, a])</a></td>
+	<td class="summary">Sets a color property on an element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:x">Element.get:x ([origin=0])</a></td>
+	<td class="summary">Gets the x position of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:left">Element.get:left ()</a></td>
+	<td class="summary">Gets the x position of the left edge of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:centerX">Element.get:centerX ()</a></td>
+	<td class="summary">Gets the x position of the horizontal center of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:right">Element.get:right ()</a></td>
+	<td class="summary">Gets the x position of the right edge of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:y">Element.get:y ([origin=0])</a></td>
+	<td class="summary">Gets the y position of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:top">Element.get:top ()</a></td>
+	<td class="summary">Gets the y position of the top of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:centerY">Element.get:centerY ()</a></td>
+	<td class="summary">Gets the y position of the vertical center of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:bottom">Element.get:bottom ()</a></td>
+	<td class="summary">Gets the y position of the bottom of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:z">Element.get:z ()</a></td>
+	<td class="summary">Gets the z position of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:width">Element.get:width ()</a></td>
+	<td class="summary">Gets the width of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:height">Element.get:height ()</a></td>
+	<td class="summary">Gets the height of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:size">Element.get:size ()</a></td>
+	<td class="summary">Gets the width and height of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element.get:childrenBounds">Element.get:childrenBounds ()</a></td>
+	<td class="summary">Gets the bounds of the rectangle surrounding all of
+ the elements children (relative to the top-left corner
+ of the element).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:x">Element:x (x[, origin=0])</a></td>
+	<td class="summary">Sets the x position of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:left">Element:left (x)</a></td>
+	<td class="summary">Moves the left edge of the element to the specified x position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:centerX">Element:centerX (x)</a></td>
+	<td class="summary">Moves the horizontal center of the element to the specified x position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:right">Element:right (x)</a></td>
+	<td class="summary">Moves the right edge of the element to the specified x position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:y">Element:y (y[, origin=0])</a></td>
+	<td class="summary">Sets the y position of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:top">Element:top (y)</a></td>
+	<td class="summary">Moves the top of the element to the specified y position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:centerY">Element:centerY (y)</a></td>
+	<td class="summary">Moves the vertical center of the element to the specified y position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:bottom">Element:bottom (y)</a></td>
+	<td class="summary">Moves the bottom of the element to the specified y position.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:z">Element:z (z)</a></td>
+	<td class="summary">Sets the z position of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:shift">Element:shift (dx, dy)</a></td>
+	<td class="summary">Moves the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:width">Element:width (width)</a></td>
+	<td class="summary">Sets the width of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:height">Element:height (height)</a></td>
+	<td class="summary">Sets the height of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:size">Element:size (width, height)</a></td>
+	<td class="summary">Sets the width and height of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:bounds">Element:bounds (left, top, right, bottom)</a></td>
+	<td class="summary">Sets the element's position and size to match the specified bounds.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:clip">Element:clip ()</a></td>
+	<td class="summary">Enables clipping for this element, meaning that children will be cropped
+ to the visible area of the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:addChild">Element:addChild (child)</a></td>
+	<td class="summary">Adds a child to the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:onBeginChildren">Element:onBeginChildren (...)</a></td>
+	<td class="summary">Called when a <a href="index.html#Layout">Layout</a> starts assigning children to this element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:onAddChild">Element:onAddChild (child)</a></td>
+	<td class="summary">Called when a <a href="index.html#Layout">Layout</a> adds a child to this element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:onEndChildren">Element:onEndChildren (...)</a></td>
+	<td class="summary">Called when a <a href="index.html#Layout">Layout</a> stops assigning children to this element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:shiftChildren">Element:shiftChildren (dx, dy)</a></td>
+	<td class="summary">Moves the element's children.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:padLeft">Element:padLeft (padding)</a></td>
+	<td class="summary">Expands the element to the left.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:padTop">Element:padTop (padding)</a></td>
+	<td class="summary">Expands the element upward.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:padRight">Element:padRight (padding)</a></td>
+	<td class="summary">Expands the element to the right.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:padBottom">Element:padBottom (padding)</a></td>
+	<td class="summary">Expands the element downward.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:padX">Element:padX (padding)</a></td>
+	<td class="summary">Expands the element equally to the left and right.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:padY">Element:padY (padding)</a></td>
+	<td class="summary">Expands the element equally upwards and downwards.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:pad">Element:pad (padding)</a></td>
+	<td class="summary">Expands the element on all sides.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:expand">Element:expand ()</a></td>
+	<td class="summary">Grows an element until it contains all of its children.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:wrap">Element:wrap ()</a></td>
+	<td class="summary">Adjusts the element's dimensions so that it perfectly
+ surrounds its children.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:drawBottom">Element:drawBottom ()</a></td>
+	<td class="summary">Called before drawing the element's children.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:drawTop">Element:drawTop ()</a></td>
+	<td class="summary">Called after drawing the element's children.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:stencil">Element:stencil ()</a></td>
+	<td class="summary">Defines the area to crop the element's children to
+ if clipping is enabled.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Element:draw">Element:draw (stencilValue)</a></td>
+	<td class="summary">Draws the element.</td>
+	</tr>
+</table>
+<h2><a href="#Transform">Transform </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Transform:new">Transform:new (x, y)</a></td>
+	<td class="summary">Initializes the element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:angle">Transform:angle (angle)</a></td>
+	<td class="summary">Sets the angle of the transform.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:scaleX">Transform:scaleX (scale)</a></td>
+	<td class="summary">Sets the horizontal scaling factor of the transform.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:scaleY">Transform:scaleY (scale)</a></td>
+	<td class="summary">Sets the vertical scaling factor of the transform.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:scale">Transform:scale (scaleX[, scaleY=scaleX])</a></td>
+	<td class="summary">Sets the horizontal and vertical scaling factor of the transform.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:shearX">Transform:shearX (shear)</a></td>
+	<td class="summary">Sets the horizontal shearing factor of the transform.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:shearY">Transform:shearY (shear)</a></td>
+	<td class="summary">Sets the vertical shearing factor of the transform.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Transform:shear">Transform:shear (shearX[, shearY=shearX])</a></td>
+	<td class="summary">Sets the horizontal and vertical shearing factor of the transform.</td>
+	</tr>
+</table>
+<h2><a href="#Shape">Shape </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Shape:fillColor">Shape:fillColor (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the fill color of the shape.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Shape:outlineColor">Shape:outlineColor (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the outline color of the shape.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Shape:outlineWidth">Shape:outlineWidth (width)</a></td>
+	<td class="summary">Sets the width of the shape's outline.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Shape:drawShape">Shape:drawShape (mode)</a></td>
+	<td class="summary">Draws the shape.</td>
+	</tr>
+</table>
+<h2><a href="#Rectangle">Rectangle </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Rectangle:cornerRadius">Rectangle:cornerRadius (radiusX[, radiusY=radiusX])</a></td>
+	<td class="summary">Sets the radius of the corners of the rectangle.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Rectangle:cornerSegments">Rectangle:cornerSegments (segments)</a></td>
+	<td class="summary">Sets the number of segments used to draw the corners.</td>
+	</tr>
+</table>
+<h2><a href="#Ellipse">Ellipse </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Ellipse:segments">Ellipse:segments (segments)</a></td>
+	<td class="summary">Sets the number of segments used to draw the ellipse.</td>
+	</tr>
+</table>
+<h2><a href="#Image">Image </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Image:new">Image:new (image, x, y)</a></td>
+	<td class="summary">Initializes the image.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Image:scaleX">Image:scaleX (scale)</a></td>
+	<td class="summary">Sets the width of the image relative to its original width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Image:scaleY">Image:scaleY (scale)</a></td>
+	<td class="summary">Sets the height of the image relative to its original width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Image:scale">Image:scale (scaleX[, scaleY=scaleX])</a></td>
+	<td class="summary">Sets the width and height of the image relative to its original dimensions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Image:color">Image:color (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the blend color of the image.</td>
+	</tr>
+</table>
+<h2><a href="#Text">Text </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Text:new">Text:new (font, text, x, y)</a></td>
+	<td class="summary">Initializes the text.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:scaleX">Text:scaleX (scale)</a></td>
+	<td class="summary">Sets the width of the text relative to its original width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:scaleY">Text:scaleY (scale)</a></td>
+	<td class="summary">Sets the height of the text relative to its original width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:scale">Text:scale (scaleX[, scaleY=scaleX])</a></td>
+	<td class="summary">Sets the width and height of the text relative to its original dimensions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:color">Text:color (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the color of the text.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:shadowColor">Text:shadowColor (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the color of the text's shadow.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:shadowOffsetX">Text:shadowOffsetX (offset)</a></td>
+	<td class="summary">Sets the horizontal offset of the text's shadow.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:shadowOffsetY">Text:shadowOffsetY (offset)</a></td>
+	<td class="summary">Sets the vertical offset of the text's shadow.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Text:shadowOffset">Text:shadowOffset (offsetX[, offsetY=offsetX])</a></td>
+	<td class="summary">Sets the horizontal and vertical offset of the text's shadow.</td>
+	</tr>
+</table>
+<h2><a href="#Paragraph">Paragraph </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:new">Paragraph:new (font, text, limit, align, x, y)</a></td>
+	<td class="summary">Initializes the paragraph.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:scaleX">Paragraph:scaleX (scale)</a></td>
+	<td class="summary">Sets the width of the paragraph relative to its original width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:scaleY">Paragraph:scaleY (scale)</a></td>
+	<td class="summary">Sets the height of the paragraph relative to its original width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:scale">Paragraph:scale (scaleX[, scaleY=scaleX])</a></td>
+	<td class="summary">Sets the width and height of the paragraph relative to its original dimensions.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:color">Paragraph:color (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the color of the paragraph.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:shadowColor">Paragraph:shadowColor (r[, g][, b][, a])</a></td>
+	<td class="summary">Sets the color of the paragraph's shadow.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:shadowOffsetX">Paragraph:shadowOffsetX (offset)</a></td>
+	<td class="summary">Sets the horizontal offset of the paragraph's shadow.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:shadowOffsetY">Paragraph:shadowOffsetY (offset)</a></td>
+	<td class="summary">Sets the vertical offset of the paragraph's shadow.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Paragraph:shadowOffset">Paragraph:shadowOffset (offsetX[, offsetY=offsetX])</a></td>
+	<td class="summary">Sets the horizontal and vertical offset of the paragraph's shadow.</td>
+	</tr>
+</table>
+<h2><a href="#Layout">Layout </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Layout:getElement">Layout:getElement (name)</a></td>
+	<td class="summary">Gets an element table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:get">Layout:get (elementName, propertyName, ...)</a></td>
+	<td class="summary">Gets the value of an element's property.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:select">Layout:select (name)</a></td>
+	<td class="summary">Selects an element for future operations to affect.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:add">Layout:add (element)</a></td>
+	<td class="summary">Adds an existing element to the element tree.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:new">Layout:new (elementClass, ...)</a></td>
+	<td class="summary">Creates a new element and adds it to the element tree.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:name">Layout:name (name)</a></td>
+	<td class="summary">Names the currently selected element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:beginChildren">Layout:beginChildren (...)</a></td>
+	<td class="summary">Starts adding children to the currently selected element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:endChildren">Layout:endChildren (...)</a></td>
+	<td class="summary">Finishes adding children to the current parent element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Layout:draw">Layout:draw ()</a></td>
+	<td class="summary">Draws and clears out the element tree.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "new"></a>
+    <strong>new ()</strong>
+    </dt>
+    <dd>
+    Creates a new layout.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#Layout">Layout</a></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "extend"></a>
+    <strong>extend ([parent='base'])</strong>
+    </dt>
+    <dd>
+    Creates a new element class.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">parent</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the element class to extend from.
+ This can be the element class table itself, or the name of a built-in
+ element class.
+         (<em>default</em> 'base')
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Element"></a>Element </h2>
+
+          <div class="section-description">
+          The base class for all elements.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Element.preserve"></a>
+    <strong>Element.preserve</strong>
+    </dt>
+    <dd>
+    A list of keys that should not be niled out at the end of a draw frame.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:new"></a>
+    <strong>Element:new ([x=0][, y=0][, width=0][, height=0])</strong>
+    </dt>
+    <dd>
+    Initializes the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+         the x position of the element
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+         the y position of the element
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">width</span>
+            <span class="types"><span class="type">number</span></span>
+         the width of the element
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">height</span>
+            <span class="types"><span class="type">number</span></span>
+         the height of the element
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:hasChildren"></a>
+    <strong>Element:hasChildren ()</strong>
+    </dt>
+    <dd>
+    Returns whether the element has any children.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:isColorSet"></a>
+    <strong>Element:isColorSet (color)</strong>
+    </dt>
+    <dd>
+    Returns whether a color is set.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">color</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the name of the color to check
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:setColor"></a>
+    <strong>Element:setColor (propertyName, r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets a color property on an element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">propertyName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the name of the property to set
+        </li>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:x"></a>
+    <strong>Element.get:x ([origin=0])</strong>
+    </dt>
+    <dd>
+    Gets the x position of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">origin</span>
+            <span class="types"><span class="type">number</span></span>
+         the origin to get the x position with respect to. 0 = left, .5 = center, 1 = right
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:left"></a>
+    <strong>Element.get:left ()</strong>
+    </dt>
+    <dd>
+    Gets the x position of the left edge of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:centerX"></a>
+    <strong>Element.get:centerX ()</strong>
+    </dt>
+    <dd>
+    Gets the x position of the horizontal center of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:right"></a>
+    <strong>Element.get:right ()</strong>
+    </dt>
+    <dd>
+    Gets the x position of the right edge of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:y"></a>
+    <strong>Element.get:y ([origin=0])</strong>
+    </dt>
+    <dd>
+    Gets the y position of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">origin</span>
+            <span class="types"><span class="type">number</span></span>
+         the origin to get the y position with respect to. 0 = top, .5 = center, 1 = bottom
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:top"></a>
+    <strong>Element.get:top ()</strong>
+    </dt>
+    <dd>
+    Gets the y position of the top of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:centerY"></a>
+    <strong>Element.get:centerY ()</strong>
+    </dt>
+    <dd>
+    Gets the y position of the vertical center of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:bottom"></a>
+    <strong>Element.get:bottom ()</strong>
+    </dt>
+    <dd>
+    Gets the y position of the bottom of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:z"></a>
+    <strong>Element.get:z ()</strong>
+    </dt>
+    <dd>
+    Gets the z position of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:width"></a>
+    <strong>Element.get:width ()</strong>
+    </dt>
+    <dd>
+    Gets the width of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:height"></a>
+    <strong>Element.get:height ()</strong>
+    </dt>
+    <dd>
+    Gets the height of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:size"></a>
+    <strong>Element.get:size ()</strong>
+    </dt>
+    <dd>
+    Gets the width and height of the element.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        the width of the element</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        the height of the element</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element.get:childrenBounds"></a>
+    <strong>Element.get:childrenBounds ()</strong>
+    </dt>
+    <dd>
+    Gets the bounds of the rectangle surrounding all of
+ the elements children (relative to the top-left corner
+ of the element).
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        the left bound of the children</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        the top bound of the children</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        the right bound of the children</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        the bottom bound of the children</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:x"></a>
+    <strong>Element:x (x[, origin=0])</strong>
+    </dt>
+    <dd>
+    Sets the x position of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+         the new x position of the element
+        </li>
+        <li><span class="parameter">origin</span>
+            <span class="types"><span class="type">number</span></span>
+         the origin to set the position with respect to. 0 = left, .5 = center, 1 = right
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:left"></a>
+    <strong>Element:left (x)</strong>
+    </dt>
+    <dd>
+    Moves the left edge of the element to the specified x position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:centerX"></a>
+    <strong>Element:centerX (x)</strong>
+    </dt>
+    <dd>
+    Moves the horizontal center of the element to the specified x position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:right"></a>
+    <strong>Element:right (x)</strong>
+    </dt>
+    <dd>
+    Moves the right edge of the element to the specified x position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:y"></a>
+    <strong>Element:y (y[, origin=0])</strong>
+    </dt>
+    <dd>
+    Sets the y position of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+         the new y position of the element
+        </li>
+        <li><span class="parameter">origin</span>
+            <span class="types"><span class="type">number</span></span>
+         the origin to set the position with respect to. 0 = top, .5 = center, 1 = bottom
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:top"></a>
+    <strong>Element:top (y)</strong>
+    </dt>
+    <dd>
+    Moves the top of the element to the specified y position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:centerY"></a>
+    <strong>Element:centerY (y)</strong>
+    </dt>
+    <dd>
+    Moves the vertical center of the element to the specified y position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:bottom"></a>
+    <strong>Element:bottom (y)</strong>
+    </dt>
+    <dd>
+    Moves the bottom of the element to the specified y position.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:z"></a>
+    <strong>Element:z (z)</strong>
+    </dt>
+    <dd>
+    Sets the z position of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:shift"></a>
+    <strong>Element:shift (dx, dy)</strong>
+    </dt>
+    <dd>
+    Moves the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">dx</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to move the element horizontally
+        </li>
+        <li><span class="parameter">dy</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to move the element vertically
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:width"></a>
+    <strong>Element:width (width)</strong>
+    </dt>
+    <dd>
+    Sets the width of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">width</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:height"></a>
+    <strong>Element:height (height)</strong>
+    </dt>
+    <dd>
+    Sets the height of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">height</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:size"></a>
+    <strong>Element:size (width, height)</strong>
+    </dt>
+    <dd>
+    Sets the width and height of the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">width</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">height</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:bounds"></a>
+    <strong>Element:bounds (left, top, right, bottom)</strong>
+    </dt>
+    <dd>
+    Sets the element's position and size to match the specified bounds.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">left</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">top</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">right</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">bottom</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:clip"></a>
+    <strong>Element:clip ()</strong>
+    </dt>
+    <dd>
+    Enables clipping for this element, meaning that children will be cropped
+ to the visible area of the element.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:addChild"></a>
+    <strong>Element:addChild (child)</strong>
+    </dt>
+    <dd>
+    Adds a child to the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">child</span>
+            <span class="types"><a class="type" href="index.html#Element">Element</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:onBeginChildren"></a>
+    <strong>Element:onBeginChildren (...)</strong>
+    </dt>
+    <dd>
+    Called when a <a href="index.html#Layout">Layout</a> starts assigning children to this element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         additional arguments passed to layout.beginChildren
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:onAddChild"></a>
+    <strong>Element:onAddChild (child)</strong>
+    </dt>
+    <dd>
+    Called when a <a href="index.html#Layout">Layout</a> adds a child to this element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">child</span>
+            <span class="types"><a class="type" href="index.html#Element">Element</a></span>
+         the child to add
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:onEndChildren"></a>
+    <strong>Element:onEndChildren (...)</strong>
+    </dt>
+    <dd>
+    Called when a <a href="index.html#Layout">Layout</a> stops assigning children to this element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         additional arguments passed to layout.endChildren
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:shiftChildren"></a>
+    <strong>Element:shiftChildren (dx, dy)</strong>
+    </dt>
+    <dd>
+    Moves the element's children.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">dx</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to move the children horizontally
+        </li>
+        <li><span class="parameter">dy</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to move the children vertically
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:padLeft"></a>
+    <strong>Element:padLeft (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element to the left.  Children's positions
+ will be adjusted as necessary to maintain their position
+ on screen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:padTop"></a>
+    <strong>Element:padTop (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element upward.  Children's positions
+ will be adjusted as necessary to maintain their position
+ on screen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:padRight"></a>
+    <strong>Element:padRight (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element to the right.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:padBottom"></a>
+    <strong>Element:padBottom (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element downward.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:padX"></a>
+    <strong>Element:padX (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element equally to the left and right.
+ Children's positions will be adjusted as necessary to
+ maintain their position on screen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:padY"></a>
+    <strong>Element:padY (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element equally upwards and downwards.
+ Children's positions will be adjusted as necessary to
+ maintain their position on screen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:pad"></a>
+    <strong>Element:pad (padding)</strong>
+    </dt>
+    <dd>
+    Expands the element on all sides.
+ Children's positions will be adjusted as necessary to
+ maintain their position on screen.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">padding</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount to expand the element
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:expand"></a>
+    <strong>Element:expand ()</strong>
+    </dt>
+    <dd>
+    Grows an element until it contains all of its children.
+ The children's positions will be adjusted as necessary
+ to maintain the same position on screen.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:wrap"></a>
+    <strong>Element:wrap ()</strong>
+    </dt>
+    <dd>
+    Adjusts the element's dimensions so that it perfectly
+ surrounds its children.  The children's positions will be
+ adjusted to maintain the same position on screen.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:drawBottom"></a>
+    <strong>Element:drawBottom ()</strong>
+    </dt>
+    <dd>
+    Called before drawing the element's children.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:drawTop"></a>
+    <strong>Element:drawTop ()</strong>
+    </dt>
+    <dd>
+    Called after drawing the element's children.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:stencil"></a>
+    <strong>Element:stencil ()</strong>
+    </dt>
+    <dd>
+    Defines the area to crop the element's children to
+ if clipping is enabled.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Element:draw"></a>
+    <strong>Element:draw (stencilValue)</strong>
+    </dt>
+    <dd>
+    Draws the element.  In most cases, you won't need
+ to manually call this function or override it in
+ custom element classes.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">stencilValue</span>
+            <span class="types"><span class="type">number</span></span>
+         the pixel value to use to mask the
+ element. This should increase by 1 for every nested
+ child element.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Transform"></a>Transform </h2>
+
+          <div class="section-description">
+          Applies arbitrary transformations to child elements. </p>
+
+<p> Extends the <a href="index.html#Element">Element</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Transform:new"></a>
+    <strong>Transform:new (x, y)</strong>
+    </dt>
+    <dd>
+    Initializes the element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+         the horizontal position of the transform
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+         the vertical position of the transform
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:angle"></a>
+    <strong>Transform:angle (angle)</strong>
+    </dt>
+    <dd>
+    Sets the angle of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">angle</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:scaleX"></a>
+    <strong>Transform:scaleX (scale)</strong>
+    </dt>
+    <dd>
+    Sets the horizontal scaling factor of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:scaleY"></a>
+    <strong>Transform:scaleY (scale)</strong>
+    </dt>
+    <dd>
+    Sets the vertical scaling factor of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:scale"></a>
+    <strong>Transform:scale (scaleX[, scaleY=scaleX])</strong>
+    </dt>
+    <dd>
+    Sets the horizontal and vertical scaling factor of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scaleX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">scaleY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> scaleX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:shearX"></a>
+    <strong>Transform:shearX (shear)</strong>
+    </dt>
+    <dd>
+    Sets the horizontal shearing factor of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">shear</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:shearY"></a>
+    <strong>Transform:shearY (shear)</strong>
+    </dt>
+    <dd>
+    Sets the vertical shearing factor of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">shear</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Transform:shear"></a>
+    <strong>Transform:shear (shearX[, shearY=shearX])</strong>
+    </dt>
+    <dd>
+    Sets the horizontal and vertical shearing factor of the transform.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">shearX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">shearY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> shearX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Shape"></a>Shape </h2>
+
+          <div class="section-description">
+          A base class for elements that draw love.graphics
+ primitives with a fill color and an outline color.
+ This class isn't useful on its own; it's meant to be
+ extended by custom classes.</p>
+
+<p> Extends the <a href="index.html#Element">Element</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Shape:fillColor"></a>
+    <strong>Shape:fillColor (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the fill color of the shape.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Shape:outlineColor"></a>
+    <strong>Shape:outlineColor (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the outline color of the shape.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Shape:outlineWidth"></a>
+    <strong>Shape:outlineWidth (width)</strong>
+    </dt>
+    <dd>
+    Sets the width of the shape's outline.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">width</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Shape:drawShape"></a>
+    <strong>Shape:drawShape (mode)</strong>
+    </dt>
+    <dd>
+    Draws the shape.  Override this to define how the shape
+ will be drawn.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mode</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the drawing mode for the shape. Will be either
+ "fill" or "line".
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Rectangle"></a>Rectangle </h2>
+
+          <div class="section-description">
+          Draws a rectangle. </p>
+
+<p> Extends the <a href="index.html#Shape">Shape</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Rectangle:cornerRadius"></a>
+    <strong>Rectangle:cornerRadius (radiusX[, radiusY=radiusX])</strong>
+    </dt>
+    <dd>
+    Sets the radius of the corners of the rectangle.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">radiusX</span>
+            <span class="types"><span class="type">number</span></span>
+         the horizontal radius
+        </li>
+        <li><span class="parameter">radiusY</span>
+            <span class="types"><span class="type">number</span></span>
+         the vertical radius
+         (<em>default</em> radiusX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Rectangle:cornerSegments"></a>
+    <strong>Rectangle:cornerSegments (segments)</strong>
+    </dt>
+    <dd>
+    Sets the number of segments used to draw the corners.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">segments</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Ellipse"></a>Ellipse </h2>
+
+          <div class="section-description">
+          Draws an ellipse. </p>
+
+<p> Extends the <a href="index.html#Shape">Shape</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Ellipse:segments"></a>
+    <strong>Ellipse:segments (segments)</strong>
+    </dt>
+    <dd>
+    Sets the number of segments used to draw the ellipse.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">segments</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Image"></a>Image </h2>
+
+          <div class="section-description">
+          Draws an image. </p>
+
+<p> Extends the <a href="index.html#Element">Element</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Image:new"></a>
+    <strong>Image:new (image, x, y)</strong>
+    </dt>
+    <dd>
+    Initializes the image.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">image</span>
+            <span class="types"><a class="type" href="index.html#Image">Image</a></span>
+         the image to use
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+         the horizontal position of the image
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+         the vertical position of the image
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Image:scaleX"></a>
+    <strong>Image:scaleX (scale)</strong>
+    </dt>
+    <dd>
+    Sets the width of the image relative to its original width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Image:scaleY"></a>
+    <strong>Image:scaleY (scale)</strong>
+    </dt>
+    <dd>
+    Sets the height of the image relative to its original width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Image:scale"></a>
+    <strong>Image:scale (scaleX[, scaleY=scaleX])</strong>
+    </dt>
+    <dd>
+    Sets the width and height of the image relative to its original dimensions.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scaleX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">scaleY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> scaleX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Image:color"></a>
+    <strong>Image:color (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the blend color of the image.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Text"></a>Text </h2>
+
+          <div class="section-description">
+          Draws text. </p>
+
+<p> Extends the <a href="index.html#Element">Element</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Text:new"></a>
+    <strong>Text:new (font, text, x, y)</strong>
+    </dt>
+    <dd>
+    Initializes the text.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">font</span>
+            <span class="types"><span class="type">Font</span></span>
+         the font to use
+        </li>
+        <li><span class="parameter">text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the text to draw
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+         the horizontal position of the text
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+         the vertical position of the text
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:scaleX"></a>
+    <strong>Text:scaleX (scale)</strong>
+    </dt>
+    <dd>
+    Sets the width of the text relative to its original width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:scaleY"></a>
+    <strong>Text:scaleY (scale)</strong>
+    </dt>
+    <dd>
+    Sets the height of the text relative to its original width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:scale"></a>
+    <strong>Text:scale (scaleX[, scaleY=scaleX])</strong>
+    </dt>
+    <dd>
+    Sets the width and height of the text relative to its original dimensions.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scaleX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">scaleY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> scaleX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:color"></a>
+    <strong>Text:color (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the color of the text.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:shadowColor"></a>
+    <strong>Text:shadowColor (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the color of the text's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:shadowOffsetX"></a>
+    <strong>Text:shadowOffsetX (offset)</strong>
+    </dt>
+    <dd>
+    Sets the horizontal offset of the text's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">offset</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:shadowOffsetY"></a>
+    <strong>Text:shadowOffsetY (offset)</strong>
+    </dt>
+    <dd>
+    Sets the vertical offset of the text's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">offset</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Text:shadowOffset"></a>
+    <strong>Text:shadowOffset (offsetX[, offsetY=offsetX])</strong>
+    </dt>
+    <dd>
+    Sets the horizontal and vertical offset of the text's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">offsetX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">offsetY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> offsetX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Paragraph"></a>Paragraph </h2>
+
+          <div class="section-description">
+          Draws a paragraph of text.  In contrast to the <a href="index.html#Text">Text</a>
+ element, this element automatically inserts line breaks
+ to stay within a certain width. It also supports
+ different align modes.</p>
+
+<p> Extends the <a href="index.html#Element">Element</a> class.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Paragraph:new"></a>
+    <strong>Paragraph:new (font, text, limit, align, x, y)</strong>
+    </dt>
+    <dd>
+    Initializes the paragraph.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">font</span>
+            <span class="types"><span class="type">Font</span></span>
+         the font to use
+        </li>
+        <li><span class="parameter">text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the text to draw
+        </li>
+        <li><span class="parameter">limit</span>
+            <span class="types"><span class="type">number</span></span>
+         the amount of horizontal space the text
+ can span before a line break occurs
+        </li>
+        <li><span class="parameter">align</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         how to align the text. Can be "left", "center", "right", or "justify".
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">number</span></span>
+         the horizontal position of the paragraph
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">number</span></span>
+         the vertical position of the paragraph
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:scaleX"></a>
+    <strong>Paragraph:scaleX (scale)</strong>
+    </dt>
+    <dd>
+    Sets the width of the paragraph relative to its original width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:scaleY"></a>
+    <strong>Paragraph:scaleY (scale)</strong>
+    </dt>
+    <dd>
+    Sets the height of the paragraph relative to its original width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scale</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:scale"></a>
+    <strong>Paragraph:scale (scaleX[, scaleY=scaleX])</strong>
+    </dt>
+    <dd>
+    Sets the width and height of the paragraph relative to its original dimensions.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">scaleX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">scaleY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> scaleX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:color"></a>
+    <strong>Paragraph:color (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the color of the paragraph.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:shadowColor"></a>
+    <strong>Paragraph:shadowColor (r[, g][, b][, a])</strong>
+    </dt>
+    <dd>
+    Sets the color of the paragraph's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">number</span></span>
+         the red component of the color, or a table containing all of the color components
+        </li>
+        <li><span class="parameter">g</span>
+            <span class="types"><span class="type">number</span></span>
+         the green component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         the blue component of the color
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         the alpha component of the color
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:shadowOffsetX"></a>
+    <strong>Paragraph:shadowOffsetX (offset)</strong>
+    </dt>
+    <dd>
+    Sets the horizontal offset of the paragraph's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">offset</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:shadowOffsetY"></a>
+    <strong>Paragraph:shadowOffsetY (offset)</strong>
+    </dt>
+    <dd>
+    Sets the vertical offset of the paragraph's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">offset</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Paragraph:shadowOffset"></a>
+    <strong>Paragraph:shadowOffset (offsetX[, offsetY=offsetX])</strong>
+    </dt>
+    <dd>
+    Sets the horizontal and vertical offset of the paragraph's shadow.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">offsetX</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">offsetY</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>default</em> offsetX)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Layout"></a>Layout </h2>
+
+          <div class="section-description">
+          Creates, manages, and draws elements.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Layout:getElement"></a>
+    <strong>Layout:getElement (name)</strong>
+    </dt>
+    <dd>
+    Gets an element table.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the name of the element to get
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:get"></a>
+    <strong>Layout:get (elementName, propertyName, ...)</strong>
+    </dt>
+    <dd>
+    Gets the value of an element's property.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">elementName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         the name of the element to get the property from, or the element table itself
+        </li>
+        <li><span class="parameter">propertyName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         the name of the property to get
+        </li>
+        <li><span class="parameter">...</span>
+         additional arguments to pass to the element's property getter
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the property value
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:select"></a>
+    <strong>Layout:select (name)</strong>
+    </dt>
+    <dd>
+    Selects an element for future operations to affect.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         the name of the element to select, or the element table itself
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:add"></a>
+    <strong>Layout:add (element)</strong>
+    </dt>
+    <dd>
+    Adds an existing element to the element tree.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">element</span>
+            <span class="types"><a class="type" href="index.html#Element">Element</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:new"></a>
+    <strong>Layout:new (elementClass, ...)</strong>
+    </dt>
+    <dd>
+    Creates a new element and adds it to the element tree.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">elementClass</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         the type of element to create
+        </li>
+        <li><span class="parameter">...</span>
+         additional arguments to pass to the new element's constructor
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:name"></a>
+    <strong>Layout:name (name)</strong>
+    </dt>
+    <dd>
+    Names the currently selected element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:beginChildren"></a>
+    <strong>Layout:beginChildren (...)</strong>
+    </dt>
+    <dd>
+    Starts adding children to the currently selected element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         additional arguments to pass to the parent element's onBeginChildren callback
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:endChildren"></a>
+    <strong>Layout:endChildren (...)</strong>
+    </dt>
+    <dd>
+    Finishes adding children to the current parent element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         additional arguments to pass to the parent element's onEndChildren callback
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Layout:draw"></a>
+    <strong>Layout:draw ()</strong>
+    </dt>
+    <dd>
+    Draws and clears out the element tree.
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-01-27 01:18:16 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
