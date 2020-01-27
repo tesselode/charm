@@ -1,8 +1,6 @@
 Charm
 =====
-Charm is a library for LÖVE that makes it easier to arrange and draw graphics, such as shapes, images, and text. It excels at relative positioning, which can become cumbersome as a layout gets more complex. It also handles mouse events, so it can be used for basic UI tasks, like creating buttons.
-
-This library is similar to [Boxer](https://github.com/tesselode/boxer), but it's **immediate mode**, which means that instead of creating objects that represent each graphic you want to draw, you simply tell Charm what you want to draw on each frame.
+Charm is a library for LÖVE that makes it easier to arrange and draw graphics, such as shapes, images, and text. It's great for managing complex layouts with specific alignment and grouping needs.
 
 Example
 -------
