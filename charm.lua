@@ -830,12 +830,12 @@ local Rectangle = newElementClass(Shape)
 
 --- Sets the radius of the corners of the rectangle.
 -- @number radiusX the horizontal radius
--- @number radiusY the vertical radius
+-- @number[opt=radiusX] radiusY the vertical radius
 function Rectangle:cornerRadius(radiusX, radiusY)
 	checkArgument(1, radiusX, 'number')
-	checkArgument(2, radiusY, 'number')
+	checkOptionalArgument(2, radiusY, 'number')
 	self._cornerRadiusX = radiusX
-	self._cornerRadiusY = radiusY
+	self._cornerRadiusY = radiusY or radiusX
 end
 
 --- Sets the number of segments used to draw the corners.
