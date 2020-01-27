@@ -222,10 +222,24 @@ function Element:setColor(propertyName, r, g, b, a)
 		checkArgument(3, b, 'number')
 		checkOptionalArgument(4, a, 'number')
 	end
+	self[propertyName] = self[propertyName] or {}
 	if type(r) == 'table' then
-		self[propertyName] = r
+		--[[
+			You might be wondering, if r is already a table,
+			why not just set self[propertyName] to r?
+			The color table gets cleared after each draw.
+			If we make self[propertyName] a reference to the
+			table the user provided, then we'll end up
+			clearing that table. The user might actually
+			want to keep that table. So to avoid clobbering
+			the user's data, we just copy the values from their
+			table to our own.
+		]]
+		self[propertyName][1] = r[1]
+		self[propertyName][2] = r[2]
+		self[propertyName][3] = r[3]
+		self[propertyName][4] = r[4]
 	else
-		self[propertyName] = self[propertyName] or {}
 		self[propertyName][1] = r
 		self[propertyName][2] = g
 		self[propertyName][3] = b
