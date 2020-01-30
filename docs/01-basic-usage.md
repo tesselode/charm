@@ -46,8 +46,10 @@ function love.draw()
 		:new('rectangle', 50, 50, 100, 150)
 			:name 'eleanor'
 			:fillColor(.5, .5, .5)
-		:draw()
+	-- Prints "100	200"
 	print(layout:get('eleanor', 'x', .5), layout:get('eleanor', 'y', 1))
+
+	layout:draw()
 end
 ```
 `get` takes at least two arguments:
@@ -56,15 +58,19 @@ end
 
 The next arguments depend on the property we're getting. In this case, the third argument is the **origin**, which is a number from 0-1 that represents how far along the axis we should travel to find the point. So `get(name, 'x', 0)` would get the x position of the left edge of the box, `get(name, 'x', 0.5)` would get the x position of the horizontal center of the box, and `get(name, 'x', 1)` would get the x position of the right edge of the box. We can also use any origin in between.
 
-There's also some shortcut properties for getting x and y positions: `left`, `center`, and `right` return the left edge, horizontal center, and right edge of a box respectively, and `top`, `middle`, and `bottom` return the top edge, vertical center, and bottom edge of a box respectively. So we could write the above code like this:
+Note: Calling `layout:draw()` will clear the element tree of its state, and therefore attempting to call `get` with a named element will fail. In the above example, you can see we retrieve the `x` and `y` values _prior_ to calling `draw`.
+
+There's also some shortcut properties for getting x and y positions: `left`, `centerX`, and `right` return the left edge, horizontal center, and right edge of a box respectively, and `top`, `centerY`, and `bottom` return the top edge, vertical center, and bottom edge of a box respectively. So we could write the above code like this:
 ```lua
 function love.draw()
 	layout
 		:new('rectangle', 50, 50, 100, 150)
 			:name 'eleanor'
 			:fillColor(.5, .5, .5)
-		:draw()
+	-- Prints "100	200"
 	print(layout:get('eleanor', 'left'), layout:get('eleanor', 'bottom'))
+
+	layout:draw()
 end
 ```
 We can also set the positions of elements that we've created. `layout.x` and `layout.y` take two arguments: the target position and the origin to set to that position. Note that the position setter functions do *not* take a name argument, as they will always modify the position of the most recently created element.
@@ -82,7 +88,7 @@ function love.draw()
 		:draw()
 end
 ```
-Like with the position getter functions, we have shortcut functions for setting the position of an element: `left`, `center`, `right`, `top`, `middle`, and `bottom`. So we could write the above code like this:
+Like with the position getter functions, we have shortcut functions for setting the position of an element: `left`, `centerY`, `right`, `top`, `centerY`, and `bottom`. So we could write the above code like this:
 ```lua
 function love.draw()
 	layout
@@ -105,7 +111,7 @@ function love.draw()
 		:new 'rectangle'
 			:width(50):height(50)
 			:left(layout:get('eleanor', 'right'))
-			:middle(layout:get('eleanor', 'middle'))
+			:centerY(layout:get('eleanor', 'centerY'))
 		:draw()
 end
 ```
@@ -142,8 +148,8 @@ function love.draw()
 					:fillColor(1/2, 1/2, 1/2)
 			:endChildren()
 			:wrap()
-			:center(love.graphics.getWidth()/2)
-			:middle(love.graphics.getHeight()/2)
+			:centerX(love.graphics.getWidth()/2)
+			:centerY(love.graphics.getHeight()/2)
 		:draw()
 end
 ```
@@ -170,8 +176,8 @@ function love.draw()
 					:fillColor(1/2, 1/2, 1/2)
 			:endChildren()
 			:wrap()
-			:center(love.graphics.getWidth()/2)
-			:middle(love.graphics.getHeight()/2)
+			:centerX(love.graphics.getWidth()/2)
+			:centerY(love.graphics.getHeight()/2)
 		:draw()
 end
 ```
