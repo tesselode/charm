@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Charm Manual</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Charm</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#How_layouts_manage_elements">How layouts manage elements </a></li>
+<li><a href="#How_element_classes_work">How element classes work </a></li>
+<li><a href="#Creating_new_classes">Creating new classes </a></li>
+<li><a href="#Callbacks">Callbacks </a></li>
+<li><a href="#Useful_utilities">Useful utilities </a></li>
+</ul>
+
+
+<h2>Tutorials</h2>
+<ul class="nowrap">
+  <li><a href="../tutorials/01-basic-usage.md.html">Basic usage
+</a></li>
+  <li><strong>Extending Charm
+</strong></li>
+</ul>
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">charm</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Extending Charm</h1>
+<p>While Charm's built-in elements are useful, they can't cover all situations. Charm lets you create your own <strong>element classes</strong> that can extend and replace behavior from the built-in classes.</p>
+
+<p><a name="How_layouts_manage_elements"></a></p>
+<h2>How layouts manage elements</h2>
+<p>Before you create your element class, it's important to understand how layout objects deal with element instances.</p>
+
+<p>Charm is immediate mode, so the user is recreating the element tree every frame. To keep this process memory-efficient, the layout object clears out and reuses old element instances whenever possible.</p>
+
+<p>When clearing out element instances:
+- Tables are cleared, leaving an empty table
+- All other values are niled out</p>
+
+<p>Therefore, when writing element classes, you should keep in mind that:
+- Values you set on an element instance will not be remembered after the next <a href="../index.html#Layout:draw">draw</a>
+- Empty tables may be left behind from previous element trees</p>
+
+<p>If you don't want a certain value to be cleared out, you can add a variable name to the <a href="../index.html#Element.preserve">preserve</a> table on your element class.</p>
+
+<p><a name="How_element_classes_work"></a></p>
+<h2>How element classes work</h2>
+<p>Most of the time, when you call a function on a <a href="../index.html#Layout">Layout</a>, you're really calling a function on an element class.</p>
+
+<p>For example, here's the constructor for <a href="../index.html#Image">Image</a>s:</p>
+
+<pre>
+<span class="keyword">function</span> Image:new(image, x, y)
+    <span class="comment">-- not pictured: some error checking code
+</span>    self._image = image
+    self._naturalWidth = image:getWidth()
+    self._naturalHeight = image:getHeight()
+    self._x = x
+    self._y = y
+    self._width = self._naturalWidth
+    self._height = self._naturalHeight
+<span class="keyword">end</span>
+</pre>
+
+<p>When you call <code>layout:new(&apos;image&apos;, image, x, y)</code>, every argument after the first one is passed to <code>Image.new</code> to initialize it.</p>
+
+<p>In fact, if you call any function on a <a href="../index.html#Layout">Layout</a> that isn't already defined on the <a href="../index.html#Layout">Layout</a> class, it calls the corresponding function on the class of the currently selected element. Functions like <a href="../index.html#Element:left">left</a>, <a href="../index.html#Shape:fillColor">fillColor</a>, and <a href="../index.html#Element:wrap">wrap</a> all live on the base element class.</p>
+
+<p><code>layout.get</code> works similarly: it calls the function <code>ElementClass.get[propertyName]</code>. So <code>layout:get(&apos;@current&apos;, &apos;x&apos;, .5)</code> is calling this function defined in the base element class:</p>
+
+<pre>
+<span class="keyword">function</span> Element.get:x(origin)
+    origin = origin <span class="keyword">or</span> <span class="number">0</span>
+    <span class="keyword">return</span> (self._x <span class="keyword">or</span> <span class="number">0</span>) + self:get <span class="string">'width'</span> * origin
+<span class="keyword">end</span>
+</pre>
+
+
+<p>Because most functionality lives on the element classes, you have a lot of power to reshape how Charm works.</p>
+
+<p><a name="Creating_new_classes"></a></p>
+<h2>Creating new classes</h2>
+<p>To create a new class, use <a href="../index.html#extend">charm.extend</a>.</p>
+
+<p><a name="Callbacks"></a></p>
+<h2>Callbacks</h2>
+<p>Here's the important callbacks that you may want to define:</p>
+
+<ul>
+    <li><a href="../index.html#new">new</a>: accepts arguments from <code>layout.new</code> and initializes the element</li>
+    <li><a href="../index.html#Element:drawBottom">drawBottom</a>: draws things below the element's children</li>
+    <li><a href="../index.html#Element:drawTop">drawTop</a>: draws things above the element's children</li>
+    <li><a href="../index.html#Element:stencil">stencil</a>: draws the stencil that's used to clip children to the visible area of the element (when clipping is enabled)</li>
+</ul>
+
+<p>You may want to change how an element manages its children. To do that, you can override these callbacks:</p>
+
+<ul>
+    <li><a href="../index.html#Element:onBeginChildren">onBeginChildren</a>: called when <code>layout.beginChildren</code> is called with this element as the parent. This callback accepts any additional arguments passed to <code>layout.beginChildren</code>. None of the built-in element classes make use of these additional arguments, but you could potentially use these to define different types of children.</li>
+    <li><a href="../index.html#Element:onAddChild">onAddChild</a>: called when an child is added to this element. You don't actually have to add it to the internal children list; you can do whatever you want!</li>
+    <li><a href="../index.html#Element:onEndChildren">onEndChildren</a>: called when <code>layout.endChildren</code> is called. Also accepts additional arguments.</li>
+</ul>
+
+<p>If you want to get real fancy, you can redefine the <a href="../index.html#Layout:draw">draw</a> callback. This callback has a decent amount of non-trivial code, and I tried to set things up so you wouldn't need to change this. But I can't stop you!</p>
+
+<p><a name="Useful_utilities"></a></p>
+<h2>Useful utilities</h2>
+<p>The base element class comes with some useful utilities for custom classes:</p>
+
+<ul>
+    <li><a href="../index.html#Element:hasChildren">hasChildren</a>: returns whether the element has any children</li>
+    <li><a href="../index.html#Element:isColorSet">isColorSet</a>: returns whether a value is a valid color</li>
+    <li><a href="../index.html#Element:setColor">setColor</a>: sets a variable with the specified name to the given color. This can take either 4 number arguments or 1 table argument.</li>
+</ul>
+
+<p>Sometimes, you may want to call a property getter from within an element class. Because the property getter functions live inside <code>ElementClass.get</code>, calling them is a bit cumbersome:</p>
+
+<pre>
+self.get.myCoolProperty(self, ...)
+</pre>
+
+<p>To make this a little more pleasant, you can call <code>ElementClass.get</code> as a function instead:</p>
+
+<pre>
+self:get(<span class="string">'myCoolProperty'</span>, ...)
+</pre>
+
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-02-05 00:39:55 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

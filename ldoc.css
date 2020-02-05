@@ -70,6 +70,10 @@ body {
     background-color: #ffffff; margin: 0px;
 }
 
+img {
+    max-width: 100%;
+}
+
 code, tt { font-family: monospace; font-size: 1.1em; }
 span.parameter { font-family:monospace; }
 span.parameter:after { content:":"; }
