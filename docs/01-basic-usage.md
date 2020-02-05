@@ -216,4 +216,6 @@ end
 
 ![](images/6.png)
 
-For more info on how to use these, see the [API](https://tesselode.github.io/charm/).
+For more info on how to use these, see the @{charm|API}.
+
+Of course, the built-in element types may not suit all of your needs. In that case, you should read about how to @{02-extending-charm.md|extend Charm}.
