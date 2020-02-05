@@ -180,3 +180,40 @@ function love.draw()
 		:draw()
 end
 ```
+
+## Drawing things other than rectangles
+Of course, you can use Charm for things other than rectangles. Here's an example of some of the other elements Charm has built-in:
+```lua
+local beanMan = love.graphics.newImage 'bean man.jpg'
+local font = love.graphics.newFont(24)
+local layout = require 'charm'.new()
+local text = [[Lorem ipsum dolor sit amet,
+consectetur adipiscing elit.
+Sed ullamcorper dapibus dui.
+Maecenas nec accumsan nulla.]]
+
+function love.draw()
+	layout
+		-- rectangle with an outline and rounded corners
+		:new('rectangle', 50, 50, 200, 200)
+			:fillColor(.25, .25, .25)
+			:outlineColor(1, 1, 1)
+			:cornerRadius(10, 20)
+		-- ellipse
+		:new('ellipse', 50, 300, 100, 200)
+			:fillColor(.25, .25, .35)
+		-- images
+		:new('image', beanMan, 400, 50)
+			:scale(.5)
+		-- text with shadow
+		:new('text', font, text, 400, 300)
+			:color(1, .8, .8)
+			:shadowColor(.8, 0, 0)
+			:shadowOffset(-2, 2)
+		:draw()
+end
+```
+
+![](images/6.png)
+
+For more info on how to use these, see the [API](https://tesselode.github.io/charm/).
