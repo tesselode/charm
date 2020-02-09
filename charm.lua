@@ -647,11 +647,13 @@ function Transform:_update()
 	local childrenLeft, childrenTop, childrenRight, childrenBottom = self:get 'childrenBounds'
 	local childrenWidth = childrenRight - childrenLeft
 	local childrenHeight = childrenBottom - childrenTop
+	local offsetX = childrenWidth * (self._originX or 0)
+	local offsetY = childrenHeight * (self._originY or 0)
 	self._transform:setTransformation(
-		0, 0,
+		offsetX, offsetY,
 		self._angle or 0,
 		self._scaleX or 1, self._scaleY or 1,
-		childrenWidth * (self._originX or 0), childrenHeight * (self._originY or 0),
+		offsetX, offsetY,
 		self._shearX or 0, self._shearY or 0
 	)
 	local x1, y1 = self._transform:transformPoint(childrenLeft, childrenTop)
