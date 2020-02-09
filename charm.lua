@@ -628,27 +628,6 @@ function Element:draw(stencilValue)
 	love.graphics.pop()
 end
 
---[[
-	Transform elements do two things:
-	- Apply an arbitrary transformation to a set of child elements
-	- Make a bounding box around the transformed child elements
-
-	When the scaling, shearing, or angle are changed or new children
-	are added, the transform element takes the following steps:
-	1. Get the rectangle around the children pre-transformation, including
-	any empty space above or to the left of the children
-	2. Get the corners of the rectangle
-	3. Transform each of those points
-	4. Make a new rectangle that contains the transformed points
-	5. Move and resize the transform element to match that rectangle
-	6. Set some variables to translate the children in the drawing phase
-	to compensate for the transform element's changed position (note
-	that this translation has to happen after the scaling/shearing/rotating,
-	otherwise the post-transform bounds of the children would change again.
-	This is also why we don't change the position of the children elements
-	using shiftChildren.)
-]]
-
 --- Applies arbitrary transformations to child elements.
 --
 -- Extends the @{Element} class.
@@ -658,20 +637,12 @@ local Transform = newElementClass(Element)
 Transform.preserve._transform = true
 
 --- Initializes the element.
--- @number x the horizontal position of the transform
--- @number y the vertical position of the transform
-function Transform:new(x, y)
-	checkOptionalArgument(2, x, 'number')
-	checkOptionalArgument(3, y, 'number')
-	self._x = x
-	self._y = y
+function Transform:new()
 	self._transform = self._transform or love.math.newTransform()
 	self._transform:reset()
-	self._childrenShiftX = 0
-	self._childrenShiftY = 0
 end
 
-function Transform:_getTransformedChildrenBounds()
+function Transform:_updateDimensions()
 	if not (self._children and #self._children > 0) then return end
 	local childrenLeft, childrenTop, childrenRight, childrenBottom = self:get 'childrenBounds'
 	local x1, y1 = self._transform:transformPoint(childrenLeft, childrenTop)
@@ -682,17 +653,8 @@ function Transform:_getTransformedChildrenBounds()
 	local top = math.min(y1, y2, y3, y4)
 	local right = math.max(x1, x2, x3, x4)
 	local bottom = math.max(y1, y2, y3, y4)
-	return left, top, right, bottom
-end
-
-function Transform:_updateDimensions()
-	if not (self._children and #self._children > 0) then return end
-	local left, top, right, bottom = self:_getTransformedChildrenBounds()
-	left = math.min(left, 0)
-	top = math.min(top, 0)
-	self:shift(left, top)
-	self._childrenShiftX = left
-	self._childrenShiftY = top
+	self:left(left)
+	self:top(top)
 	self:width(right - left)
 	self:height(bottom - top)
 end
@@ -774,8 +736,6 @@ end
 function Transform:draw(stencilValue)
 	if not self:hasChildren() then return end
 	love.graphics.push 'all'
-	love.graphics.translate(self:get 'x', self:get 'y')
-	love.graphics.translate(-self._childrenShiftX, -self._childrenShiftY)
 	love.graphics.applyTransform(self._transform)
 	for _, child in ipairs(self._children) do
 		child:draw(stencilValue)
