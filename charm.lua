@@ -331,6 +331,16 @@ function Element.get:childrenBounds()
 	return left, top, right, bottom
 end
 
+--- Sets the origin of the element.
+-- @number originX the new horizontal origin of the element
+-- @number originY[opt=originX] the new vertical origin of the element
+function Element:origin(originX, originY)
+	checkArgument(1, originX, 'number')
+	checkOptionalArgument(2, originY, 'number')
+	self._originX = originX
+	self._originY = originY or originX
+end
+
 --- Sets the x position of the element.
 -- @number x the new x position of the element
 -- @number[opt=0] origin the origin to set the position with respect to. 0 = left, .5 = center, 1 = right
