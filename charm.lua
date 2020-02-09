@@ -135,7 +135,7 @@ local function sortChildren(a, b)
 	return a:get 'z' < b:get 'z'
 end
 
-local function newElementClass(parent)
+local function newElementClass(parent, ...)
 	local class = {
 		parent = parent,
 		get = setmetatable({}, {
@@ -148,6 +148,23 @@ local function newElementClass(parent)
 	}
 	class.__index = class
 	setmetatable(class, {__index = parent})
+	for i = 1, select('#', ...) do
+		local mixinClass = select(i, ...)
+		-- copy functions
+		for k, v in pairs(mixinClass) do
+			if type(v) == 'function' then
+				class[k] = v
+			end
+		end
+		-- copy properties
+		for k, v in pairs(mixinClass.get) do
+			class.get[k] = v
+		end
+		-- copy preserved keys
+		for k, v in pairs(mixinClass.preserve) do
+			class.preserve[k] = v
+		end
+	end
 	return class
 end
 
@@ -940,7 +957,7 @@ function Points:width(width)
 		self._points[i] = self._points[i] * factor
 	end
 	-- resize the element as usual
-	self.parent.width(self, width)
+	Points.parent.width(self, width)
 end
 
 function Points:height(height)
@@ -950,12 +967,13 @@ function Points:height(height)
 		self._points[i + 1] = self._points[i + 1] * factor
 	end
 	-- resize the element as usual
-	self.parent.height(self, height)
+	Points.parent.height(self, height)
 end
 
-function Points:drawTop()
-	love.graphics.rectangle('line', 0, 0, self._width, self._height)
-	love.graphics.line(self._points)
+local Polygon = newElementClass(Points, Shape)
+
+function Polygon:drawShape(mode)
+	love.graphics.polygon(mode, self._points)
 end
 
 --- Draws an image.
@@ -1289,6 +1307,7 @@ local elementClasses = {
 	rectangle = Rectangle,
 	ellipse = Ellipse,
 	points = Points,
+	polygon = Polygon,
 	image = Image,
 	text = Text,
 	paragraph = Paragraph,
