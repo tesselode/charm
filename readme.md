@@ -9,20 +9,23 @@ Example
 ```lua
 function love.draw()
 	layout
-		:new 'transform'
+		:new 'rectangle'
 			:beginChildren()
-				:new('rectangle', 0, 0, 300, 250)
+				:new 'transform'
 					:beginChildren()
-						:new('paragraph', font, text, 280, 'left', 10, 10 - textScrollY)
-							:color(0, 0, 0)
-						textHeight = layout:get('@current', 'height')
-					layout:endChildren()
-					:fillColor(.8, .8, .8)
-					:clip()
+						:new('rectangle', 0, 0, 300, 250)
+							:beginChildren()
+								:new('paragraph', font, text, 280, 'left', 10, 10 - textScrollY)
+									:color(0, 0, 0)
+								textHeight = layout:get('@current', 'height')
+							layout:endChildren()
+							:fillColor(.8, .8, .8)
+							:clip()
+					:endChildren()
+					:scale(animationProgress)
+					:angle((1 + animationProgress) * math.pi)
 			:endChildren()
 			:left(100):top(100)
-			:scale(animationProgress)
-			:angle((1 + animationProgress) * math.pi)
 		:draw()
 end
 ```
