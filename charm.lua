@@ -662,10 +662,10 @@ function Transform:_update()
 	local top = math.min(y1, y2, y3, y4)
 	local right = math.max(x1, x2, x3, x4)
 	local bottom = math.max(y1, y2, y3, y4)
-	self:left(left)
-	self:top(top)
-	self:width(right - left)
-	self:height(bottom - top)
+	self._x = left
+	self._y = top
+	self._width = right - left
+	self._height = bottom - top
 end
 
 --- Sets the origin of the transformation.
