@@ -964,9 +964,10 @@ local Text = newElementClass(Element)
 -- @number y the vertical position of the text
 function Text:new(font, text, x, y)
 	checkArgument(2, font, 'Font')
-	checkArgument(3, text, 'string')
+	checkArgument(3, text, 'string', 'number')
 	checkOptionalArgument(4, x, 'number')
 	checkOptionalArgument(5, y, 'number')
+	text = tostring(text)
 	self._font = font
 	self._text = text
 	self._naturalWidth = font:getWidth(text)
@@ -1091,11 +1092,12 @@ local Paragraph = newElementClass(Element)
 -- @number y the vertical position of the paragraph
 function Paragraph:new(font, text, limit, align, x, y)
 	checkArgument(2, font, 'Font')
-	checkArgument(3, text, 'string')
+	checkArgument(3, text, 'string', 'number')
 	checkArgument(4, limit, 'number')
 	checkOptionalArgument(5, align, 'string')
 	checkOptionalArgument(6, x, 'number')
 	checkOptionalArgument(7, y, 'number')
+	text = tostring(text)
 	self._font = font
 	self._text = text
 	self._limit = limit
