@@ -970,6 +970,52 @@ function Points:height(height)
 	Points.parent.height(self, height)
 end
 
+--- Draws a line.
+--
+-- Extends the @{Points} class.
+-- @type Line
+local Line = newElementClass(Points)
+
+--- Sets the color of the line.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
+function Line:color(r, g, b, a)
+	self:setColor('_color', r, g, b, a)
+end
+
+--- Sets the thickness of the line.
+-- @number width
+function Line:lineWidth(width)
+	checkArgument(1, width, 'number')
+	self._lineWidth = width
+end
+
+function Line:_drawLine()
+	love.graphics.push 'all'
+	love.graphics.setLineWidth(self._lineWidth)
+	love.graphics.line(self._points)
+	love.graphics.pop()
+end
+
+function Line:stencil()
+	self:_drawLine()
+end
+
+function Line:drawBottom()
+	love.graphics.push 'all'
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	end
+	self:_drawLine()
+	love.graphics.pop()
+end
+
+--- Draws an polygon.
+--
+-- Extends the @{Points} class and the @{Shape} class.
+-- @type Polygon
 local Polygon = newElementClass(Points, Shape)
 
 function Polygon:drawShape(mode)
@@ -1307,6 +1353,7 @@ local elementClasses = {
 	rectangle = Rectangle,
 	ellipse = Ellipse,
 	points = Points,
+	line = Line,
 	polygon = Polygon,
 	image = Image,
 	text = Text,
