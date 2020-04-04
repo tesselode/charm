@@ -39,6 +39,11 @@ end
 
 function Element:initState(state) end
 
+function Element:pointInBounds(x, y)
+	return x >= 0 and x <= self._width
+	   and y >= 0 and y <= self._height
+end
+
 --- Returns whether a color is set.
 -- @string color the name of the color to check
 -- @treturn boolean
@@ -122,6 +127,21 @@ function Element.get:rectangle()
 	return self:get 'x', self:get 'y', self:get 'size'
 end
 
+function Element.get:hovered()
+	local state = self:getState()
+	return state.hovered
+end
+
+function Element.get:entered()
+	local state = self:getState()
+	return state.hovered and not state.hoveredPrevious
+end
+
+function Element.get:exited()
+	local state = self:getState()
+	return state.hoveredPrevious and not state.hovered
+end
+
 function Element:width(width)
 	self._width = width
 end
@@ -145,9 +165,42 @@ function Element:addChild(child)
 	table.insert(self._children, child)
 end
 
+function Element:onEnter(f)
+	self._onEnter = self._onEnter or {}
+	table.insert(self._onEnter, f)
+end
+
+function Element:onExit(f)
+	self._onExit = self._onExit or {}
+	table.insert(self._onExit, f)
+end
+
 function Element:drawBottom() end
 
 function Element:drawTop() end
+
+function Element:_processMouseEvents(mouseX, mouseY, blocked)
+	local mouseInBounds = self:pointInBounds(mouseX - self:get 'x', mouseY - self:get 'y')
+	if self._children then
+		for i = #self._children, 1, -1 do
+			local child = self._children[i]
+			if child:_processMouseEvents(mouseX - self:get 'x', mouseY - self:get 'y', blocked) then
+				blocked = true
+			end
+		end
+	end
+	local hovered = mouseInBounds and not blocked
+	local state = self:getState()
+	state.hoveredPrevious = state.hovered
+	state.hovered = hovered
+	if self:get 'entered' and self._onEnter then
+		for _, f in ipairs(self._onEnter) do f() end
+	end
+	if self:get 'exited' and self._onExit then
+		for _, f in ipairs(self._onExit) do f() end
+	end
+	return mouseInBounds
+end
 
 function Element:draw()
 	love.graphics.push 'all'
@@ -425,6 +478,9 @@ function Ui:endChildren()
 end
 
 function Ui:draw()
+	for _, element in ipairs(self._tree) do
+		element:_processMouseEvents(love.mouse.getPosition())
+	end
 	for _, element in ipairs(self._tree) do
 		element:draw()
 	end
