@@ -20,6 +20,7 @@ end
 
 local Element = newElementClass 'Element'
 
+Element.preserve._parent = true
 Element.preserve._ui = true
 
 function Element:new(x, y, width, height)
@@ -42,7 +43,12 @@ function Element.get:name()
 end
 
 function Element.get:fullName()
-	return self:get 'name'
+	local fullName = ''
+	if self._parent then
+		fullName = fullName .. self._parent:get 'fullName' .. ' > '
+	end
+	fullName = fullName .. self:get 'name'
+	return fullName
 end
 
 function Element.get:width()
@@ -59,12 +65,12 @@ end
 
 function Element.get:x(origin)
 	origin = origin or 0
-	return self._x + self:get 'width' * origin
+	return (self._x or 0) + self:get 'width' * origin
 end
 
 function Element.get:y(origin)
 	origin = origin or 0
-	return self._y + self:get 'height' * origin
+	return (self._y or 0) + self:get 'height' * origin
 end
 
 function Element.get:rectangle()
@@ -86,18 +92,30 @@ end
 
 function Element:y(y, origin)
 	origin = origin or 0
-	self._y = y - self:get 'width' * origin
+	self._y = y - self:get 'height' * origin
+end
+
+function Element:addChild(child)
+	self._children = self._children or {}
+	table.insert(self._children, child)
 end
 
 function Element:drawDebug()
 	local state = self:getState()
 	state.time = state.time + love.timer.getDelta()
+
 	love.graphics.push 'all'
+	love.graphics.translate(self:get 'x', self:get 'y')
 	love.graphics.setColor(1, 0, 0)
-	love.graphics.rectangle('line', self:get 'rectangle')
+	love.graphics.rectangle('line', 0, 0, self:get 'size')
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print(self:get 'name', self:get 'x', self:get 'y')
-	love.graphics.print(state.time, self:get 'x', self:get 'y' + 16)
+	love.graphics.print(self:get 'fullName')
+	love.graphics.print(state.time, 0, 16)
+	if self._children then
+		for _, child in ipairs(self._children) do
+			child:drawDebug()
+		end
+	end
 	love.graphics.pop()
 end
 
@@ -110,7 +128,8 @@ local Ui = {}
 function Ui:__index(k)
 	if Ui[k] then return Ui[k] end
 	self._functionCache[k] = self._functionCache[k] or function(_, ...)
-		self._selected[k](self._selected, ...)
+		local selected = self._groups[self._currentGroup].selected
+		selected[k](selected, ...)
 		return self
 	end
 	return self._functionCache[k]
@@ -186,9 +205,15 @@ function Ui:_getNextElementName(element)
 	return className .. group.elementCount[className]
 end
 
+function Ui:select(element)
+	local group = self._groups[self._currentGroup]
+	group.selected = element
+end
+
 function Ui:new(class, ...)
 	-- if we just finished drawing, start a new frame
 	if self._finished then self:begin() end
+	local parentGroup = self._groups[self._currentGroup - 1]
 	-- get the element class if a name was provided
 	if type(class) == 'string' then
 		class = elementClasses[class]
@@ -213,6 +238,9 @@ function Ui:new(class, ...)
 	element._used = true
 	element._ui = self
 	element._name = self:_getNextElementName(element)
+	if parentGroup then
+		element._parent = parentGroup.selected
+	end
 	element:new(...)
 	-- initialize the element state if needed
 	local fullName = element:get 'fullName'
@@ -222,9 +250,22 @@ function Ui:new(class, ...)
 		element:initState(self._state[fullName])
 	end
 	-- add the element to the tree
-	table.insert(self._tree, element)
-	-- select the element
-	self._selected = element
+	if parentGroup then
+		parentGroup.selected:addChild(element)
+	else
+		table.insert(self._tree, element)
+	end
+	self:select(element)
+	return self
+end
+
+function Ui:beginChildren()
+	self:_pushGroup()
+	return self
+end
+
+function Ui:endChildren()
+	self:_popGroup()
 	return self
 end
 

@@ -7,7 +7,11 @@ function love.keypressed(key)
 end
 
 function love.draw()
-	ui:name 'fred':new('element', 50, 50, 100, 150)
+	ui
+		:name 'fred':new('element', 50, 50, 100, 150)
+			:beginChildren()
+				:new('element', 50, 50, 50, 50)
+			:endChildren()
 	if love.keyboard.isDown 'space' then
 		ui:new 'element'
 			:width(100)
