@@ -179,6 +179,14 @@ function Element:clip()
 	self._clip = true
 end
 
+function Element:transparent()
+	self._transparent = true
+end
+
+function Element:opaque()
+	self._transparent = false
+end
+
 function Element:addChild(child)
 	self._children = self._children or {}
 	table.insert(self._children, child)
@@ -270,7 +278,7 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	end
 	-- return true if this element would block elements below it
 	-- from receiving mouse input
-	return mouseInBounds
+	return blocked or (mouseInBounds and not self._transparent)
 end
 
 function Element:stencil() end
