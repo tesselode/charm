@@ -1,5 +1,7 @@
 local charm = {}
 
+local numMouseButtons = 3
+
 local function newElementClass(className, parent)
 	local class = setmetatable({
 		-- every element class has a className string
@@ -134,12 +136,24 @@ end
 
 function Element.get:entered()
 	local state = self:getState()
-	return state.hovered and not state.hoveredPrevious
+	return state.entered
 end
 
 function Element.get:exited()
 	local state = self:getState()
-	return state.hoveredPrevious and not state.hovered
+	return state.exited
+end
+
+function Element.get:held(button)
+	button = button or 1
+	local state = self:getState()
+	return state.held[button]
+end
+
+function Element.get:clicked(button)
+	button = button or 1
+	local state = self:getState()
+	return state.clicked[button]
 end
 
 function Element:width(width)
@@ -175,30 +189,79 @@ function Element:onExit(f)
 	table.insert(self._onExit, f)
 end
 
+function Element:onClick(f)
+	self._onClick = self._onClick or {}
+	table.insert(self._onClick, f)
+end
+
 function Element:drawBottom() end
 
 function Element:drawTop() end
 
-function Element:_processMouseEvents(mouseX, mouseY, blocked)
-	local mouseInBounds = self:pointInBounds(mouseX - self:get 'x', mouseY - self:get 'y')
+function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
+	local mouseInBounds = self:pointInBounds(x - self:get 'x', y - self:get 'y')
+	--[[
+		process mouse events for each child, starting from the
+		topmost one. if any child returns true, indicating that it's
+		"taking" the mouse input, then no child below it or the parent
+		element can be hovered.
+	]]
 	if self._children then
 		for i = #self._children, 1, -1 do
 			local child = self._children[i]
-			if child:_processMouseEvents(mouseX - self:get 'x', mouseY - self:get 'y', blocked) then
+			if child:_processMouseEvents(x - self:get 'x', y - self:get 'y', dx, dy, pressed, released, blocked) then
 				blocked = true
 			end
 		end
 	end
 	local hovered = mouseInBounds and not blocked
 	local state = self:getState()
-	state.hoveredPrevious = state.hovered
+	--[[
+		create the held and clicked tables if they don't already
+		exist. i could do this in Element.initState, but then
+		every other element class that overrides initState would
+		have to make sure it calls Element.initState so that
+		these tables are initialized properly. kind of a pain
+		for the end user.
+	]]
+	state.held = state.held or {}
+	state.clicked = state.clicked or {}
+	local hoveredPrevious = state.hovered
+	-- the element is hovered if the mouse is over the element
+	-- and another element isn't blocking this one
 	state.hovered = hovered
-	if self:get 'entered' and self._onEnter then
+	-- the element is "entered" if it just started being hovered
+	-- this frame
+	state.entered = hovered and not hoveredPrevious
+	if state.entered and self._onEnter then
 		for _, f in ipairs(self._onEnter) do f() end
 	end
-	if self:get 'exited' and self._onExit then
+	-- the element is "exited" if it just started stopped hovered
+	-- this frame
+	state.exited = hoveredPrevious and not hovered
+	if state.exited and self._onExit then
 		for _, f in ipairs(self._onExit) do f() end
 	end
+	for button = 1, numMouseButtons do
+		-- the element is "clicked" if it was held down and the button
+		-- was released over the element this frame
+		state.clicked[button] = hovered and state.held[button] and released[button]
+		if state.clicked[button] and self._onClick then
+			for _, f in ipairs(self._onClick) do f(button) end
+		end
+		-- the element starts being "held" when the button is pressed
+		-- over the element, and it continues being held until
+		-- the mouse button is released (even if the mouse leaves
+		-- the element in the meantime)
+		if hovered and pressed[button] then
+			state.held[button] = true
+		end
+		if released[button] then
+			state.held[button] = false
+		end
+	end
+	-- return true if this element would block elements below it
+	-- from receiving mouse input
 	return mouseInBounds
 end
 
@@ -477,10 +540,23 @@ function Ui:endChildren()
 	return self
 end
 
-function Ui:draw()
-	for _, element in ipairs(self._tree) do
-		element:_processMouseEvents(love.mouse.getPosition())
+function Ui:_processMouseEvents()
+	local mouseX, mouseY = love.mouse.getPosition()
+	local dx, dy = mouseX - self._mouseXPrevious, mouseY - self._mouseYPrevious
+	self._mouseXPrevious, self._mouseYPrevious = mouseX, mouseY
+	for button = 1, numMouseButtons do
+		local down = love.mouse.isDown(button)
+		self._mousePressed[button] = down and not self._mouseDownPrevious[button]
+		self._mouseReleased[button] = self._mouseDownPrevious[button] and not down
+		self._mouseDownPrevious[button] = down
 	end
+	for _, element in ipairs(self._tree) do
+		element:_processMouseEvents(mouseX, mouseY, dx, dy, self._mousePressed, self._mouseReleased)
+	end
+end
+
+function Ui:draw()
+	self:_processMouseEvents()
 	for _, element in ipairs(self._tree) do
 		element:draw()
 	end
@@ -507,6 +583,11 @@ function charm.new()
 		_currentGroup = 1,
 		_finished = true,
 		_nextElementName = false,
+		_mouseXPrevious = love.mouse.getX(),
+		_mouseYPrevious = love.mouse.getY(),
+		_mouseDownPrevious = {},
+		_mousePressed = {},
+		_mouseReleased = {},
 	}, Ui)
 end
 
