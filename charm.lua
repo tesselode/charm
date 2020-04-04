@@ -39,6 +39,51 @@ end
 
 function Element:initState(state) end
 
+--- Returns whether a color is set.
+-- @string color the name of the color to check
+-- @treturn boolean
+function Element:isColorSet(color)
+	return color and #color > 0
+end
+
+--- Sets a color property on an element.
+-- @string propertyName the name of the property to set
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
+function Element:setColor(propertyName, r, g, b, a)
+	--[[ if type(r) ~= 'table' then
+		checkArgument(1, r, 'number', 'table')
+		checkArgument(2, g, 'number')
+		checkArgument(3, b, 'number')
+		checkOptionalArgument(4, a, 'number')
+	end ]]
+	self[propertyName] = self[propertyName] or {}
+	if type(r) == 'table' then
+		--[[
+			You might be wondering, if r is already a table,
+			why not just set self[propertyName] to r?
+			The color table gets cleared after each draw.
+			If we make self[propertyName] a reference to the
+			table the user provided, then we'll end up
+			clearing that table. The user might actually
+			want to keep that table. So to avoid clobbering
+			the user's data, we just copy the values from their
+			table to our own.
+		]]
+		self[propertyName][1] = r[1]
+		self[propertyName][2] = r[2]
+		self[propertyName][3] = r[3]
+		self[propertyName][4] = r[4]
+	else
+		self[propertyName][1] = r
+		self[propertyName][2] = g
+		self[propertyName][3] = b
+		self[propertyName][4] = a
+	end
+end
+
 function Element.get:name()
 	return self._ui:getName(self)
 end
@@ -100,6 +145,23 @@ function Element:addChild(child)
 	table.insert(self._children, child)
 end
 
+function Element:drawBottom() end
+
+function Element:drawTop() end
+
+function Element:draw()
+	love.graphics.push 'all'
+	love.graphics.translate(self:get 'x', self:get 'y')
+	self:drawBottom()
+	if self._children then
+		for _, child in ipairs(self._children) do
+			child:draw()
+		end
+	end
+	self:drawTop()
+	love.graphics.pop()
+end
+
 function Element:drawDebug()
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
@@ -115,8 +177,55 @@ function Element:drawDebug()
 	love.graphics.pop()
 end
 
+local Shape = newElementClass('Shape', Element)
+
+function Shape:fillColor(r, g, b, a)
+	self:setColor('_fillColor', r, g, b, a)
+end
+
+function Shape:outlineColor(r, g, b, a)
+	self:setColor('_outlineColor', r, g, b, a)
+end
+
+function Shape:outlineWidth(outlineWidth)
+	self._outlineWidth = outlineWidth
+end
+
+function Shape:drawShape(mode) end
+
+function Shape:drawBottom()
+	if not self:isColorSet(self._fillColor) then return end
+	love.graphics.push 'all'
+	love.graphics.setColor(self._fillColor)
+	self:drawShape 'fill'
+	love.graphics.pop()
+end
+
+function Shape:drawTop()
+	if not self:isColorSet(self._outlineColor) then return end
+	love.graphics.push 'all'
+	love.graphics.setColor(self._outlineColor)
+	love.graphics.setLineWidth(self._outlineWidth or 1)
+	self:drawShape 'line'
+	love.graphics.pop()
+end
+
+local Rectangle = newElementClass('Rectangle', Shape)
+
+function Rectangle:cornerRadius(cornerRadiusX, cornerRadiusY)
+	self._cornerRadiusX = cornerRadiusX
+	self._cornerRadiusY = cornerRadiusY or cornerRadiusX
+end
+
+function Rectangle:drawShape(mode)
+	love.graphics.rectangle(mode, 0, 0, self:get 'width', self:get 'height',
+		self._cornerRadiusX, self._cornerRadiusY)
+end
+
 local elementClasses = {
 	element = Element,
+	rectangle = Rectangle,
+	shape = Shape,
 }
 
 local Ui = {}
@@ -312,6 +421,14 @@ end
 
 function Ui:endChildren()
 	self:_popGroup()
+	return self
+end
+
+function Ui:draw()
+	for _, element in ipairs(self._tree) do
+		element:draw()
+	end
+	self._finished = true
 	return self
 end
 
