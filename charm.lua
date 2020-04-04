@@ -164,6 +164,63 @@ function Ui:_popGroup()
 	self._currentGroup = self._currentGroup - 1
 end
 
+function Ui:_getNextElementName(element)
+	-- if the user set a name for the next element, use that name
+	if self._nextElementName then
+		local name = self._nextElementName
+		self._nextElementName = false
+		return name
+	end
+	--[[
+		otherwise, autogenerate the name [elementClassName][number],
+		where number is how many unnamed elements of that type
+		there have been so far (e.g. rectangle1, image3)
+	]]
+	local className = element.className
+	local group = self._groups[self._currentGroup]
+	group.elementCount[className] = group.elementCount[className] or 0
+	group.elementCount[className] = group.elementCount[className] + 1
+	return className .. group.elementCount[className]
+end
+
+function Ui:getElement(element)
+	element = element or '@selected'
+	if type(element) == 'table' then return element end
+	if element == '@selected' then
+		return self._groups[self._currentGroup].selected
+	elseif element == '@previous' then
+		return self._groups[self._currentGroup].previous
+	elseif element == '@parent' then
+		local parentGroup = self._groups[self._currentGroup - 1]
+		return parentGroup.selected
+	end
+end
+
+function Ui:getName(element)
+	element = self:getElement(element)
+	return element._name
+end
+
+function Ui:getFullName(element)
+	element = self:getElement(element)
+	local fullName = ''
+	if element._parent then
+		fullName = fullName .. self:getFullName(element._parent) .. ' > '
+	end
+	fullName = fullName .. self:getName(element)
+	return fullName
+end
+
+function Ui:getState(element)
+	element = self:getElement(element)
+	return self._state[element:get 'fullName']
+end
+
+function Ui:get(element, propertyName, ...)
+	element = self:getElement(element)
+	return element:get(propertyName, ...)
+end
+
 function Ui:begin()
 	-- clear the tree
 	for i in ipairs(self._tree) do
@@ -188,28 +245,10 @@ function Ui:begin()
 	self._finished = false
 end
 
-function Ui:_getNextElementName(element)
-	-- if the user set a name for the next element, use that name
-	if self._nextElementName then
-		local name = self._nextElementName
-		self._nextElementName = false
-		return name
-	end
-	--[[
-		otherwise, autogenerate the name [elementClassName][number],
-		where number is how many unnamed elements of that type
-		there have been so far (e.g. rectangle1, image3)
-	]]
-	local className = element.className
-	local group = self._groups[self._currentGroup]
-	group.elementCount[className] = group.elementCount[className] or 0
-	group.elementCount[className] = group.elementCount[className] + 1
-	return className .. group.elementCount[className]
-end
-
 function Ui:select(element)
-	local group = self._groups[self._currentGroup]
-	group.selected = element
+	local currentGroup = self._groups[self._currentGroup]
+	currentGroup.previous = currentGroup.selected
+	currentGroup.selected = self:getElement(element)
 end
 
 function Ui:new(class, ...)
@@ -261,6 +300,11 @@ function Ui:new(class, ...)
 	return self
 end
 
+function Ui:name(name)
+	self._nextElementName = name
+	return self
+end
+
 function Ui:beginChildren()
 	self:_pushGroup()
 	return self
@@ -269,28 +313,6 @@ end
 function Ui:endChildren()
 	self:_popGroup()
 	return self
-end
-
-function Ui:name(name)
-	self._nextElementName = name
-	return self
-end
-
-function Ui:getName(element)
-	return element._name
-end
-
-function Ui:getFullName(element)
-	local fullName = ''
-	if element._parent then
-		fullName = fullName .. self:getFullName(element._parent) .. ' > '
-	end
-	fullName = fullName .. self:getName(element)
-	return fullName
-end
-
-function Ui:getState(element)
-	return self._state[element:get 'fullName']
 end
 
 function Ui:drawDebug()
