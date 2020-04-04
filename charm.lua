@@ -43,8 +43,8 @@ function Element.get:name()
 	return self._ui:getName(self)
 end
 
-function Element.get:fullName()
-	return self._ui:getFullName(self)
+function Element.get:id()
+	return self._ui:getId(self)
 end
 
 function Element:getState()
@@ -106,7 +106,7 @@ function Element:drawDebug()
 	love.graphics.setColor(1, 0, 0)
 	love.graphics.rectangle('line', 0, 0, self:get 'size')
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print(self:get 'fullName')
+	love.graphics.print(self:get 'id')
 	if self._children then
 		for _, child in ipairs(self._children) do
 			child:drawDebug()
@@ -201,19 +201,19 @@ function Ui:getName(element)
 	return element._name
 end
 
-function Ui:getFullName(element)
+function Ui:getId(element)
 	element = self:getElement(element)
-	local fullName = ''
+	local id = ''
 	if element._parent then
-		fullName = fullName .. self:getFullName(element._parent) .. ' > '
+		id = id .. self:getId(element._parent) .. ' > '
 	end
-	fullName = fullName .. self:getName(element)
-	return fullName
+	id = id .. self:getName(element)
+	return id
 end
 
 function Ui:getState(element)
 	element = self:getElement(element)
-	return self._state[element:get 'fullName']
+	return self._state[element:get 'id']
 end
 
 function Ui:get(element, propertyName, ...)
@@ -231,13 +231,13 @@ function Ui:begin()
 		element._used = false
 	end
 	-- remove unused element state
-	for fullName in pairs(self._state) do
-		if not self._stateUsed[fullName] then
-			self._state[fullName] = nil
+	for id in pairs(self._state) do
+		if not self._stateUsed[id] then
+			self._state[id] = nil
 		end
 	end
-	for fullName in pairs(self._stateUsed) do
-		self._stateUsed[fullName] = nil
+	for id in pairs(self._stateUsed) do
+		self._stateUsed[id] = nil
 	end
 	-- reset the group stack
 	self._currentGroup = 0
@@ -284,11 +284,11 @@ function Ui:new(class, ...)
 	end
 	element:new(...)
 	-- initialize the element state if needed
-	local fullName = element:get 'fullName'
-	self._stateUsed[fullName] = true
-	if not self._state[fullName] then
-		self._state[fullName] = {}
-		element:initState(self._state[fullName])
+	local id = element:get 'id'
+	self._stateUsed[id] = true
+	if not self._state[id] then
+		self._state[id] = {}
+		element:initState(self._state[id])
 	end
 	-- add the element to the tree
 	if parentGroup then
