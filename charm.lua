@@ -2,14 +2,21 @@ local charm = {}
 
 local function newElementClass(className, parent)
 	local class = setmetatable({
+		-- every element class has a className string
+		-- so we can automatically generate decent element names
 		className = className,
 		parent = parent,
+		-- property getters
 		get = setmetatable({}, {
+			-- property getters fall back to parent property getters
 			__index = parent and parent.get,
+			-- allows for the self:get 'propertyName' shorthand
 			__call = function(_, self, propertyName, ...)
 				return self.get[propertyName](self, ...)
 			end,
 		}),
+		-- keys that should not be cleared out when a new draw
+		-- frame is started
 		preserve = setmetatable({}, {
 			__index = parent and parent.preserve,
 		}),
@@ -30,25 +37,18 @@ function Element:new(x, y, width, height)
 	self._height = height
 end
 
-function Element:initState(state)
-	state.time = 0
+function Element:initState(state) end
+
+function Element.get:name()
+	return self._ui:getName(self)
+end
+
+function Element.get:fullName()
+	return self._ui:getFullName(self)
 end
 
 function Element:getState()
 	return self._ui:getState(self)
-end
-
-function Element.get:name()
-	return self._name
-end
-
-function Element.get:fullName()
-	local fullName = ''
-	if self._parent then
-		fullName = fullName .. self._parent:get 'fullName' .. ' > '
-	end
-	fullName = fullName .. self:get 'name'
-	return fullName
 end
 
 function Element.get:width()
@@ -101,16 +101,12 @@ function Element:addChild(child)
 end
 
 function Element:drawDebug()
-	local state = self:getState()
-	state.time = state.time + love.timer.getDelta()
-
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
 	love.graphics.setColor(1, 0, 0)
 	love.graphics.rectangle('line', 0, 0, self:get 'size')
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print(self:get 'fullName')
-	love.graphics.print(state.time, 0, 16)
 	if self._children then
 		for _, child in ipairs(self._children) do
 			child:drawDebug()
@@ -193,11 +189,17 @@ function Ui:begin()
 end
 
 function Ui:_getNextElementName(element)
+	-- if the user set a name for the next element, use that name
 	if self._nextElementName then
 		local name = self._nextElementName
 		self._nextElementName = false
 		return name
 	end
+	--[[
+		otherwise, autogenerate the name [elementClassName][number],
+		where number is how many unnamed elements of that type
+		there have been so far (e.g. rectangle1, image3)
+	]]
 	local className = element.className
 	local group = self._groups[self._currentGroup]
 	group.elementCount[className] = group.elementCount[className] or 0
@@ -272,6 +274,19 @@ end
 function Ui:name(name)
 	self._nextElementName = name
 	return self
+end
+
+function Ui:getName(element)
+	return element._name
+end
+
+function Ui:getFullName(element)
+	local fullName = ''
+	if element._parent then
+		fullName = fullName .. self:getFullName(element._parent) .. ' > '
+	end
+	fullName = fullName .. self:getName(element)
+	return fullName
 end
 
 function Ui:getState(element)
