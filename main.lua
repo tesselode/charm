@@ -22,6 +22,7 @@ function love.draw()
 			:onEnter(function() print 'enter' end)
 			:onExit(function() print 'exit' end)
 			:onClick(function() print 'click' end)
+			:onDrag(function(...) print('drag', ...) end)
 		:draw()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))

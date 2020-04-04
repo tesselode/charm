@@ -157,6 +157,12 @@ function Element.get:clicked(button)
 	return state.clicked[button]
 end
 
+function Element.get:dragged(button)
+	button = button or 1
+	local state = self:getState()
+	return state.draggedX[button], state.draggedY[button]
+end
+
 function Element:width(width)
 	self._width = width
 end
@@ -207,6 +213,11 @@ function Element:onClick(f)
 	table.insert(self._onClick, f)
 end
 
+function Element:onDrag(f)
+	self._onDrag = self._onDrag or {}
+	table.insert(self._onDrag, f)
+end
+
 function Element:drawBottom() end
 
 function Element:drawTop() end
@@ -242,6 +253,8 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	]]
 	state.held = state.held or {}
 	state.clicked = state.clicked or {}
+	state.draggedX = state.draggedX or {}
+	state.draggedY = state.draggedY or {}
 	local hoveredPrevious = state.hovered
 	-- the element is hovered if the mouse is over the element
 	-- and another element isn't blocking this one
@@ -274,6 +287,16 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 		end
 		if released[button] then
 			state.held[button] = false
+		end
+		-- the element is "dragged" if it's held and the mouse moved
+		-- this frame
+		if state.held[button] and (dx ~= 0 or dy ~= 0) then
+			state.draggedX[button] = dx
+			state.draggedY[button] = dy
+			for _, f in ipairs(self._onDrag) do f(button, dx, dy) end
+		else
+			state.draggedX[button] = false
+			state.draggedY[button] = false
 		end
 	end
 	-- return true if this element would block elements below it
