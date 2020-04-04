@@ -10,12 +10,17 @@ local function newElementClass(className, parent)
 				return self.get[propertyName](self, ...)
 			end,
 		}),
+		preserve = setmetatable({}, {
+			__index = parent and parent.preserve,
+		}),
 	}, {__index = parent})
 	class.__index = class
 	return class
 end
 
 local Element = newElementClass 'Element'
+
+Element.preserve._ui = true
 
 function Element:new(x, y, width, height)
 	self._x = x
@@ -24,8 +29,20 @@ function Element:new(x, y, width, height)
 	self._height = height
 end
 
+function Element:initState(state)
+	state.time = 0
+end
+
+function Element:getState()
+	return self._ui:getState(self)
+end
+
 function Element.get:name()
 	return self._name
+end
+
+function Element.get:fullName()
+	return self:get 'name'
 end
 
 function Element.get:width()
@@ -73,11 +90,14 @@ function Element:y(y, origin)
 end
 
 function Element:drawDebug()
+	local state = self:getState()
+	state.time = state.time + love.timer.getDelta()
 	love.graphics.push 'all'
 	love.graphics.setColor(1, 0, 0)
 	love.graphics.rectangle('line', self:get 'rectangle')
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print(self:get 'name', self:get 'x', self:get 'y')
+	love.graphics.print(state.time, self:get 'x', self:get 'y' + 16)
 	love.graphics.pop()
 end
 
@@ -98,12 +118,14 @@ end
 
 function Ui:_clear(element)
 	for k, v in pairs(element) do
-		if type(v) == 'table' then
-			for kk in pairs(v) do
-				v[kk] = nil
+		if not element.preserve[k] then
+			if type(v) == 'table' then
+				for kk in pairs(v) do
+					v[kk] = nil
+				end
+			else
+				element[k] = nil
 			end
-		else
-			element[k] = nil
 		end
 	end
 end
@@ -135,6 +157,15 @@ function Ui:begin()
 	-- mark all elements as unused
 	for _, element in ipairs(self._pool) do
 		element._used = false
+	end
+	-- remove unused element state
+	for fullName in pairs(self._state) do
+		if not self._stateUsed[fullName] then
+			self._state[fullName] = nil
+		end
+	end
+	for fullName in pairs(self._stateUsed) do
+		self._stateUsed[fullName] = nil
 	end
 	-- reset the group stack
 	self._currentGroup = 0
@@ -178,10 +209,18 @@ function Ui:new(class, ...)
 	-- clear out the element
 	self:_clear(element)
 	-- initialize the element
-	element._used = true
 	setmetatable(element, class)
+	element._used = true
+	element._ui = self
 	element._name = self:_getNextElementName(element)
 	element:new(...)
+	-- initialize the element state if needed
+	local fullName = element:get 'fullName'
+	self._stateUsed[fullName] = true
+	if not self._state[fullName] then
+		self._state[fullName] = {}
+		element:initState(self._state[fullName])
+	end
 	-- add the element to the tree
 	table.insert(self._tree, element)
 	-- select the element
@@ -192,6 +231,10 @@ end
 function Ui:name(name)
 	self._nextElementName = name
 	return self
+end
+
+function Ui:getState(element)
+	return self._state[element:get 'fullName']
 end
 
 function Ui:drawDebug()
@@ -207,9 +250,11 @@ function charm.new()
 		_functionCache = {},
 		_pool = {},
 		_tree = {},
-		_finished = true,
+		_state = {},
+		_stateUsed = {},
 		_groups = {},
 		_currentGroup = 1,
+		_finished = true,
 		_nextElementName = false,
 	}, Ui)
 end
