@@ -31,6 +31,7 @@ local Element = newElementClass 'Element'
 
 Element.preserve._parent = true
 Element.preserve._ui = true
+Element.preserve._stencil = true
 
 function Element:new(x, y, width, height)
 	self._x = x
@@ -174,6 +175,10 @@ function Element:y(y, origin)
 	self._y = y - self:get 'height' * origin
 end
 
+function Element:clip()
+	self._clip = true
+end
+
 function Element:addChild(child)
 	self._children = self._children or {}
 	table.insert(self._children, child)
@@ -200,6 +205,9 @@ function Element:drawTop() end
 
 function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	local mouseInBounds = self:pointInBounds(x - self:get 'x', y - self:get 'y')
+	-- if clipping is enabled, and the mouse is not within the parent
+	-- element's bounds, then none of the children can be hovered
+	if self._clip and not mouseInBounds then blocked = true end
 	--[[
 		process mouse events for each child, starting from the
 		topmost one. if any child returns true, indicating that it's
@@ -265,15 +273,36 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	return mouseInBounds
 end
 
-function Element:draw()
+function Element:stencil() end
+
+function Element:_drawChildren(stencilValue)
+	if not self._children then return end
+	-- if clipping is enabled, "push" a stencil to the "stack"
+	if self.clip then
+		self._stencil = self._stencil or function()
+			self:stencil()
+		end
+		stencilValue = stencilValue + 1
+		love.graphics.push 'all'
+		love.graphics.stencil(self._stencil, 'increment', 1, true)
+		love.graphics.setStencilTest('gequal', stencilValue)
+	end
+	for _, child in ipairs(self._children) do
+		child:draw()
+	end
+	-- if clipping is enabled, "pop" a stencil from the "stack"
+	if self.clip then
+		love.graphics.stencil(self._stencil, 'decrement', 1, true)
+		love.graphics.pop()
+	end
+end
+
+function Element:draw(stencilValue)
+	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
 	self:drawBottom()
-	if self._children then
-		for _, child in ipairs(self._children) do
-			child:draw()
-		end
-	end
+	self:_drawChildren(stencilValue)
 	self:drawTop()
 	love.graphics.pop()
 end
@@ -308,6 +337,10 @@ function Shape:outlineWidth(outlineWidth)
 end
 
 function Shape:drawShape(mode) end
+
+function Shape:stencil()
+	self:drawShape 'fill'
+end
 
 function Shape:drawBottom()
 	if not self:isColorSet(self._fillColor) then return end
