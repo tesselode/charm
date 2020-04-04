@@ -402,10 +402,83 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY)
 end
 
+local Text = newElementClass('Text', Element)
+
+Text.preserve._wrapInfo = true
+
+function Text:_calculateSize()
+	local limit = self._limit or math.huge
+	self._wrapInfo = self._wrapInfo or {}
+	self._wrapInfo[self._font] = self._wrapInfo[self._font] or {}
+	self._wrapInfo[self._font][self._text] = self._wrapInfo[self._font][self._text] or {}
+	self._wrapInfo[self._font][self._text][limit] = self._wrapInfo[self._font][self._text][limit] or {
+		self._font:getWrap(self._text, limit)
+	}
+	local info = self._wrapInfo[self._font][self._text][limit]
+	self._textWidth = self._limit or info[1]
+	self._textHeight = #info[2] * self._font:getHeight() * self._font:getLineHeight()
+	self:width(self._textWidth)
+	self:height(self._textHeight)
+end
+
+function Text:new(font, text, align, limit, x, y)
+	self._font = font
+	self._text = text
+	self._align = align or 'left'
+	self._limit = limit
+	self._x = x
+	self._y = y
+	self:_calculateSize()
+end
+
+function Text:color(r, g, b, a)
+	self:setColor('_color', r, g, b, a)
+end
+
+function Text:shadowColor(r, g, b, a)
+	self:setColor('_shadowColor', r, g, b, a)
+end
+
+function Text:shadowOffset(shadowOffsetX, shadowOffsetY)
+	self._shadowOffsetX = shadowOffsetX
+	self._shadowOffsetY = shadowOffsetY or shadowOffsetX
+end
+
+function Text:drawBottom()
+	love.graphics.push 'all'
+	love.graphics.setFont(self._font)
+	if self:isColorSet(self._shadowColor) then
+		love.graphics.setColor(self._shadowColor)
+		love.graphics.printf(
+			self._text,
+			self._shadowOffsetX or 1, self._shadowOffsetY or 1,
+			self._textWidth,
+			self._align,
+			0,
+			self._textWidth / self:get 'width', self._textHeight / self:get 'height'
+		)
+	end
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	else
+		love.graphics.setColor(1, 1, 1)
+	end
+	love.graphics.printf(
+		self._text,
+		0, 0,
+		self._textWidth,
+		self._align,
+		0,
+		self._textWidth / self:get 'width', self._textHeight / self:get 'height'
+	)
+	love.graphics.pop()
+end
+
 local elementClasses = {
 	element = Element,
 	rectangle = Rectangle,
 	shape = Shape,
+	text = Text,
 }
 
 local Ui = {}

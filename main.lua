@@ -1,5 +1,15 @@
 local charm = require 'charm'
 
+local loremIpsum = [[
+
+
+Voluptate magnam sequi et accusantium officiis dignissimos.
+
+Nisi eaque officia omnis.
+]]
+
+local font = love.graphics.newFont(16)
+
 local ui = charm.new()
 
 function love.keypressed(key)
@@ -8,22 +18,13 @@ end
 
 function love.draw()
 	ui
-		:new('rectangle', 50, 50, 100, 100)
-			:fillColor(ui:get('@selected', 'hovered') and {.5, .5, .5} or {.25, .25, .25})
-			:outlineColor(1, 1, 1)
-			:beginChildren()
-				:new('rectangle', 50, 50, 100, 100)
-					:fillColor(ui:get('@selected', 'hovered') and {1, 1, 1} or {1, 0, 0})
-					:transparent()
-				:new('rectangle', 25, 75, 100, 25)
-					:fillColor(ui:get('@selected', 'hovered') and {1, 1, 1} or {0, 0, 1})
-			:endChildren()
-			:clip()
-			:onEnter(function() print 'enter' end)
-			:onExit(function() print 'exit' end)
-			:onClick(function() print 'click' end)
-			:onDrag(function(...) print('drag', ...) end)
+		:new('text', font, loremIpsum, 'center', 600)
+			:x(50):y(50)
+			:color(1, 0, 0)
+			:shadowColor(0, 1, 0)
+			:shadowOffset(4, 40)
 		:draw()
+		:drawDebug()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))
 	love.graphics.print(('Elements in pool: %i'):format(#ui._pool), 0, 16)
