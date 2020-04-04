@@ -1,7 +1,8 @@
 local charm = {}
 
-local function newElementClass(parent)
+local function newElementClass(className, parent)
 	local class = setmetatable({
+		className = className,
 		parent = parent,
 		get = setmetatable({}, {
 			__index = parent and parent.get,
@@ -14,13 +15,17 @@ local function newElementClass(parent)
 	return class
 end
 
-local Element = newElementClass()
+local Element = newElementClass 'Element'
 
 function Element:new(x, y, width, height)
 	self._x = x
 	self._y = y
 	self._width = width
 	self._height = height
+end
+
+function Element.get:name()
+	return self._name
 end
 
 function Element.get:width()
@@ -71,6 +76,8 @@ function Element:drawDebug()
 	love.graphics.push 'all'
 	love.graphics.setColor(1, 0, 0)
 	love.graphics.rectangle('line', self:get 'rectangle')
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.print(self:get 'name', self:get 'x', self:get 'y')
 	love.graphics.pop()
 end
 
@@ -101,14 +108,51 @@ function Ui:_clear(element)
 	end
 end
 
+function Ui:_pushGroup()
+	self._currentGroup = self._currentGroup + 1
+	-- create a new group table if needed
+	if not self._groups[self._currentGroup] then
+		self._groups[self._currentGroup] = {}
+	end
+	local group = self._groups[self._currentGroup]
+	-- reset the group table
+	group.elementCount = group.elementCount or {}
+	for k in pairs(group.elementCount) do
+		group.elementCount[k] = nil
+	end
+	group.selected = nil
+end
+
+function Ui:_popGroup()
+	self._currentGroup = self._currentGroup - 1
+end
+
 function Ui:begin()
+	-- clear the tree
 	for i in ipairs(self._tree) do
 		self._tree[i] = nil
 	end
+	-- mark all elements as unused
 	for _, element in ipairs(self._pool) do
-		element.used = false
+		element._used = false
 	end
+	-- reset the group stack
+	self._currentGroup = 0
+	self:_pushGroup()
 	self._finished = false
+end
+
+function Ui:_getNextElementName(element)
+	if self._nextElementName then
+		local name = self._nextElementName
+		self._nextElementName = false
+		return name
+	end
+	local className = element.className
+	local group = self._groups[self._currentGroup]
+	group.elementCount[className] = group.elementCount[className] or 0
+	group.elementCount[className] = group.elementCount[className] + 1
+	return className .. group.elementCount[className]
 end
 
 function Ui:new(class, ...)
@@ -121,7 +165,7 @@ function Ui:new(class, ...)
 	-- reuse an existing element if possible
 	local element
 	for _, e in ipairs(self._pool) do
-		if not e.used then
+		if not e._used then
 			element = e
 			break
 		end
@@ -134,8 +178,9 @@ function Ui:new(class, ...)
 	-- clear out the element
 	self:_clear(element)
 	-- initialize the element
-	element.used = true
+	element._used = true
 	setmetatable(element, class)
+	element._name = self:_getNextElementName(element)
 	element:new(...)
 	-- add the element to the tree
 	table.insert(self._tree, element)
@@ -144,11 +189,17 @@ function Ui:new(class, ...)
 	return self
 end
 
+function Ui:name(name)
+	self._nextElementName = name
+	return self
+end
+
 function Ui:drawDebug()
 	for _, element in ipairs(self._tree) do
 		element:drawDebug()
 	end
 	self._finished = true
+	return self
 end
 
 function charm.new()
@@ -156,8 +207,10 @@ function charm.new()
 		_functionCache = {},
 		_pool = {},
 		_tree = {},
-		_finished = false,
-		_selected = nil,
+		_finished = true,
+		_groups = {},
+		_currentGroup = 1,
+		_nextElementName = false,
 	}, Ui)
 end
 
