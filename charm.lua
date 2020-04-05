@@ -1098,11 +1098,10 @@ function Ui:select(element)
 	currentGroup.selected = self:getElement(element)
 end
 
-function Ui:new(class, ...)
+function Ui:create(class, ...)
 	validateElementClass(1, class)
 	-- if we just finished drawing, start a new frame
 	if self._finished then self:begin() end
-	local parentGroup = self._groups[self._currentGroup - 1]
 	-- get the element class if a name was provided
 	if type(class) == 'string' then
 		class = elementClasses[class]
@@ -1127,6 +1126,7 @@ function Ui:new(class, ...)
 	element._used = true
 	element._ui = self
 	element._name = self:_getNextElementName(element)
+	local parentGroup = self._groups[self._currentGroup - 1]
 	if parentGroup then
 		element._parent = parentGroup.selected
 	end
@@ -1138,12 +1138,23 @@ function Ui:new(class, ...)
 		self._state[id] = {}
 		element:initState(self._state[id])
 	end
-	-- add the element to the tree
+	return element
+end
+
+function Ui:add(element)
+	checkArgument(1, element, 'table')
+	local parentGroup = self._groups[self._currentGroup - 1]
 	if parentGroup then
 		parentGroup.selected:addChild(element)
 	else
 		table.insert(self._tree, element)
 	end
+	return self
+end
+
+function Ui:new(class, ...)
+	local element = self:create(class, ...)
+	self:add(element)
 	self:select(element)
 	return self
 end
