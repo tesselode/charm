@@ -489,11 +489,18 @@ function Element:emit(event, ...)
 	end
 end
 
+function Element:beforeDraw() end
+
 function Element:drawBottom() end
 
 function Element:drawTop() end
 
 function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
+	--[[
+		call the beforeDraw callback. this isn't related to processing mouse events,
+		i just needed to call this somewhere before event handling happens.
+	]]
+	self:beforeDraw()
 	local mouseInBounds = self:pointInBounds(x - self:get 'x', y - self:get 'y')
 	-- if clipping is enabled, and the mouse is not within the parent
 	-- element's bounds, then none of the children can be hovered
