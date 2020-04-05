@@ -862,6 +862,7 @@ function Text:new(font, text, align, limit, x, y)
 	self._x = x
 	self._y = y
 	self:_calculateSize()
+	self:transparent()
 end
 
 function Text:color(r, g, b, a)
