@@ -474,8 +474,37 @@ function Text:drawBottom()
 	love.graphics.pop()
 end
 
+local Image = newElementClass('Image', Element)
+
+function Image:new(image, x, y)
+	self._image = image
+	self._x = x
+	self._y = y
+	self._width, self._height = image:getDimensions()
+end
+
+function Image:color(r, g, b, a)
+	self:setColor('_color', r, g, b, a)
+end
+
+function Image:scale(scaleX, scaleY)
+	self:width(self._image:getWidth() * scaleX)
+	self:height(self._image:getHeight() * (scaleY or scaleX))
+end
+
+function Image:drawBottom()
+	love.graphics.push 'all'
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	end
+	love.graphics.draw(self._image, 0, 0, 0, self._width / self._image:getWidth(),
+		self._height / self._image:getHeight())
+	love.graphics.pop()
+end
+
 local elementClasses = {
 	element = Element,
+	image = Image,
 	rectangle = Rectangle,
 	shape = Shape,
 	text = Text,

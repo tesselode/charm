@@ -1,14 +1,6 @@
 local charm = require 'charm'
 
-local loremIpsum = [[
-
-
-Voluptate magnam sequi et accusantium officiis dignissimos.
-
-Nisi eaque officia omnis.
-]]
-
-local font = love.graphics.newFont(16)
+local beanMan = love.graphics.newImage 'bean man.png'
 
 local ui = charm.new()
 
@@ -18,11 +10,8 @@ end
 
 function love.draw()
 	ui
-		:new('text', font, loremIpsum, 'center', 600)
-			:x(50):y(50)
-			:color(1, 0, 0)
-			:shadowColor(0, 1, 0)
-			:shadowOffset(4, 40)
+		:new('image', beanMan, 50, 50)
+			:width(50):height(50)
 		:draw()
 		:drawDebug()
 
