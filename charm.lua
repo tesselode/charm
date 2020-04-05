@@ -2,7 +2,7 @@ local charm = {}
 
 local numMouseButtons = 3
 
-local function newElementClass(className, parent)
+local function newElementClass(className, parent, ...)
 	local class = setmetatable({
 		-- every element class has a className string
 		-- so we can automatically generate decent element names
@@ -24,6 +24,23 @@ local function newElementClass(className, parent)
 		}),
 	}, {__index = parent})
 	class.__index = class
+	for i = 1, select('#', ...) do
+		local mixinClass = select(i, ...)
+		-- copy functions
+		for k, v in pairs(mixinClass) do
+			if type(v) == 'function' then
+				class[k] = v
+			end
+		end
+		-- copy properties
+		for k, v in pairs(mixinClass.get) do
+			class.get[k] = v
+		end
+		-- copy preserved keys
+		for k, v in pairs(mixinClass.preserve) do
+			class.preserve[k] = v
+		end
+	end
 	return class
 end
 
@@ -402,6 +419,117 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY)
 end
 
+--- A base class for elements that are made up of a set
+-- of points. This class isn't useful on its own;
+-- it's meant to be extended by custom classes.
+--
+-- Extends the @{Element} class.
+-- @type Points
+local Points = newElementClass('Points', Element)
+
+function Points:new(...)
+	self._points = self._points or {}
+	--[[ checkCondition(select('#', ...) > 0, 'must specify at least one point')
+	checkCondition(select('#', ...) % 2 == 0, 'must provide an even number of arguments. '
+		.. 'The arguments represent a series of (x, y) coordinates.') ]]
+	-- add the points to the table and get the bounds.
+	-- these bounds will become the dimensions of the element.
+	local minX, minY, maxX, maxY
+	for i = 1, select('#', ...), 2 do
+		local x, y = select(i, ...)
+		--[[ checkArgument(i, x, 'number')
+		checkArgument(i + 1, y, 'number') ]]
+		minX = minX and math.min(minX, x) or x
+		minY = minY and math.min(minY, y) or y
+		maxX = maxX and math.max(maxX, x) or x
+		maxY = maxY and math.max(maxY, y) or y
+		table.insert(self._points, x)
+		table.insert(self._points, y)
+	end
+	-- adjust the points to be with respect to the position
+	-- of the element
+	for i = 1, #self._points, 2 do
+		self._points[i] = self._points[i] - minX
+		self._points[i + 1] = self._points[i + 1] - minY
+	end
+	self._x = minX
+	self._y = minY
+	self._width = maxX - minX
+	self._height = maxY - minY
+end
+
+function Points:width(width)
+	-- scale the points to match the new width
+	local factor = width / self:get 'width'
+	for i = 1, #self._points, 2 do
+		self._points[i] = self._points[i] * factor
+	end
+	-- resize the element as usual
+	Points.parent.width(self, width)
+end
+
+function Points:height(height)
+	-- scale the points to match the new height
+	local factor = height / self:get 'height'
+	for i = 1, #self._points, 2 do
+		self._points[i + 1] = self._points[i + 1] * factor
+	end
+	-- resize the element as usual
+	Points.parent.height(self, height)
+end
+
+--- Draws a line.
+--
+-- Extends the @{Points} class.
+-- @type Line
+local Line = newElementClass('Line', Points)
+
+--- Sets the color of the line.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
+function Line:color(r, g, b, a)
+	self:setColor('_color', r, g, b, a)
+end
+
+--- Sets the thickness of the line.
+-- @number width
+function Line:lineWidth(width)
+	--checkArgument(1, width, 'number')
+	self._lineWidth = width
+end
+
+function Line:_drawLine()
+	love.graphics.push 'all'
+	love.graphics.setLineWidth(self._lineWidth)
+	love.graphics.line(self._points)
+	love.graphics.pop()
+end
+
+function Line:stencil()
+	self:_drawLine()
+end
+
+function Line:drawBottom()
+	love.graphics.push 'all'
+	if self:isColorSet(self._color) then
+		love.graphics.setColor(self._color)
+	end
+	self:_drawLine()
+	love.graphics.pop()
+end
+
+--- Draws an polygon.
+--
+-- Extends the @{Points} class and the @{Shape} class.
+-- @type Polygon
+local Polygon = newElementClass('Polygon', Points, Shape)
+
+function Polygon:drawShape(mode)
+	love.graphics.polygon(mode, self._points)
+end
+
 local Text = newElementClass('Text', Element)
 
 Text.preserve._wrapInfo = true
@@ -510,6 +638,9 @@ end
 local elementClasses = {
 	element = Element,
 	image = Image,
+	line = Line,
+	points = Points,
+	polygon = Polygon,
 	rectangle = Rectangle,
 	shape = Shape,
 	text = Text,

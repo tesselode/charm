@@ -10,9 +10,9 @@ end
 
 function love.draw()
 	ui
-		:new('text', font, 'hi!')
+		:new('polygon', 0, 0, 50, 0, 75, 100, 25, 100)
 			:x(100):y(100)
-			:scale(.5)
+			:fillColor(1/3, 1/3, 1/3)
 		:draw()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))
