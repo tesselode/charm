@@ -2,6 +2,8 @@ local charm = require 'charm'
 
 local ui = charm.new()
 
+local Cool = charm.extend('Cool', 'rectangle')
+
 function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
 end
@@ -10,8 +12,8 @@ function love.draw()
 	ui
 		:new 'rectangle'
 			:beginChildren()
-				:new('rectangle', 100, 100, 100, 100)
-				:new('rectangle', 150, 150, 100, 100)
+				:new(Cool, 100, 100, 100, 100)
+				:new(Cool, 150, 150, 100, 100)
 			:endChildren()
 			:wrap()
 			:centerX(love.graphics.getWidth() / 2)

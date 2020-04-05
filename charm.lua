@@ -1,5 +1,83 @@
 local charm = {}
 
+-- gets the type of a value
+-- also works with LOVE types
+local function getType(value)
+	return type(value) == 'userdata' and value.type and value:type() or type(value)
+end
+
+-- gets the error level needed to make an error appear
+-- in the user's code, not the library code
+local function getUserErrorLevel()
+	local source = debug.getinfo(1).source
+	local level = 1
+	while debug.getinfo(level).source == source do
+		level = level + 1
+	end
+	--[[
+		we return level - 1 here and not just level
+		because the level was calculated one function
+		deeper than the function that will actually
+		use this value. if we produced an error *inside*
+		this function, level would be correct, but
+		for the function calling this function, level - 1
+		is correct.
+	]]
+	return level - 1
+end
+
+-- gets the name of the function that the user called
+-- that eventually caused an error
+local function getUserCalledFunctionName()
+	return debug.getinfo(getUserErrorLevel() - 1).name
+end
+
+local function checkCondition(condition, message)
+	if condition then return end
+	error(message, getUserErrorLevel())
+end
+
+-- changes a list of types into a human-readable phrase
+-- i.e. string, table, number -> "string, table, or number"
+local function getAllowedTypesText(...)
+	local numberOfArguments = select('#', ...)
+	if numberOfArguments >= 3 then
+		local text = ''
+		for i = 1, numberOfArguments - 1 do
+			text = text .. string.format('%s, ', select(i, ...))
+		end
+		text = text .. string.format('or %s', select(numberOfArguments, ...))
+		return text
+	elseif numberOfArguments == 2 then
+		return string.format('%s or %s', select(1, ...), select(2, ...))
+	end
+	return select(1, ...)
+end
+
+-- checks if an argument is of the correct type, and if not,
+-- throws a "bad argument" error consistent with the ones
+-- lua and love produce
+local function checkArgument(argumentIndex, argument, ...)
+	for i = 1, select('#', ...) do
+		if getType(argument) == select(i, ...) then return end
+	end
+	error(
+		string.format(
+			"bad argument #%i to '%s' (expected %s, got %s)",
+			argumentIndex,
+			getUserCalledFunctionName(),
+			getAllowedTypesText(...),
+			getType(argument)
+		),
+		getUserErrorLevel()
+	)
+end
+
+local function checkOptionalArgument(argumentIndex, argument, ...)
+	if argument == nil then return end
+	checkArgument(argumentIndex, argument, ...)
+end
+
 local numMouseButtons = 3
 
 local function newElementClass(className, parent, ...)
@@ -801,6 +879,13 @@ local elementClasses = {
 	text = Text,
 }
 
+local function validateElementClass(argumentIndex, class)
+	checkArgument(argumentIndex, class, 'string', 'table')
+	if type(class) == 'string' then
+		checkCondition(elementClasses[class], string.format("no built-in element class called '%s'", class))
+	end
+end
+
 local Ui = {}
 
 function Ui:__index(k)
@@ -1045,6 +1130,20 @@ function charm.new()
 		_mousePressed = {},
 		_mouseReleased = {},
 	}, Ui)
+end
+
+function charm.extend(className, parent, ...)
+	if parent then validateElementClass(2, parent) end
+	if type(parent) == 'string' then parent = elementClasses[parent] end
+	parent = parent or elementClasses.element
+	local mixins = {...}
+	for i, mixin in ipairs(mixins) do
+		validateElementClass(2 + i, mixin)
+		if type(mixin) == 'string' then
+			mixins[i] = elementClasses[mixin]
+		end
+	end
+	return newElementClass(className, parent, unpack(mixins))
 end
 
 return charm
