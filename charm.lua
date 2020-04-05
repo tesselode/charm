@@ -125,7 +125,7 @@ end
 local Element = newElementClass 'Element'
 
 Element.preserve._parent = true
-Element.preserve._ui = true
+Element.preserve.ui = true
 Element.preserve._stencil = true
 
 function Element:new(x, y, width, height)
@@ -142,7 +142,7 @@ end
 function Element:initState(state) end
 
 function Element:getState()
-	return self._ui:getState(self)
+	return self.ui:getState(self)
 end
 
 function Element:pointInBounds(x, y)
@@ -209,11 +209,11 @@ function Element:setColor(propertyName, r, g, b, a)
 end
 
 function Element.get:name()
-	return self._ui:getName(self)
+	return self.ui:getName(self)
 end
 
 function Element.get:id()
-	return self._ui:getId(self)
+	return self.ui:getId(self)
 end
 
 function Element.get:width()
@@ -1124,7 +1124,7 @@ function Ui:create(class, ...)
 	-- initialize the element
 	setmetatable(element, class)
 	element._used = true
-	element._ui = self
+	element.ui = self
 	element._name = self:_getNextElementName(element)
 	local parentGroup = self._groups[self._currentGroup - 1]
 	if parentGroup then
