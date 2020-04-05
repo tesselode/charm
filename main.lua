@@ -9,12 +9,18 @@ end
 function love.draw()
 	ui
 		:new 'rectangle'
-			:bounds(50, 50, 200, 100)
-		:new 'rectangle'
-			:left(ui:get('@previous', 'right'))
-			:centerY(ui:get('@previous', 'centerY'))
-			:size(50, 100)
-		:draw()
+			:beginChildren()
+				:new('rectangle', 100, 100, 100, 100)
+				:new('rectangle', 150, 150, 100, 100)
+			:endChildren()
+			:wrap()
+			:centerX(love.graphics.getWidth() / 2)
+			:centerY(love.graphics.getHeight() / 2)
+			if love.keyboard.isDown 'space' then
+				ui:origin(0, 0)
+				ui:padLeft(50)
+			end
+		ui:draw()
 		:drawDebug()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))

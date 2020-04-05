@@ -68,6 +68,12 @@ function Element:pointInBounds(x, y)
 	   and y >= 0 and y <= self:get 'height'
 end
 
+--- Returns whether the element has any children.
+-- @treturn boolean
+function Element:hasChildren()
+	return self._children and #self._children > 0
+end
+
 --- Returns whether a color is set.
 -- @string color the name of the color to check
 -- @treturn boolean
@@ -159,6 +165,24 @@ function Element.get:rectangle()
 	return self:get 'x', self:get 'y', self:get 'size'
 end
 
+function Element.get:childrenBounds()
+	if not self:hasChildren() then return end
+	local left, top, right, bottom
+	for _, child in ipairs(self._children) do
+		local childLeft, childTop, childRight, childBottom = child:get 'bounds'
+		left = left and math.min(left, childLeft) or childLeft
+		top = top and math.min(top, childTop) or childTop
+		right = right and math.max(right, childRight) or childRight
+		bottom = bottom and math.max(bottom, childBottom) or childBottom
+	end
+	return left, top, right, bottom
+end
+
+function Element.get:childrenRectangle()
+	local left, top, right, bottom = self:get 'childrenBounds'
+	return left, top, right - left, bottom - top
+end
+
 function Element.get:hovered()
 	local state = self:getState()
 	return state.hovered
@@ -194,7 +218,7 @@ end
 
 function Element:origin(originX, originY)
 	self._originX = originX
-	self._originY = originY or originX
+	self._originY = originY
 end
 
 function Element:width(width)
@@ -249,6 +273,58 @@ function Element:rectangle(x, y, width, height)
 	self._width = width
 	self._height = height
 end
+
+function Element:shift(dx, dy)
+	self._x = self._x + dx
+	self._y = self._y + dy
+end
+
+function Element:shiftChildren(dx, dy)
+	if not self:hasChildren() then return end
+	for _, child in ipairs(self._children) do
+		child:shift(dx, dy)
+	end
+end
+
+function Element:wrap()
+	if not self:hasChildren() then return end
+	local left, top, right, bottom = self:get 'childrenBounds'
+	self:bounds(left + self:get 'x', top + self:get 'y',
+		right + self:get 'x', bottom + self:get 'y')
+	self:shiftChildren(-left, -top)
+end
+
+function Element:padLeft(padding)
+	self:shiftChildren(padding, 0)
+	self:width(self:get 'width' + padding)
+end
+
+function Element:padTop(padding)
+	self:shiftChildren(0, padding)
+	self:height(self:get 'height' + padding)
+end
+
+function Element:padRight(padding)
+	self:width(self:get 'width' + padding)
+end
+
+function Element:padBottom(padding)
+	self:height(self:get 'height' + padding)
+end
+
+function Element:padHorizontal(padding)
+	self:padLeft(padding)
+	self:padRight(padding)
+end
+
+function Element:padVertical(padding)
+	self:padTop(padding)
+	self:padBottom(padding)
+end
+
+function Element:pad(padding)
+	self:padHorizontal(padding)
+	self:padVertical(padding)
 end
 
 function Element:clip()
@@ -949,7 +1025,6 @@ function Ui:drawDebug()
 	for _, element in ipairs(self._tree) do
 		element:drawDebug()
 	end
-	self._finished = true
 	return self
 end
 
