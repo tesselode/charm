@@ -444,6 +444,11 @@ function Text:shadowOffset(shadowOffsetX, shadowOffsetY)
 	self._shadowOffsetY = shadowOffsetY or shadowOffsetX
 end
 
+function Text:scale(scaleX, scaleY)
+	self:width(self._textWidth * scaleX)
+	self:height(self._textHeight * (scaleY or scaleX))
+end
+
 function Text:drawBottom()
 	love.graphics.push 'all'
 	love.graphics.setFont(self._font)
@@ -455,7 +460,7 @@ function Text:drawBottom()
 			self._textWidth,
 			self._align,
 			0,
-			self._textWidth / self:get 'width', self._textHeight / self:get 'height'
+			self:get 'width' / self._textWidth, self:get 'height' / self._textHeight
 		)
 	end
 	if self:isColorSet(self._color) then
@@ -469,7 +474,7 @@ function Text:drawBottom()
 		self._textWidth,
 		self._align,
 		0,
-		self._textWidth / self:get 'width', self._textHeight / self:get 'height'
+		self:get 'width' / self._textWidth, self:get 'height' / self._textHeight
 	)
 	love.graphics.pop()
 end

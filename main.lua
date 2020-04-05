@@ -1,6 +1,6 @@
 local charm = require 'charm'
 
-local beanMan = love.graphics.newImage 'bean man.png'
+local font = love.graphics.newFont(32)
 
 local ui = charm.new()
 
@@ -10,10 +10,10 @@ end
 
 function love.draw()
 	ui
-		:new('image', beanMan, 50, 50)
-			:width(50):height(50)
+		:new('text', font, 'hi!')
+			:x(100):y(100)
+			:scale(.5)
 		:draw()
-		:drawDebug()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))
 	love.graphics.print(('Elements in pool: %i'):format(#ui._pool), 0, 16)
