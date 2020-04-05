@@ -10,9 +10,8 @@ end
 
 function love.draw()
 	ui
-		:new('polygon', 0, 0, 50, 0, 75, 100, 25, 100)
-			:x(100):y(100)
-			:fillColor(1/3, 1/3, 1/3)
+		:new('ellipse', 50, 50, 100, 150)
+			:fillColor(ui:get('@current', 'hovered') and {.5, .5, .5} or {.25, .25, .25})
 		:draw()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))

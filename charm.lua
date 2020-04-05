@@ -419,6 +419,31 @@ function Rectangle:drawShape(mode)
 		self._cornerRadiusX, self._cornerRadiusY)
 end
 
+--- Draws an ellipse.
+--
+-- Extends the @{Shape} class.
+-- @type Ellipse
+local Ellipse = newElementClass('Ellipse', Shape)
+
+function Ellipse:pointInBounds(x, y)
+	local rx, ry = self:get('width')/2, self:get('height')/2
+	return ((x - rx) ^ 2) / (rx ^ 2) + ((y - ry) ^ 2) / (ry ^ 2) <= 1
+end
+
+--- Sets the number of segments used to draw the ellipse.
+-- @number segments
+function Ellipse:segments(segments)
+	--checkArgument(1, segments, 'number')
+	self._segments = segments
+end
+
+function Ellipse:drawShape(mode)
+	love.graphics.ellipse(mode,
+		self:get 'width' / 2, self:get 'height' / 2,
+		self:get 'width' / 2, self:get 'height' / 2,
+		self._segments)
+end
+
 --- A base class for elements that are made up of a set
 -- of points. This class isn't useful on its own;
 -- it's meant to be extended by custom classes.
@@ -637,6 +662,7 @@ end
 
 local elementClasses = {
 	element = Element,
+	ellipse = Ellipse,
 	image = Image,
 	line = Line,
 	points = Points,
@@ -711,9 +737,9 @@ function Ui:_getNextElementName(element)
 end
 
 function Ui:getElement(element)
-	element = element or '@selected'
+	element = element or '@current'
 	if type(element) == 'table' then return element end
-	if element == '@selected' then
+	if element == '@current' then
 		return self._groups[self._currentGroup].selected
 	elseif element == '@previous' then
 		return self._groups[self._currentGroup].previous
