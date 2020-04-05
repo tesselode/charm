@@ -2,28 +2,16 @@ local charm = require 'charm'
 
 local ui = charm.new()
 
-local Cool = charm.extend('Cool', 'rectangle')
-
 function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
 end
 
 function love.draw()
 	ui
-		:new 'rectangle'
-			:beginChildren()
-				:new(Cool, 100, 100, 100, 100)
-				:new(Cool, 150, 150, 100, 100)
-			:endChildren()
-			:wrap()
-			:centerX(love.graphics.getWidth() / 2)
-			:centerY(love.graphics.getHeight() / 2)
-			if love.keyboard.isDown 'space' then
-				ui:origin(0, 0)
-				ui:padLeft(50)
-			end
-		ui:draw()
-		:drawDebug()
+		:new('rectangle', 50, 50, 100, 150)
+			:fillColor(ui:get('@current', 'hovered') and {1/2, 1/2, 1/2} or {1/4, 1/4, 1/4})
+			:on('click', function(button) print(button) end)
+		:draw()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))
 	love.graphics.print(('Elements in pool: %i'):format(#ui._pool), 0, 16)

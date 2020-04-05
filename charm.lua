@@ -393,6 +393,12 @@ function Element:shift(dx, dy)
 	self._y = self._y + dy
 end
 
+function Element:addChild(child)
+	checkArgument(1, child, 'table')
+	self._children = self._children or {}
+	table.insert(self._children, child)
+end
+
 function Element:shiftChildren(dx, dy)
 	checkArgument(1, dx, 'number')
 	checkArgument(2, dy, 'number')
@@ -462,34 +468,18 @@ function Element:opaque()
 	self._transparent = false
 end
 
-function Element:addChild(child)
-	checkArgument(1, child, 'table')
-	self._children = self._children or {}
-	table.insert(self._children, child)
+function Element:on(event, f)
+	self._listeners = self._listeners or {}
+	self._listeners[event] = self._listeners[event] or {}
+	table.insert(self._listeners[event], f)
 end
 
-function Element:onEnter(f)
-	checkArgument(1, f, 'function')
-	self._onEnter = self._onEnter or {}
-	table.insert(self._onEnter, f)
-end
-
-function Element:onExit(f)
-	checkArgument(1, f, 'function')
-	self._onExit = self._onExit or {}
-	table.insert(self._onExit, f)
-end
-
-function Element:onClick(f)
-	checkArgument(1, f, 'function')
-	self._onClick = self._onClick or {}
-	table.insert(self._onClick, f)
-end
-
-function Element:onDrag(f)
-	checkArgument(1, f, 'function')
-	self._onDrag = self._onDrag or {}
-	table.insert(self._onDrag, f)
+function Element:emit(event, ...)
+	if not self._listeners then return end
+	if not self._listeners[event] then return end
+	for _, f in ipairs(self._listeners[event]) do
+		f(...)
+	end
 end
 
 function Element:drawBottom() end
@@ -536,22 +526,16 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	-- the element is "entered" if it just started being hovered
 	-- this frame
 	state.entered = hovered and not hoveredPrevious
-	if state.entered and self._onEnter then
-		for _, f in ipairs(self._onEnter) do f() end
-	end
+	if state.entered then self:emit 'enter' end
 	-- the element is "exited" if it just started stopped hovered
 	-- this frame
 	state.exited = hoveredPrevious and not hovered
-	if state.exited and self._onExit then
-		for _, f in ipairs(self._onExit) do f() end
-	end
+	if state.exited then self:emit 'exit' end
 	for button = 1, numMouseButtons do
 		-- the element is "clicked" if it was held down and the button
 		-- was released over the element this frame
 		state.clicked[button] = hovered and state.held[button] and released[button]
-		if state.clicked[button] and self._onClick then
-			for _, f in ipairs(self._onClick) do f(button) end
-		end
+		if state.clicked[button] then self:emit('click', button) end
 		-- the element starts being "held" when the button is pressed
 		-- over the element, and it continues being held until
 		-- the mouse button is released (even if the mouse leaves
@@ -567,7 +551,7 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 		if state.held[button] and (dx ~= 0 or dy ~= 0) then
 			state.draggedX[button] = dx
 			state.draggedY[button] = dy
-			for _, f in ipairs(self._onDrag) do f(button, dx, dy) end
+			self:emit('drag', button, dx, dy)
 		else
 			state.draggedX[button] = false
 			state.draggedY[button] = false
@@ -972,11 +956,9 @@ end
 
 function Ui:_clear(element)
 	for k, v in pairs(element) do
-		if not element.preserve[k] then
+		if not (element.preserve and element.preserve[k]) then
 			if type(v) == 'table' then
-				for kk in pairs(v) do
-					v[kk] = nil
-				end
+				self:_clear(v)
 			else
 				element[k] = nil
 			end
