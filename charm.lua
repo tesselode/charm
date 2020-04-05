@@ -59,9 +59,13 @@ end
 
 function Element:initState(state) end
 
+function Element:getState()
+	return self._ui:getState(self)
+end
+
 function Element:pointInBounds(x, y)
-	return x >= 0 and x <= self._width
-	   and y >= 0 and y <= self._height
+	return x >= 0 and x <= self:get 'width'
+	   and y >= 0 and y <= self:get 'height'
 end
 
 --- Returns whether a color is set.
@@ -117,10 +121,6 @@ function Element.get:id()
 	return self._ui:getId(self)
 end
 
-function Element:getState()
-	return self._ui:getState(self)
-end
-
 function Element.get:width()
 	return self._width or 0
 end
@@ -138,9 +138,21 @@ function Element.get:x(origin)
 	return (self._x or 0) + self:get 'width' * origin
 end
 
+function Element.get:left() return self:get('x', 0) end
+function Element.get:centerX() return self:get('x', .5) end
+function Element.get:right() return self:get('x', 1) end
+
 function Element.get:y(origin)
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
+end
+
+function Element.get:top() return self:get('y', 0) end
+function Element.get:centerY() return self:get('y', .5) end
+function Element.get:bottom() return self:get('y', 1) end
+
+function Element.get:bounds()
+	return self:get 'left', self:get 'top', self:get 'right', self:get 'bottom'
 end
 
 function Element.get:rectangle()
@@ -188,14 +200,41 @@ function Element:height(height)
 	self._height = height
 end
 
+function Element:size(width, height)
+	self:width(width)
+	self:height(height)
+end
+
 function Element:x(x, origin)
 	origin = origin or 0
 	self._x = x - self:get 'width' * origin
 end
 
+function Element:left(x) self:x(x, 0) end
+function Element:centerX(x) self:x(x, .5) end
+function Element:right(x) self:x(x, 1) end
+
 function Element:y(y, origin)
 	origin = origin or 0
 	self._y = y - self:get 'height' * origin
+end
+
+function Element:top(y) self:y(y, 0) end
+function Element:centerY(y) self:y(y, .5) end
+function Element:bottom(y) self:y(y, 1) end
+
+function Element:bounds(left, top, right, bottom)
+	self:left(left)
+	self:top(top)
+	self:width(right - left)
+	self:height(bottom - top)
+end
+
+function Element:rectangle(x, y, width, height)
+	self:x(x)
+	self:y(y)
+	self:width(width)
+	self:height(height)
 end
 
 function Element:clip()

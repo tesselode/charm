@@ -1,7 +1,5 @@
 local charm = require 'charm'
 
-local font = love.graphics.newFont(32)
-
 local ui = charm.new()
 
 function love.keypressed(key)
@@ -10,9 +8,14 @@ end
 
 function love.draw()
 	ui
-		:new('ellipse', 50, 50, 100, 150)
-			:fillColor(ui:get('@current', 'hovered') and {.5, .5, .5} or {.25, .25, .25})
+		:new 'rectangle'
+			:bounds(50, 50, 200, 100)
+		:new 'rectangle'
+			:left(ui:get('@previous', 'right'))
+			:centerY(ui:get('@previous', 'centerY'))
+			:size(50, 100)
 		:draw()
+		:drawDebug()
 
 	love.graphics.print(('Memory usage: %ikb'):format(collectgarbage 'count'))
 	love.graphics.print(('Elements in pool: %i'):format(#ui._pool), 0, 16)
