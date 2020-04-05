@@ -129,6 +129,10 @@ Element.preserve._ui = true
 Element.preserve._stencil = true
 
 function Element:new(x, y, width, height)
+	checkOptionalArgument(2, x, 'number')
+	checkOptionalArgument(3, y, 'number')
+	checkOptionalArgument(4, width, 'number')
+	checkOptionalArgument(5, height, 'number')
 	self._x = x
 	self._y = y
 	self._width = width
@@ -142,6 +146,8 @@ function Element:getState()
 end
 
 function Element:pointInBounds(x, y)
+	checkArgument(1, x, 'number')
+	checkArgument(2, y, 'number')
 	return x >= 0 and x <= self:get 'width'
 	   and y >= 0 and y <= self:get 'height'
 end
@@ -166,6 +172,11 @@ end
 -- @number[opt] b the blue component of the color
 -- @number[opt] a the alpha component of the color
 function Element:setColor(propertyName, r, g, b, a)
+	checkArgument(1, propertyName, 'string')
+	checkArgument(2, r, 'number', 'table')
+	checkOptionalArgument(3, g, 'number')
+	checkOptionalArgument(4, b, 'number')
+	checkOptionalArgument(5, a, 'number')
 	--[[ if type(r) ~= 'table' then
 		checkArgument(1, r, 'number', 'table')
 		checkArgument(2, g, 'number')
@@ -218,6 +229,7 @@ function Element.get:size()
 end
 
 function Element.get:x(origin)
+	checkOptionalArgument(1, origin, 'number')
 	origin = origin or 0
 	return (self._x or 0) + self:get 'width' * origin
 end
@@ -227,6 +239,7 @@ function Element.get:centerX() return self:get('x', .5) end
 function Element.get:right() return self:get('x', 1) end
 
 function Element.get:y(origin)
+	checkOptionalArgument(1, origin, 'number')
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
 end
@@ -277,29 +290,35 @@ function Element.get:exited()
 end
 
 function Element.get:held(button)
+	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
 	return state.held[button]
 end
 
 function Element.get:clicked(button)
+	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
 	return state.clicked[button]
 end
 
 function Element.get:dragged(button)
+	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
 	return state.draggedX[button], state.draggedY[button]
 end
 
 function Element:origin(originX, originY)
+	checkArgument(1, originX, 'number')
+	checkArgument(2, originY, 'number')
 	self._originX = originX
 	self._originY = originY
 end
 
 function Element:width(width)
+	checkArgument(1, width, 'number')
 	local originX = self._originX or 0
 	local x = self:get('x', originX)
 	self._width = width
@@ -307,6 +326,7 @@ function Element:width(width)
 end
 
 function Element:height(height)
+	checkArgument(1, height, 'number')
 	local originY = self._originY or 0
 	local y = self:get('y', originY)
 	self._height = height
@@ -314,11 +334,15 @@ function Element:height(height)
 end
 
 function Element:size(width, height)
+	checkArgument(1, width, 'number')
+	checkArgument(2, height, 'number')
 	self:width(width)
 	self:height(height)
 end
 
 function Element:x(x, origin)
+	checkArgument(1, x, 'number')
+	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	self._originX = origin
 	self._x = x - self:get 'width' * origin
@@ -329,6 +353,8 @@ function Element:centerX(x) self:x(x, .5) end
 function Element:right(x) self:x(x, 1) end
 
 function Element:y(y, origin)
+	checkArgument(1, y, 'number')
+	checkOptionalArgument(2, origin, 'number')
 	origin = origin or 0
 	self._originY = origin
 	self._y = y - self:get 'height' * origin
@@ -339,6 +365,10 @@ function Element:centerY(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
 function Element:bounds(left, top, right, bottom)
+	checkArgument(1, left, 'number')
+	checkArgument(2, top, 'number')
+	checkArgument(3, right, 'number')
+	checkArgument(4, bottom, 'number')
 	self._x = left
 	self._y = top
 	self._width = right - left
@@ -346,6 +376,10 @@ function Element:bounds(left, top, right, bottom)
 end
 
 function Element:rectangle(x, y, width, height)
+	checkArgument(1, x, 'number')
+	checkArgument(2, y, 'number')
+	checkArgument(3, width, 'number')
+	checkArgument(4, height, 'number')
 	self._x = x
 	self._y = y
 	self._width = width
@@ -353,11 +387,15 @@ function Element:rectangle(x, y, width, height)
 end
 
 function Element:shift(dx, dy)
+	checkArgument(1, dx, 'number')
+	checkArgument(2, dy, 'number')
 	self._x = self._x + dx
 	self._y = self._y + dy
 end
 
 function Element:shiftChildren(dx, dy)
+	checkArgument(1, dx, 'number')
+	checkArgument(2, dy, 'number')
 	if not self:hasChildren() then return end
 	for _, child in ipairs(self._children) do
 		child:shift(dx, dy)
@@ -373,34 +411,41 @@ function Element:wrap()
 end
 
 function Element:padLeft(padding)
+	checkArgument(1, padding, 'number')
 	self:shiftChildren(padding, 0)
 	self:width(self:get 'width' + padding)
 end
 
 function Element:padTop(padding)
+	checkArgument(1, padding, 'number')
 	self:shiftChildren(0, padding)
 	self:height(self:get 'height' + padding)
 end
 
 function Element:padRight(padding)
+	checkArgument(1, padding, 'number')
 	self:width(self:get 'width' + padding)
 end
 
 function Element:padBottom(padding)
+	checkArgument(1, padding, 'number')
 	self:height(self:get 'height' + padding)
 end
 
 function Element:padHorizontal(padding)
+	checkArgument(1, padding, 'number')
 	self:padLeft(padding)
 	self:padRight(padding)
 end
 
 function Element:padVertical(padding)
+	checkArgument(1, padding, 'number')
 	self:padTop(padding)
 	self:padBottom(padding)
 end
 
 function Element:pad(padding)
+	checkArgument(1, padding, 'number')
 	self:padHorizontal(padding)
 	self:padVertical(padding)
 end
@@ -418,26 +463,31 @@ function Element:opaque()
 end
 
 function Element:addChild(child)
+	checkArgument(1, child, 'table')
 	self._children = self._children or {}
 	table.insert(self._children, child)
 end
 
 function Element:onEnter(f)
+	checkArgument(1, f, 'function')
 	self._onEnter = self._onEnter or {}
 	table.insert(self._onEnter, f)
 end
 
 function Element:onExit(f)
+	checkArgument(1, f, 'function')
 	self._onExit = self._onExit or {}
 	table.insert(self._onExit, f)
 end
 
 function Element:onClick(f)
+	checkArgument(1, f, 'function')
 	self._onClick = self._onClick or {}
 	table.insert(self._onClick, f)
 end
 
 function Element:onDrag(f)
+	checkArgument(1, f, 'function')
 	self._onDrag = self._onDrag or {}
 	table.insert(self._onDrag, f)
 end
@@ -588,6 +638,7 @@ function Shape:outlineColor(r, g, b, a)
 end
 
 function Shape:outlineWidth(outlineWidth)
+	checkArgument(1, outlineWidth, 'number')
 	self._outlineWidth = outlineWidth
 end
 
@@ -617,6 +668,8 @@ end
 local Rectangle = newElementClass('Rectangle', Shape)
 
 function Rectangle:cornerRadius(cornerRadiusX, cornerRadiusY)
+	checkArgument(1, cornerRadiusX, 'number')
+	checkOptionalArgument(2, cornerRadiusY, 'number')
 	self._cornerRadiusX = cornerRadiusX
 	self._cornerRadiusY = cornerRadiusY or cornerRadiusX
 end
@@ -633,6 +686,8 @@ end
 local Ellipse = newElementClass('Ellipse', Shape)
 
 function Ellipse:pointInBounds(x, y)
+	checkArgument(1, x, 'number')
+	checkArgument(2, y, 'number')
 	local rx, ry = self:get('width')/2, self:get('height')/2
 	return ((x - rx) ^ 2) / (rx ^ 2) + ((y - ry) ^ 2) / (ry ^ 2) <= 1
 end
@@ -640,7 +695,7 @@ end
 --- Sets the number of segments used to draw the ellipse.
 -- @number segments
 function Ellipse:segments(segments)
-	--checkArgument(1, segments, 'number')
+	checkArgument(1, segments, 'number')
 	self._segments = segments
 end
 
@@ -661,16 +716,16 @@ local Points = newElementClass('Points', Element)
 
 function Points:new(...)
 	self._points = self._points or {}
-	--[[ checkCondition(select('#', ...) > 0, 'must specify at least one point')
+	checkCondition(select('#', ...) > 0, 'must specify at least one point')
 	checkCondition(select('#', ...) % 2 == 0, 'must provide an even number of arguments. '
-		.. 'The arguments represent a series of (x, y) coordinates.') ]]
+		.. 'The arguments represent a series of (x, y) coordinates.')
 	-- add the points to the table and get the bounds.
 	-- these bounds will become the dimensions of the element.
 	local minX, minY, maxX, maxY
 	for i = 1, select('#', ...), 2 do
 		local x, y = select(i, ...)
-		--[[ checkArgument(i, x, 'number')
-		checkArgument(i + 1, y, 'number') ]]
+		checkArgument(i, x, 'number')
+		checkArgument(i + 1, y, 'number')
 		minX = minX and math.min(minX, x) or x
 		minY = minY and math.min(minY, y) or y
 		maxX = maxX and math.max(maxX, x) or x
@@ -728,7 +783,7 @@ end
 --- Sets the thickness of the line.
 -- @number width
 function Line:lineWidth(width)
-	--checkArgument(1, width, 'number')
+	checkArgument(1, width, 'number')
 	self._lineWidth = width
 end
 
@@ -782,6 +837,12 @@ function Text:_calculateSize()
 end
 
 function Text:new(font, text, align, limit, x, y)
+	checkArgument(2, font, 'Font')
+	checkArgument(3, text, 'string', 'number')
+	checkOptionalArgument(4, align, 'string')
+	checkOptionalArgument(5, limit, 'number')
+	checkOptionalArgument(6, x, 'number')
+	checkOptionalArgument(7, y, 'number')
 	self._font = font
 	self._text = text
 	self._align = align or 'left'
@@ -800,11 +861,15 @@ function Text:shadowColor(r, g, b, a)
 end
 
 function Text:shadowOffset(shadowOffsetX, shadowOffsetY)
+	checkArgument(1, shadowOffsetX, 'number')
+	checkOptionalArgument(2, shadowOffsetY, 'number')
 	self._shadowOffsetX = shadowOffsetX
 	self._shadowOffsetY = shadowOffsetY or shadowOffsetX
 end
 
 function Text:scale(scaleX, scaleY)
+	checkArgument(1, scaleX, 'number')
+	checkOptionalArgument(2, scaleY, 'number')
 	self:width(self._textWidth * scaleX)
 	self:height(self._textHeight * (scaleY or scaleX))
 end
@@ -842,6 +907,9 @@ end
 local Image = newElementClass('Image', Element)
 
 function Image:new(image, x, y)
+	checkArgument(2, image, 'Image')
+	checkOptionalArgument(3, x, 'number')
+	checkOptionalArgument(4, y, 'number')
 	self._image = image
 	self._x = x
 	self._y = y
@@ -853,6 +921,8 @@ function Image:color(r, g, b, a)
 end
 
 function Image:scale(scaleX, scaleY)
+	checkArgument(1, scaleX, 'number')
+	checkOptionalArgument(2, scaleY, 'number')
 	self:width(self._image:getWidth() * scaleX)
 	self:height(self._image:getHeight() * (scaleY or scaleX))
 end
@@ -891,8 +961,10 @@ local Ui = {}
 function Ui:__index(k)
 	if Ui[k] then return Ui[k] end
 	self._functionCache[k] = self._functionCache[k] or function(_, ...)
-		local selected = self._groups[self._currentGroup].selected
-		selected[k](selected, ...)
+		local element = self:getElement '@current'
+		checkCondition(element, string.format("no element to call function '%s' on", k))
+		checkCondition(element[k], string.format("currently selected element has no function '%s'", k))
+		element[k](element, ...)
 		return self
 	end
 	return self._functionCache[k]
@@ -910,6 +982,17 @@ function Ui:_clear(element)
 			end
 		end
 	end
+end
+
+function Ui:_validateElement(name)
+	checkArgument(1, name, 'string', 'table')
+	local element = self:getElement(name)
+	local message = name == '@current' and 'No element is currently selected. Have you created any elements yet?'
+		or name == '@previous' and 'no previous element to get'
+		or name == '@parent' and 'No parent element to get. This keyword should be used '
+			.. 'within ui:beginChildren() and ui:endChildren() calls.'
+		or string.format("element must be an element table or the keyword '@current', '@previous', or '@parent'")
+	checkCondition(element, message)
 end
 
 function Ui:_pushGroup()
@@ -951,6 +1034,7 @@ function Ui:_getNextElementName(element)
 end
 
 function Ui:getElement(element)
+	checkOptionalArgument(1, element, 'string', 'table')
 	element = element or '@current'
 	if type(element) == 'table' then return element end
 	if element == '@current' then
@@ -964,11 +1048,13 @@ function Ui:getElement(element)
 end
 
 function Ui:getName(element)
+	self:_validateElement(element)
 	element = self:getElement(element)
 	return element._name
 end
 
 function Ui:getId(element)
+	self:_validateElement(element)
 	element = self:getElement(element)
 	local id = ''
 	if element._parent then
@@ -979,12 +1065,16 @@ function Ui:getId(element)
 end
 
 function Ui:getState(element)
+	self:_validateElement(element)
 	element = self:getElement(element)
 	return self._state[element:get 'id']
 end
 
 function Ui:get(element, propertyName, ...)
+	self:_validateElement(element)
+	checkArgument(2, propertyName, 'string')
 	element = self:getElement(element)
+	checkCondition(element.get[propertyName], string.format("element has no property named '%s'", propertyName))
 	return element:get(propertyName, ...)
 end
 
@@ -1013,12 +1103,14 @@ function Ui:begin()
 end
 
 function Ui:select(element)
+	self:_validateElement(element)
 	local currentGroup = self._groups[self._currentGroup]
 	currentGroup.previous = currentGroup.selected
 	currentGroup.selected = self:getElement(element)
 end
 
 function Ui:new(class, ...)
+	validateElementClass(1, class)
 	-- if we just finished drawing, start a new frame
 	if self._finished then self:begin() end
 	local parentGroup = self._groups[self._currentGroup - 1]
