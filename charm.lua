@@ -276,16 +276,19 @@ end
 
 function Element.get:hovered()
 	local state = self:getState()
+	if not state then return false end
 	return state.hovered
 end
 
 function Element.get:entered()
 	local state = self:getState()
+	if not state then return false end
 	return state.entered
 end
 
 function Element.get:exited()
 	local state = self:getState()
+	if not state then return false end
 	return state.exited
 end
 
@@ -293,21 +296,25 @@ function Element.get:held(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
-	return state.held[button]
+	if not state then return false end
+	return state.held and state.held[button] or false
 end
 
 function Element.get:clicked(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
-	return state.clicked[button]
+	if not state then return false end
+	return state.clicked and state.clicked[button] or false
 end
 
 function Element.get:dragged(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
-	return state.draggedX[button], state.draggedY[button]
+	if not state then return false, false end
+	return state.draggedX and state.draggedX[button] or false,
+		state.draggedY and state.draggedY[button] or false
 end
 
 function Element:origin(originX, originY)
