@@ -80,6 +80,20 @@ end
 
 local numMouseButtons = 3
 
+local function shallowClear(t)
+	for k in pairs(t) do t[k] = nil end
+end
+
+local function deepClear(t)
+	for k, v in pairs(t) do
+		if type(v) == 'table' then
+			deepClear(v)
+		else
+			t[k] = nil
+		end
+	end
+end
+
 local function newElementClass(className, parent, ...)
 	local class = setmetatable({
 		-- every element class has a className string
@@ -95,10 +109,9 @@ local function newElementClass(className, parent, ...)
 				return self.get[propertyName](self, ...)
 			end,
 		}),
-		-- keys that should not be cleared out when a new draw
-		-- frame is started
-		preserve = setmetatable({}, {
-			__index = parent and parent.preserve,
+		-- customize how tables are cleared out
+		clearMode = setmetatable({}, {
+			__index = parent and parent.clearMode,
 		}),
 	}, {__index = parent})
 	class.__index = class
@@ -114,9 +127,9 @@ local function newElementClass(className, parent, ...)
 		for k, v in pairs(mixinClass.get) do
 			class.get[k] = v
 		end
-		-- copy preserved keys
-		for k, v in pairs(mixinClass.preserve) do
-			class.preserve[k] = v
+		-- copy clear mode preferences
+		for k, v in pairs(mixinClass.clearMode) do
+			class.clearMode[k] = v
 		end
 	end
 	return class
@@ -124,9 +137,10 @@ end
 
 local Element = newElementClass 'Element'
 
-Element.preserve._parent = true
-Element.preserve.ui = true
-Element.preserve._stencil = true
+Element.clearMode.ui = 'none'
+Element.clearMode._parent = 'none'
+Element.clearMode._stencil = 'none'
+Element.clearMode._listeners = 'deep'
 
 function Element:new(x, y, width, height)
 	checkOptionalArgument(2, x, 'number')
@@ -817,7 +831,7 @@ end
 
 local Text = newElementClass('Text', Element)
 
-Text.preserve._wrapInfo = true
+Text.clearMode._wrapInfo = 'none'
 
 function Text:_calculateSize()
 	local limit = self._limit or math.huge
@@ -970,9 +984,14 @@ end
 
 function Ui:_clear(element)
 	for k, v in pairs(element) do
-		if not (element.preserve and element.preserve[k]) then
+		local clearMode = element.clearMode[k] or 'shallow'
+		if clearMode ~= 'none' then
 			if type(v) == 'table' then
-				self:_clear(v)
+				if clearMode == 'shallow' then
+					shallowClear(v)
+				elseif clearMode == 'deep' then
+					deepClear(v)
+				end
 			else
 				element[k] = nil
 			end
