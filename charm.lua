@@ -192,12 +192,23 @@ function Element.get:dragged(button)
 	return state.draggedX[button], state.draggedY[button]
 end
 
+function Element:origin(originX, originY)
+	self._originX = originX
+	self._originY = originY or originX
+end
+
 function Element:width(width)
+	local originX = self._originX or 0
+	local x = self:get('x', originX)
 	self._width = width
+	self:x(x, originX)
 end
 
 function Element:height(height)
+	local originY = self._originY or 0
+	local y = self:get('y', originY)
 	self._height = height
+	self:y(y, originY)
 end
 
 function Element:size(width, height)
@@ -207,6 +218,7 @@ end
 
 function Element:x(x, origin)
 	origin = origin or 0
+	self._originX = origin
 	self._x = x - self:get 'width' * origin
 end
 
@@ -216,6 +228,7 @@ function Element:right(x) self:x(x, 1) end
 
 function Element:y(y, origin)
 	origin = origin or 0
+	self._originY = origin
 	self._y = y - self:get 'height' * origin
 end
 
@@ -224,17 +237,18 @@ function Element:centerY(y) self:y(y, .5) end
 function Element:bottom(y) self:y(y, 1) end
 
 function Element:bounds(left, top, right, bottom)
-	self:left(left)
-	self:top(top)
-	self:width(right - left)
-	self:height(bottom - top)
+	self._x = left
+	self._y = top
+	self._width = right - left
+	self._height = bottom - top
 end
 
 function Element:rectangle(x, y, width, height)
-	self:x(x)
-	self:y(y)
-	self:width(width)
-	self:height(height)
+	self._x = x
+	self._y = y
+	self._width = width
+	self._height = height
+end
 end
 
 function Element:clip()
