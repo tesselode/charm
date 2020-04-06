@@ -331,6 +331,7 @@ function Element:origin(originX, originY)
 	checkArgument(2, originY, 'number')
 	self._originX = originX
 	self._originY = originY
+	return self
 end
 
 function Element:width(width)
@@ -339,6 +340,7 @@ function Element:width(width)
 	local x = self:get('x', originX)
 	self._width = width
 	self:x(x, originX)
+	return self
 end
 
 function Element:height(height)
@@ -347,6 +349,7 @@ function Element:height(height)
 	local y = self:get('y', originY)
 	self._height = height
 	self:y(y, originY)
+	return self
 end
 
 function Element:size(width, height)
@@ -354,6 +357,7 @@ function Element:size(width, height)
 	checkArgument(2, height, 'number')
 	self:width(width)
 	self:height(height)
+	return self
 end
 
 function Element:x(x, origin)
@@ -362,11 +366,24 @@ function Element:x(x, origin)
 	origin = origin or 0
 	self._originX = origin
 	self._x = x - self:get 'width' * origin
+	return self
 end
 
-function Element:left(x) self:x(x, 0) end
-function Element:centerX(x) self:x(x, .5) end
-function Element:right(x) self:x(x, 1) end
+function Element:left(x)
+	self:x(x, 0)
+	return self
+end
+
+function Element:centerX(x)
+	self:x(x, .5)
+	return self
+end
+
+function Element:right(x)
+	self:x(x, 1)
+	return self
+end
+
 
 function Element:y(y, origin)
 	checkArgument(1, y, 'number')
@@ -374,11 +391,23 @@ function Element:y(y, origin)
 	origin = origin or 0
 	self._originY = origin
 	self._y = y - self:get 'height' * origin
+	return self
 end
 
-function Element:top(y) self:y(y, 0) end
-function Element:centerY(y) self:y(y, .5) end
-function Element:bottom(y) self:y(y, 1) end
+function Element:top(y)
+	self:y(y, 0)
+	return self
+end
+
+function Element:centerY(y)
+	self:y(y, .5)
+	return self
+end
+
+function Element:bottom(y)
+	self:y(y, 1)
+	return self
+end
 
 function Element:bounds(left, top, right, bottom)
 	checkArgument(1, left, 'number')
@@ -389,6 +418,7 @@ function Element:bounds(left, top, right, bottom)
 	self._y = top
 	self._width = right - left
 	self._height = bottom - top
+	return self
 end
 
 function Element:rectangle(x, y, width, height)
@@ -400,6 +430,7 @@ function Element:rectangle(x, y, width, height)
 	self._y = y
 	self._width = width
 	self._height = height
+	return self
 end
 
 function Element:shift(dx, dy)
@@ -407,12 +438,14 @@ function Element:shift(dx, dy)
 	checkArgument(2, dy, 'number')
 	self._x = self._x + dx
 	self._y = self._y + dy
+	return self
 end
 
 function Element:addChild(child)
 	checkArgument(1, child, 'table')
 	self._children = self._children or {}
 	table.insert(self._children, child)
+	return child
 end
 
 function Element:onAddChild(child)
@@ -426,6 +459,7 @@ function Element:shiftChildren(dx, dy)
 	for _, child in ipairs(self._children) do
 		child:shift(dx, dy)
 	end
+	return self
 end
 
 function Element:expand()
@@ -433,6 +467,7 @@ function Element:expand()
 	local _, _, right, bottom = self:get 'childrenBounds'
 	self._width = math.max(self:get 'width', right)
 	self._height = math.max(self:get 'height', bottom)
+	return self
 end
 
 function Element:wrap()
@@ -441,64 +476,76 @@ function Element:wrap()
 	self:bounds(left + self:get 'x', top + self:get 'y',
 		right + self:get 'x', bottom + self:get 'y')
 	self:shiftChildren(-left, -top)
+	return self
 end
 
 function Element:padLeft(padding)
 	checkArgument(1, padding, 'number')
 	self:shiftChildren(padding, 0)
 	self:width(self:get 'width' + padding)
+	return self
 end
 
 function Element:padTop(padding)
 	checkArgument(1, padding, 'number')
 	self:shiftChildren(0, padding)
 	self:height(self:get 'height' + padding)
+	return self
 end
 
 function Element:padRight(padding)
 	checkArgument(1, padding, 'number')
 	self:width(self:get 'width' + padding)
+	return self
 end
 
 function Element:padBottom(padding)
 	checkArgument(1, padding, 'number')
 	self:height(self:get 'height' + padding)
+	return self
 end
 
 function Element:padHorizontal(padding)
 	checkArgument(1, padding, 'number')
 	self:padLeft(padding)
 	self:padRight(padding)
+	return self
 end
 
 function Element:padVertical(padding)
 	checkArgument(1, padding, 'number')
 	self:padTop(padding)
 	self:padBottom(padding)
+	return self
 end
 
 function Element:pad(padding)
 	checkArgument(1, padding, 'number')
 	self:padHorizontal(padding)
 	self:padVertical(padding)
+	return self
 end
 
 function Element:clip()
 	self._clip = true
+	return self
 end
 
 function Element:transparent()
 	self._transparent = true
+	return self
 end
 
 function Element:opaque()
 	self._transparent = false
+	return self
 end
 
 function Element:on(event, f)
 	self._listeners = self._listeners or {}
 	self._listeners[event] = self._listeners[event] or {}
 	table.insert(self._listeners[event], f)
+	return self
 end
 
 function Element:emit(event, ...)
@@ -507,6 +554,7 @@ function Element:emit(event, ...)
 	for _, f in ipairs(self._listeners[event]) do
 		f(...)
 	end
+	return self
 end
 
 function Element:beforeDraw() end
@@ -652,15 +700,18 @@ local Shape = newElementClass('Shape', Element)
 
 function Shape:fillColor(r, g, b, a)
 	self:setColor('_fillColor', r, g, b, a)
+	return self
 end
 
 function Shape:outlineColor(r, g, b, a)
 	self:setColor('_outlineColor', r, g, b, a)
+	return self
 end
 
 function Shape:outlineWidth(outlineWidth)
 	checkArgument(1, outlineWidth, 'number')
 	self._outlineWidth = outlineWidth
+	return self
 end
 
 function Shape:drawShape(mode) end
@@ -693,6 +744,7 @@ function Rectangle:cornerRadius(cornerRadiusX, cornerRadiusY)
 	checkOptionalArgument(2, cornerRadiusY, 'number')
 	self._cornerRadiusX = cornerRadiusX
 	self._cornerRadiusY = cornerRadiusY or cornerRadiusX
+	return self
 end
 
 function Rectangle:drawShape(mode)
@@ -718,6 +770,7 @@ end
 function Ellipse:segments(segments)
 	checkArgument(1, segments, 'number')
 	self._segments = segments
+	return self
 end
 
 function Ellipse:drawShape(mode)
@@ -774,6 +827,7 @@ function Points:width(width)
 	end
 	-- resize the element as usual
 	Points.parent.width(self, width)
+	return self
 end
 
 function Points:height(height)
@@ -784,6 +838,7 @@ function Points:height(height)
 	end
 	-- resize the element as usual
 	Points.parent.height(self, height)
+	return self
 end
 
 --- Draws a line.
@@ -799,6 +854,7 @@ local Line = newElementClass('Line', Points)
 -- @number[opt] a the alpha component of the color
 function Line:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
+	return self
 end
 
 --- Sets the thickness of the line.
@@ -806,6 +862,7 @@ end
 function Line:lineWidth(width)
 	checkArgument(1, width, 'number')
 	self._lineWidth = width
+	return self
 end
 
 function Line:_drawLine()
@@ -876,10 +933,12 @@ end
 
 function Text:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
+	return self
 end
 
 function Text:shadowColor(r, g, b, a)
 	self:setColor('_shadowColor', r, g, b, a)
+	return self
 end
 
 function Text:shadowOffset(shadowOffsetX, shadowOffsetY)
@@ -887,6 +946,7 @@ function Text:shadowOffset(shadowOffsetX, shadowOffsetY)
 	checkOptionalArgument(2, shadowOffsetY, 'number')
 	self._shadowOffsetX = shadowOffsetX
 	self._shadowOffsetY = shadowOffsetY or shadowOffsetX
+	return self
 end
 
 function Text:scale(scaleX, scaleY)
@@ -894,6 +954,7 @@ function Text:scale(scaleX, scaleY)
 	checkOptionalArgument(2, scaleY, 'number')
 	self:width(self._textWidth * scaleX)
 	self:height(self._textHeight * (scaleY or scaleX))
+	return self
 end
 
 function Text:drawBottom()
@@ -940,6 +1001,7 @@ end
 
 function Image:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
+	return self
 end
 
 function Image:scale(scaleX, scaleY)
@@ -947,6 +1009,7 @@ function Image:scale(scaleX, scaleY)
 	checkOptionalArgument(2, scaleY, 'number')
 	self:width(self._image:getWidth() * scaleX)
 	self:height(self._image:getHeight() * (scaleY or scaleX))
+	return self
 end
 
 function Image:drawBottom()
