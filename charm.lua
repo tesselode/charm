@@ -428,6 +428,13 @@ function Element:shiftChildren(dx, dy)
 	end
 end
 
+function Element:expand()
+	if not self:hasChildren() then return end
+	local _, _, right, bottom = self:get 'childrenBounds'
+	self._width = math.max(self:get 'width', right)
+	self._height = math.max(self:get 'height', bottom)
+end
+
 function Element:wrap()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
