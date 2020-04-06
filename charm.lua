@@ -467,6 +467,15 @@ function Element:shiftChildren(dx, dy)
 	return self
 end
 
+function Element:alignChildren(originX, originY)
+	checkArgument(1, originX, 'number')
+	checkArgument(2, originY, 'number')
+	local x, y, width, height = self:get 'childrenRectangle'
+	local dx = self:get 'width' * originX - (x + width * originX)
+	local dy = self:get 'height' * originY - (y + height * originY)
+	self:shiftChildren(dx, dy)
+end
+
 function Element:expand()
 	if not self:hasChildren() then return end
 	local _, _, right, bottom = self:get 'childrenBounds'
