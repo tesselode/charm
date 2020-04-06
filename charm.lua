@@ -415,6 +415,10 @@ function Element:addChild(child)
 	table.insert(self._children, child)
 end
 
+function Element:onAddChild(child)
+	self:addChild(child)
+end
+
 function Element:shiftChildren(dx, dy)
 	checkArgument(1, dx, 'number')
 	checkArgument(2, dy, 'number')
@@ -1167,7 +1171,7 @@ function Ui:add(element)
 	checkArgument(1, element, 'table')
 	local parentGroup = self._groups[self._currentGroup - 1]
 	if parentGroup then
-		parentGroup.selected:addChild(element)
+		parentGroup.selected:onAddChild(element)
 	else
 		table.insert(self._tree, element)
 	end
