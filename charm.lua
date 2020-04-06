@@ -290,19 +290,16 @@ end
 
 function Element.get:hovered()
 	local state = self:getState()
-	if not state then return false end
 	return state.hovered
 end
 
 function Element.get:entered()
 	local state = self:getState()
-	if not state then return false end
 	return state.entered
 end
 
 function Element.get:exited()
 	local state = self:getState()
-	if not state then return false end
 	return state.exited
 end
 
@@ -310,7 +307,6 @@ function Element.get:held(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
-	if not state then return false end
 	return state.held and state.held[button] or false
 end
 
@@ -318,7 +314,6 @@ function Element.get:clicked(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
 	local state = self:getState()
-	if not state then return false end
 	return state.clicked and state.clicked[button] or false
 end
 
@@ -504,10 +499,9 @@ function Element:emit(event, ...)
 end
 
 function Element:beforeDraw() end
-
 function Element:drawBottom() end
-
 function Element:drawTop() end
+function Element:afterDraw() end
 
 function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	--[[
@@ -622,6 +616,7 @@ function Element:draw(stencilValue)
 	self:_drawChildren(stencilValue)
 	self:drawTop()
 	love.graphics.pop()
+	self:afterDraw()
 end
 
 function Element:drawDebug()
@@ -1157,14 +1152,14 @@ function Ui:create(class, ...)
 	if parentGroup then
 		element._parent = parentGroup.selected
 	end
-	element:new(...)
 	-- initialize the element state if needed
 	local id = element:get 'id'
 	self._stateUsed[id] = true
 	if not self._state[id] then
 		self._state[id] = {}
-		element:initState(self._state[id])
+		element:initState(self._state[id], ...)
 	end
+	element:new(...)
 	return element
 end
 
