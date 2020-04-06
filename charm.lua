@@ -595,7 +595,9 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	return blocked or (mouseInBounds and not self._transparent)
 end
 
-function Element:stencil() end
+function Element:stencil()
+	love.graphics.rectangle('fill', self:get 'rectangle')
+end
 
 function Element:_drawChildren(stencilValue)
 	if not self._children then return end
