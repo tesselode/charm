@@ -911,22 +911,19 @@ end
 
 local Text = newElementClass('Text', Element)
 
-Text.clearMode._wrapInfo = 'none'
-
-function Text:_calculateSize()
-	local limit = self._limit or math.huge
-	self._wrapInfo = self._wrapInfo or {}
-	self._wrapInfo[self._font] = self._wrapInfo[self._font] or {}
-	self._wrapInfo[self._font][self._text] = self._wrapInfo[self._font][self._text] or {}
-	self._wrapInfo[self._font][self._text][limit] = self._wrapInfo[self._font][self._text][limit] or {
-		self._font:getWrap(self._text, limit)
-	}
-	local info = self._wrapInfo[self._font][self._text][limit]
-	self._textWidth = self._limit or info[1]
-	self._textHeight = #info[2] * self._font:getHeight() * self._font:getLineHeight()
-	self:width(self._textWidth)
-	self:height(self._textHeight)
-end
+--[[
+	Font.getWrap is used to calculate the size of text. unfortunately,
+	this generates a table every time you call it, which generates
+	garabage. so we intentionally don't clear the font, text, and
+	align settings from the previous frame. if this frame's settings
+	are the same as the previous ones, then we can reuse the size
+	calculations, saving some memory.
+]]
+Text.clearMode._font = 'none'
+Text.clearMode._text = 'none'
+Text.clearMode._align = 'none'
+Text.clearMode._textWidth = 'none'
+Text.clearMode._textHeight = 'none'
 
 function Text:new(font, text, align, limit, x, y)
 	checkArgument(2, font, 'Font')
@@ -935,13 +932,19 @@ function Text:new(font, text, align, limit, x, y)
 	checkOptionalArgument(5, limit, 'number')
 	checkOptionalArgument(6, x, 'number')
 	checkOptionalArgument(7, y, 'number')
+	if font ~= self._font or text ~= self._text or limit ~= self._limit then
+		local maxWidth, lines = font:getWrap(text, limit or math.huge)
+		self._textWidth = self._limit or maxWidth
+		self._textHeight = #lines * font:getHeight() * font:getLineHeight()
+	end
 	self._font = font
 	self._text = text
 	self._align = align or 'left'
 	self._limit = limit
 	self._x = x
 	self._y = y
-	self:_calculateSize()
+	self:width(self._textWidth)
+	self:height(self._textHeight)
 	self:transparent()
 end
 
