@@ -514,7 +514,7 @@ function Element:drawBottom() end
 function Element:drawTop() end
 function Element:afterDraw() end
 
-function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
+function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked, clipped)
 	--[[
 		call the beforeDraw callback. this isn't related to processing mouse events,
 		i just needed to call this somewhere before event handling happens.
@@ -523,7 +523,7 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	local mouseInBounds = self:pointInBounds(x - self:get 'x', y - self:get 'y')
 	-- if clipping is enabled, and the mouse is not within the parent
 	-- element's bounds, then none of the children can be hovered
-	if self._clip and not mouseInBounds then blocked = true end
+	local childrenClipped = self._clip and not mouseInBounds
 	--[[
 		process mouse events for each child, starting from the
 		topmost one. if any child returns true, indicating that it's
@@ -533,7 +533,8 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	if self._children then
 		for i = #self._children, 1, -1 do
 			local child = self._children[i]
-			if child:_processMouseEvents(x - self:get 'x', y - self:get 'y', dx, dy, pressed, released, blocked) then
+			if child:_processMouseEvents(x - self:get 'x', y - self:get 'y',
+					dx, dy, pressed, released, blocked, childrenClipped) then
 				blocked = true
 			end
 		end
@@ -592,7 +593,7 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked)
 	end
 	-- return true if this element would block elements below it
 	-- from receiving mouse input
-	return blocked or (mouseInBounds and not self._transparent)
+	return (blocked or (mouseInBounds and not self._transparent)) and not clipped
 end
 
 function Element:stencil()
@@ -602,7 +603,7 @@ end
 function Element:_drawChildren(stencilValue)
 	if not self._children then return end
 	-- if clipping is enabled, "push" a stencil to the "stack"
-	if self.clip then
+	if self._clip then
 		self._stencil = self._stencil or function()
 			self:stencil()
 		end
@@ -612,10 +613,10 @@ function Element:_drawChildren(stencilValue)
 		love.graphics.setStencilTest('gequal', stencilValue)
 	end
 	for _, child in ipairs(self._children) do
-		child:draw()
+		child:draw(stencilValue)
 	end
 	-- if clipping is enabled, "pop" a stencil from the "stack"
-	if self.clip then
+	if self._clip then
 		love.graphics.stencil(self._stencil, 'decrement', 1, true)
 		love.graphics.pop()
 	end
