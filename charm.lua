@@ -169,7 +169,7 @@ end
 --- Returns whether the element has any children.
 -- @treturn boolean
 function Element:hasChildren()
-	return self._children and #self._children > 0
+	return self.children and #self.children > 0
 end
 
 --- Returns whether a color is set.
@@ -273,7 +273,7 @@ end
 function Element.get:childrenBounds()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom
-	for _, child in ipairs(self._children) do
+	for _, child in ipairs(self.children) do
 		local childLeft, childTop, childRight, childBottom = child:get 'bounds'
 		left = left and math.min(left, childLeft) or childLeft
 		top = top and math.min(top, childTop) or childTop
@@ -448,8 +448,8 @@ end
 
 function Element:addChild(child)
 	checkArgument(1, child, 'table')
-	self._children = self._children or {}
-	table.insert(self._children, child)
+	self.children = self.children or {}
+	table.insert(self.children, child)
 	return child
 end
 
@@ -461,7 +461,7 @@ function Element:shiftChildren(dx, dy)
 	checkArgument(1, dx, 'number')
 	checkArgument(2, dy, 'number')
 	if not self:hasChildren() then return end
-	for _, child in ipairs(self._children) do
+	for _, child in ipairs(self.children) do
 		child:shift(dx, dy)
 	end
 	return self
@@ -579,7 +579,7 @@ end
 
 function Element:beforeDraw()
 	if not self:hasChildren() then return end
-	for _, child in ipairs(self._children) do
+	for _, child in ipairs(self.children) do
 		child:beforeDraw()
 	end
 end
@@ -599,9 +599,9 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked, c
 		"taking" the mouse input, then no child below it or the parent
 		element can be hovered.
 	]]
-	if self._children then
-		for i = #self._children, 1, -1 do
-			local child = self._children[i]
+	if self.children then
+		for i = #self.children, 1, -1 do
+			local child = self.children[i]
 			if child:_processMouseEvents(x - self:get 'x', y - self:get 'y',
 					dx, dy, pressed, released, blocked, childrenClipped) then
 				blocked = true
@@ -670,7 +670,7 @@ function Element:stencil()
 end
 
 function Element:_drawChildren(stencilValue)
-	if not self._children then return end
+	if not self.children then return end
 	-- if clipping is enabled, "push" a stencil to the "stack"
 	if self._clip then
 		self._stencil = self._stencil or function()
@@ -681,7 +681,7 @@ function Element:_drawChildren(stencilValue)
 		love.graphics.stencil(self._stencil, 'increment', 1, true)
 		love.graphics.setStencilTest('gequal', stencilValue)
 	end
-	for _, child in ipairs(self._children) do
+	for _, child in ipairs(self.children) do
 		child:draw(stencilValue)
 	end
 	-- if clipping is enabled, "pop" a stencil from the "stack"
@@ -709,8 +709,8 @@ function Element:drawDebug()
 	love.graphics.rectangle('line', 0, 0, self:get 'size')
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print(self:get 'id')
-	if self._children then
-		for _, child in ipairs(self._children) do
+	if self.children then
+		for _, child in ipairs(self.children) do
 			child:drawDebug()
 		end
 	end
