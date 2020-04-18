@@ -1,6 +1,6 @@
 --- Layout library for LÖVE.
 local charm = {
-	_VERSION = 'charm',
+	_VERSION = 'charm v0.3',
 	_DESCRIPTION = 'Layout library for LÖVE.',
 	_LICENSE = [[
 		MIT License
