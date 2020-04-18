@@ -468,11 +468,17 @@ function Element:shiftChildren(dx, dy)
 end
 
 function Element:alignChildren(originX, originY)
-	checkArgument(1, originX, 'number')
-	checkArgument(2, originY, 'number')
+	checkOptionalArgument(1, originX, 'number')
+	checkOptionalArgument(2, originY, 'number')
+	if not self:hasChildren() then return end
 	local x, y, width, height = self:get 'childrenRectangle'
-	local dx = self:get 'width' * originX - (x + width * originX)
-	local dy = self:get 'height' * originY - (y + height * originY)
+	local dx, dy = 0, 0
+	if originX then
+		dx = self:get 'width' * originX - (x + width * originX)
+	end
+	if originY then
+		dy = self:get 'height' * originY - (y + height * originY)
+	end
 	self:shiftChildren(dx, dy)
 end
 
