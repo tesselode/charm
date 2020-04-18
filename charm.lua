@@ -906,7 +906,7 @@ function Line:drawBottom()
 	love.graphics.pop()
 end
 
---- Draws an polygon.
+--- Draws a polygon.
 --
 -- Extends the @{Points} class and the @{Shape} class.
 -- @type Polygon
@@ -1163,7 +1163,7 @@ end
 function Ui:getState(element)
 	self:_validateElement(element)
 	element = self:getElement(element)
-	return self._state[element:get 'id']
+	return self._state[self:getId(element)]
 end
 
 function Ui:get(element, propertyName, ...)
