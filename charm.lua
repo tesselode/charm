@@ -1,4 +1,31 @@
-local charm = {}
+--- Layout library for LÖVE.
+local charm = {
+	_VERSION = 'charm',
+	_DESCRIPTION = 'Layout library for LÖVE.',
+	_LICENSE = [[
+		MIT License
+
+		Copyright (c) 2020 Andrew Minnich
+
+		Permission is hereby granted, free of charge, to any person obtaining a copy
+		of this software and associated documentation files (the "Software"), to deal
+		in the Software without restriction, including without limitation the rights
+		to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+		copies of the Software, and to permit persons to whom the Software is
+		furnished to do so, subject to the following conditions:
+
+		The above copyright notice and this permission notice shall be included in all
+		copies or substantial portions of the Software.
+
+		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+		IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+		FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+		AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+		LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+		OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+		SOFTWARE.
+	]]
+}
 
 -- gets the type of a value
 -- also works with LOVE types
@@ -135,6 +162,29 @@ local function newElementClass(className, parent, ...)
 	return class
 end
 
+--[[
+	A note on how data is managed in Charm:
+
+	Charm aims to be as memory-efficient as possible. You'll
+	see a couple of principles throughout the code:
+	- Tables are only created when they're first needed
+	- Tables are cleared out and reused whenever possible
+
+	This is how the Ui class is able to recreate the
+	element tree every frame without creating a lot of
+	garbage - a pool of previously created element tables
+	is kept around, and when a frame is finished, they're
+	cleared out and reused.
+
+	What this means for the code for element classes:
+	- We cannot rely on a value still being there next frame
+	(unless it's a table, in which case it'll be empty unless
+	the clear mode for that key is set to "none")
+	- We treat empty tables or nonexistent tables as being "unset"
+]]
+
+--- The base class for all elements.
+-- @type Element
 local Element = newElementClass 'Element'
 
 Element.clearMode.ui = 'none'
@@ -142,6 +192,11 @@ Element.clearMode._parent = 'none'
 Element.clearMode._stencil = 'none'
 Element.clearMode._listeners = 'deep'
 
+--- Initializes the element.
+-- @number[opt=0] x the x position of the element
+-- @number[opt=0] y the y position of the element
+-- @number[opt=0] width the width of the element
+-- @number[opt=0] height the height of the element
 function Element:new(x, y, width, height)
 	checkOptionalArgument(2, x, 'number')
 	checkOptionalArgument(3, y, 'number')
@@ -153,12 +208,23 @@ function Element:new(x, y, width, height)
 	self._height = height
 end
 
+--- Called when the element's state is initialized. This
+-- happens when an element is created that didn't exist
+-- the previous frame.
+-- @table state the state container for the element
 function Element:initState(state) end
 
+--- Gets the state table for this element.
+-- @treturn table
 function Element:getState()
 	return self.ui:getState(self)
 end
 
+--- Returns whether a point is considered to be "inside"
+-- this element.
+-- @number x the x position of the point
+-- @number y the y position of the point
+-- @treturn boolean
 function Element:pointInBounds(x, y)
 	checkArgument(1, x, 'number')
 	checkArgument(2, y, 'number')
@@ -222,54 +288,105 @@ function Element:setColor(propertyName, r, g, b, a)
 	end
 end
 
+--- Gets the name of the element.
+-- @treturn string
 function Element.get:name()
 	return self.ui:getName(self)
 end
 
+--- Gets the ID of the element. The ID uniquely identifies
+-- the element in a @{Ui}.
+-- @treturn string
 function Element.get:id()
 	return self.ui:getId(self)
 end
 
+--- Gets the width of the element.
+-- @treturn number
 function Element.get:width()
 	return self._width or 0
 end
 
+--- Gets the height of the element.
+-- @treturn number
 function Element.get:height()
 	return self._height or 0
 end
 
+--- Gets the width and height of the element.
+-- @treturn number the width of the element
+-- @treturn number the height of the element
 function Element.get:size()
 	return self:get 'width', self:get 'height'
 end
 
+--- Gets the x position of the element.
+-- @number[opt=0] origin the origin to get the x position with respect to. 0 = left, .5 = center, 1 = right
+-- @treturn number
 function Element.get:x(origin)
 	checkOptionalArgument(1, origin, 'number')
 	origin = origin or 0
 	return (self._x or 0) + self:get 'width' * origin
 end
 
+--- Gets the x position of the left edge of the element.
+-- @treturn number
 function Element.get:left() return self:get('x', 0) end
+
+--- Gets the x position of the horizontal center of the element.
+-- @treturn number
 function Element.get:centerX() return self:get('x', .5) end
+
+--- Gets the x position of the right edge of the element.
+-- @treturn number
 function Element.get:right() return self:get('x', 1) end
 
+--- Gets the y position of the element.
+-- @number[opt=0] origin the origin to get the y position with respect to. 0 = top, .5 = center, 1 = bottom
+-- @treturn number
 function Element.get:y(origin)
 	checkOptionalArgument(1, origin, 'number')
 	origin = origin or 0
 	return (self._y or 0) + self:get 'height' * origin
 end
 
+--- Gets the y position of the top of the element.
+-- @treturn number
 function Element.get:top() return self:get('y', 0) end
+
+--- Gets the y position of the vertical center of the element.
+-- @treturn number
 function Element.get:centerY() return self:get('y', .5) end
+
+--- Gets the y position of the bottom of the element.
+-- @treturn number
 function Element.get:bottom() return self:get('y', 1) end
 
+--- Gets the left, top, right, and bottom edges of the element.
+-- @treturn number the left edge of the element
+-- @treturn number the top edge of the element
+-- @treturn number the right edge of the element
+-- @treturn number the bottom edge of the element
 function Element.get:bounds()
 	return self:get 'left', self:get 'top', self:get 'right', self:get 'bottom'
 end
 
+--- Gets the position and size of the element.
+-- @treturn number the x position of the element
+-- @treturn number the y position of the element
+-- @treturn number the width of the element
+-- @treturn number the height of the element
 function Element.get:rectangle()
 	return self:get 'x', self:get 'y', self:get 'size'
 end
 
+--- Gets the bounds of the rectangle surrounding all of
+-- the elements children (relative to the top-left corner
+-- of the element).
+-- @treturn number the left bound of the children
+-- @treturn number the top bound of the children
+-- @treturn number the right bound of the children
+-- @treturn number the bottom bound of the children
 function Element.get:childrenBounds()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom
@@ -283,26 +400,42 @@ function Element.get:childrenBounds()
 	return left, top, right, bottom
 end
 
+--- Gets the position and size of the rectangle surrounding all of
+-- the elements children (relative to the top-left corner
+-- of the element).
+-- @treturn number the x position of the children
+-- @treturn number the y position of the children
+-- @treturn number the width of the children
+-- @treturn number the height of the children
 function Element.get:childrenRectangle()
 	local left, top, right, bottom = self:get 'childrenBounds'
 	return left, top, right - left, bottom - top
 end
 
+--- Gets whether the element is currently hovered by the mouse.
+-- @treturn boolean
 function Element.get:hovered()
 	local state = self:getState()
 	return state.hovered
 end
 
+--- Gets whether the mouse started hovering the element this frame.
+-- @treturn boolean
 function Element.get:entered()
 	local state = self:getState()
 	return state.entered
 end
 
+--- Gets whether the mouse left the bounds of the element.
+-- @treturn boolean
 function Element.get:exited()
 	local state = self:getState()
 	return state.exited
 end
 
+--- Gets whether the mouse is holding the element.
+-- @number button the mouse button to check for
+-- @treturn boolean
 function Element.get:held(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
@@ -310,6 +443,9 @@ function Element.get:held(button)
 	return state.held and state.held[button] or false
 end
 
+--- Gets whether the mouse just clicked this element.
+-- @number button the mouse button to check for
+-- @treturn boolean
 function Element.get:clicked(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
@@ -317,6 +453,12 @@ function Element.get:clicked(button)
 	return state.clicked and state.clicked[button] or false
 end
 
+--- Gets whether the mouse dragged the element this frame.
+-- @number button the mouse button to check for
+-- @treturn number|false the horizontal distance this element was dragged,
+-- or `false` if it was not dragged
+-- @treturn number|false the vertical distance this element was dragged,
+-- or `false` if it was not dragged
 function Element.get:dragged(button)
 	checkOptionalArgument(1, button, 'number')
 	button = button or 1
@@ -326,6 +468,10 @@ function Element.get:dragged(button)
 		state.draggedY and state.draggedY[button] or false
 end
 
+--- Sets the origin of the element.
+-- @number originX the new horizontal origin of the element
+-- @number originY the new vertical origin of the element
+-- @treturn self
 function Element:origin(originX, originY)
 	checkArgument(1, originX, 'number')
 	checkArgument(2, originY, 'number')
@@ -334,6 +480,9 @@ function Element:origin(originX, originY)
 	return self
 end
 
+--- Sets the width of the element.
+-- @number width
+-- @treturn self
 function Element:width(width)
 	checkArgument(1, width, 'number')
 	local originX = self._originX or 0
@@ -343,6 +492,9 @@ function Element:width(width)
 	return self
 end
 
+--- Sets the height of the element.
+-- @number height
+-- @treturn self
 function Element:height(height)
 	checkArgument(1, height, 'number')
 	local originY = self._originY or 0
@@ -352,6 +504,10 @@ function Element:height(height)
 	return self
 end
 
+--- Sets the width and height of the element.
+-- @number width
+-- @number height
+-- @treturn self
 function Element:size(width, height)
 	checkArgument(1, width, 'number')
 	checkArgument(2, height, 'number')
@@ -360,11 +516,19 @@ function Element:size(width, height)
 	return self
 end
 
+--- Sets the size of the element to a multiple of its current size.
+-- @number scaleX the amount to scale the element horizontally
+-- @number scaleY the amount to scale the element vertically
+-- @treturn self
 function Element:scale(scaleX, scaleY)
 	self:width(self:get 'width' * scaleX)
 	self:height(self:get 'height' * (scaleY or scaleX))
 end
 
+--- Sets the x position of the element.
+-- @number x the new x position of the element
+-- @number[opt=0] origin the origin to set the position with respect to. 0 = left, .5 = center, 1 = right
+-- @treturn self
 function Element:x(x, origin)
 	checkArgument(1, x, 'number')
 	checkOptionalArgument(2, origin, 'number')
@@ -374,22 +538,34 @@ function Element:x(x, origin)
 	return self
 end
 
+--- Moves the left edge of the element to the specified x position.
+-- @number x
+-- @treturn self
 function Element:left(x)
 	self:x(x, 0)
 	return self
 end
 
+--- Moves the horizontal center of the element to the specified x position.
+-- @number x
+-- @treturn self
 function Element:centerX(x)
 	self:x(x, .5)
 	return self
 end
 
+--- Moves the right edge of the element to the specified x position.
+-- @number x
+-- @treturn self
 function Element:right(x)
 	self:x(x, 1)
 	return self
 end
 
-
+--- Sets the y position of the element.
+-- @number y the new y position of the element
+-- @number[opt=0] origin the origin to set the position with respect to. 0 = top, .5 = center, 1 = bottom
+-- @treturn self
 function Element:y(y, origin)
 	checkArgument(1, y, 'number')
 	checkOptionalArgument(2, origin, 'number')
@@ -399,21 +575,37 @@ function Element:y(y, origin)
 	return self
 end
 
+--- Moves the top of the element to the specified y position.
+-- @number y
+-- @treturn self
 function Element:top(y)
 	self:y(y, 0)
 	return self
 end
 
+--- Moves the vertical center of the element to the specified y position.
+-- @number y
+-- @treturn self
 function Element:centerY(y)
 	self:y(y, .5)
 	return self
 end
 
+--- Moves the bottom of the element to the specified y position.
+-- @number y
+-- @treturn self
 function Element:bottom(y)
 	self:y(y, 1)
 	return self
 end
 
+--- Sets the position of the left, top, right, and bottom edges
+-- of the element.
+-- @number left
+-- @number top
+-- @number right
+-- @number bottom
+-- @treturn self
 function Element:bounds(left, top, right, bottom)
 	checkArgument(1, left, 'number')
 	checkArgument(2, top, 'number')
@@ -426,6 +618,12 @@ function Element:bounds(left, top, right, bottom)
 	return self
 end
 
+--- Sets the position and size of the element.
+-- @number x
+-- @number y
+-- @number width
+-- @number height
+-- @treturn self
 function Element:rectangle(x, y, width, height)
 	checkArgument(1, x, 'number')
 	checkArgument(2, y, 'number')
@@ -438,6 +636,10 @@ function Element:rectangle(x, y, width, height)
 	return self
 end
 
+--- Moves the element.
+-- @number dx the amount to move the element horizontally
+-- @number dy the amount to move the element vertically
+-- @treturn self
 function Element:shift(dx, dy)
 	checkArgument(1, dx, 'number')
 	checkArgument(2, dy, 'number')
@@ -446,6 +648,9 @@ function Element:shift(dx, dy)
 	return self
 end
 
+--- Adds a child to the element.
+-- @tparam Element child
+-- @treturn table the child that was added
 function Element:addChild(child)
 	checkArgument(1, child, 'table')
 	self.children = self.children or {}
@@ -453,10 +658,16 @@ function Element:addChild(child)
 	return child
 end
 
+--- Called when a @{Ui} adds a child to this element.
+-- @tparam Element child the child to add
 function Element:onAddChild(child)
 	self:addChild(child)
 end
 
+--- Moves the element's children.
+-- @number dx the amount to move the children horizontally
+-- @number dy the amount to move the children vertically
+-- @treturn self
 function Element:shiftChildren(dx, dy)
 	checkArgument(1, dx, 'number')
 	checkArgument(2, dy, 'number')
