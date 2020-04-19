@@ -687,8 +687,8 @@ end
 function Element:shift(dx, dy)
 	checkArgument(1, dx, 'number')
 	checkArgument(2, dy, 'number')
-	self._x = self._x + dx
-	self._y = self._y + dy
+	self._x = self:get 'x' + dx
+	self._y = self:get 'y' + dy
 	return self
 end
 
