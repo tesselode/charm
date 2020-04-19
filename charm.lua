@@ -187,6 +187,22 @@ end
 -- @type Element
 local Element = newElementClass 'Element'
 
+--- Defines how table values in this element will be cleared
+-- at the start of a new draw frame. Each key can be set to
+-- one of the following values:
+--
+-- - `'none'` - this table will not be cleared
+-- - `'shallow'` (default) - this table will be cleared one level deep
+-- - `'deep'` - this table will be cleared recursively
+--
+-- For example, setting `MyElementClass.clearMode.banana = 'none'`
+-- means that at the beginning of each draw frame, for each instance
+-- of this element class, `instance.banana` will not be cleared.
+--
+-- Note that for non-table values, `'shallow'` and `'deep'` do the same
+-- thing, which is setting the key to `nil`.
+--
+-- @table Element.clearMode
 Element.clearMode.ui = 'none'
 Element.clearMode._parent = 'none'
 Element.clearMode._stencil = 'none'
@@ -211,7 +227,7 @@ end
 --- Called when the element's state is initialized. This
 -- happens when an element is created that didn't exist
 -- the previous frame.
--- @table state the state container for the element
+-- @tparam table state the state container for the element
 function Element:initState(state) end
 
 --- Gets the state table for this element.
@@ -220,7 +236,7 @@ function Element:getState()
 	return self.ui:getState(self)
 end
 
---- Returns whether a point is considered to be "inside"
+--- Gets whether a point is considered to be "inside"
 -- this element.
 -- @number x the x position of the point
 -- @number y the y position of the point
@@ -232,13 +248,13 @@ function Element:pointInBounds(x, y)
 	   and y >= 0 and y <= self:get 'height'
 end
 
---- Returns whether the element has any children.
+--- Gets whether the element has any children.
 -- @treturn boolean
 function Element:hasChildren()
 	return self.children and #self.children > 0
 end
 
---- Returns whether a color is set.
+--- Gets whether a color is set.
 -- @string color the name of the color to check
 -- @treturn boolean
 function Element:isColorSet(color)
@@ -295,7 +311,7 @@ function Element.get:name()
 end
 
 --- Gets the ID of the element. The ID uniquely identifies
--- the element in a @{Ui}.
+-- the element in a @{Ui} tree.
 -- @treturn string
 function Element.get:id()
 	return self.ui:getId(self)
@@ -363,10 +379,10 @@ function Element.get:centerY() return self:get('y', .5) end
 function Element.get:bottom() return self:get('y', 1) end
 
 --- Gets the left, top, right, and bottom edges of the element.
--- @treturn number the left edge of the element
--- @treturn number the top edge of the element
--- @treturn number the right edge of the element
--- @treturn number the bottom edge of the element
+-- @treturn number
+-- @treturn number
+-- @treturn number
+-- @treturn number
 function Element.get:bounds()
 	return self:get 'left', self:get 'top', self:get 'right', self:get 'bottom'
 end
@@ -381,7 +397,7 @@ function Element.get:rectangle()
 end
 
 --- Gets the bounds of the rectangle surrounding all of
--- the elements children (relative to the top-left corner
+-- the element's children (relative to the top-left corner
 -- of the element).
 -- @treturn number the left bound of the children
 -- @treturn number the top bound of the children
@@ -401,7 +417,7 @@ function Element.get:childrenBounds()
 end
 
 --- Gets the position and size of the rectangle surrounding all of
--- the elements children (relative to the top-left corner
+-- the element's children (relative to the top-left corner
 -- of the element).
 -- @treturn number the x position of the children
 -- @treturn number the y position of the children
@@ -481,6 +497,9 @@ function Element:origin(originX, originY)
 end
 
 --- Sets the width of the element.
+--
+-- Maintains the horizontal position of the element at its
+-- current origin.
 -- @number width
 -- @treturn self
 function Element:width(width)
@@ -493,6 +512,9 @@ function Element:width(width)
 end
 
 --- Sets the height of the element.
+--
+-- Maintains the vertical position of the element at
+-- its current origin.
 -- @number height
 -- @treturn self
 function Element:height(height)
@@ -505,6 +527,9 @@ function Element:height(height)
 end
 
 --- Sets the width and height of the element.
+--
+-- Maintains the vertical position of the element at
+-- its current origin.
 -- @number width
 -- @number height
 -- @treturn self
@@ -517,6 +542,9 @@ function Element:size(width, height)
 end
 
 --- Sets the size of the element to a multiple of its current size.
+--
+-- Maintains the vertical position of the element at
+-- its current origin.
 -- @number scaleX the amount to scale the element horizontally
 -- @number scaleY the amount to scale the element vertically
 -- @treturn self
@@ -526,6 +554,8 @@ function Element:scale(scaleX, scaleY)
 end
 
 --- Sets the x position of the element.
+--
+-- Updates the horizontal origin of the element.
 -- @number x the new x position of the element
 -- @number[opt=0] origin the origin to set the position with respect to. 0 = left, .5 = center, 1 = right
 -- @treturn self
@@ -539,6 +569,8 @@ function Element:x(x, origin)
 end
 
 --- Moves the left edge of the element to the specified x position.
+--
+-- Updates the horizontal origin of the element.
 -- @number x
 -- @treturn self
 function Element:left(x)
@@ -547,6 +579,8 @@ function Element:left(x)
 end
 
 --- Moves the horizontal center of the element to the specified x position.
+--
+-- Updates the horizontal origin of the element.
 -- @number x
 -- @treturn self
 function Element:centerX(x)
@@ -555,6 +589,8 @@ function Element:centerX(x)
 end
 
 --- Moves the right edge of the element to the specified x position.
+--
+-- Updates the horizontal origin of the element.
 -- @number x
 -- @treturn self
 function Element:right(x)
@@ -563,6 +599,8 @@ function Element:right(x)
 end
 
 --- Sets the y position of the element.
+--
+-- Updates the horizontal origin of the element.
 -- @number y the new y position of the element
 -- @number[opt=0] origin the origin to set the position with respect to. 0 = top, .5 = center, 1 = bottom
 -- @treturn self
@@ -576,6 +614,8 @@ function Element:y(y, origin)
 end
 
 --- Moves the top of the element to the specified y position.
+--
+-- Updates the horizontal origin of the element.
 -- @number y
 -- @treturn self
 function Element:top(y)
@@ -584,6 +624,8 @@ function Element:top(y)
 end
 
 --- Moves the vertical center of the element to the specified y position.
+--
+-- Updates the horizontal origin of the element.
 -- @number y
 -- @treturn self
 function Element:centerY(y)
@@ -592,6 +634,8 @@ function Element:centerY(y)
 end
 
 --- Moves the bottom of the element to the specified y position.
+--
+-- Updates the horizontal origin of the element.
 -- @number y
 -- @treturn self
 function Element:bottom(y)
@@ -678,6 +722,13 @@ function Element:shiftChildren(dx, dy)
 	return self
 end
 
+--- Aligns the element's children as a group to the parent
+-- element.
+-- @number originX the horizontal point on the element and
+-- the group of children to align
+-- @number originY the vertical point on the element and
+-- the group of children to align
+-- @treturn self
 function Element:alignChildren(originX, originY)
 	checkOptionalArgument(1, originX, 'number')
 	checkOptionalArgument(2, originY, 'number')
@@ -693,6 +744,9 @@ function Element:alignChildren(originX, originY)
 	self:shiftChildren(dx, dy)
 end
 
+--- Grows the element to the right and downward until to contain
+-- all of its children.
+-- @treturn self
 function Element:expand()
 	if not self:hasChildren() then return end
 	local _, _, right, bottom = self:get 'childrenBounds'
@@ -701,6 +755,10 @@ function Element:expand()
 	return self
 end
 
+--- Adjusts the element's dimensions so that it perfectly
+-- surrounds its children. The children's positions will be
+-- adjusted to maintain the same position on screen.
+-- @treturn self
 function Element:wrap()
 	if not self:hasChildren() then return end
 	local left, top, right, bottom = self:get 'childrenBounds'
@@ -710,6 +768,12 @@ function Element:wrap()
 	return self
 end
 
+--- Adds space to the left of the element.
+--
+-- Maintains the horizontal position of the element at its
+-- current origin.
+-- @number padding the amount to expand the element
+-- @treturn self
 function Element:padLeft(padding)
 	checkArgument(1, padding, 'number')
 	self:shiftChildren(padding, 0)
@@ -717,6 +781,11 @@ function Element:padLeft(padding)
 	return self
 end
 
+--- Adds space to the top of the element.
+--
+-- Maintains the vertical position of the element at its
+-- current origin.
+-- @treturn self
 function Element:padTop(padding)
 	checkArgument(1, padding, 'number')
 	self:shiftChildren(0, padding)
@@ -724,18 +793,35 @@ function Element:padTop(padding)
 	return self
 end
 
+--- Adds space to the right of the element.
+--
+-- Maintains the horizontal position of the element at its
+-- current origin.
+-- @number padding the amount to expand the element
+-- @treturn self
 function Element:padRight(padding)
 	checkArgument(1, padding, 'number')
 	self:width(self:get 'width' + padding)
 	return self
 end
 
+--- Adds space to the bottom of the element.
+--
+-- Maintains the vertical position of the element at its
+-- current origin.
+-- @treturn self
 function Element:padBottom(padding)
 	checkArgument(1, padding, 'number')
 	self:height(self:get 'height' + padding)
 	return self
 end
 
+--- Adds space to the left and right of the element.
+--
+-- Maintains the horizontal position of the element at its
+-- current origin.
+-- @number padding the amount to expand the element
+-- @treturn self
 function Element:padHorizontal(padding)
 	checkArgument(1, padding, 'number')
 	self:padLeft(padding)
@@ -743,6 +829,11 @@ function Element:padHorizontal(padding)
 	return self
 end
 
+--- Adds space to the top and bottom of the element.
+--
+-- Maintains the vertical position of the element at its
+-- current origin.
+-- @treturn self
 function Element:padVertical(padding)
 	checkArgument(1, padding, 'number')
 	self:padTop(padding)
@@ -750,6 +841,11 @@ function Element:padVertical(padding)
 	return self
 end
 
+--- Adds space to all sides of the element.
+--
+-- Maintains the position of the element at its
+-- current origin.
+-- @treturn self
 function Element:pad(padding)
 	checkArgument(1, padding, 'number')
 	self:padHorizontal(padding)
@@ -757,21 +853,35 @@ function Element:pad(padding)
 	return self
 end
 
+--- Enables clipping for this element, meaning that children will be cropped
+-- to the visible area of the element.
+-- @treturn self
 function Element:clip()
 	self._clip = true
 	return self
 end
 
+--- Enables transparency for this element, meaning that it will not
+-- block elements behind it from receiving mouse events.
+-- @treturn self
 function Element:transparent()
 	self._transparent = true
 	return self
 end
 
+--- Disables transparency for this element, meaning that it will
+-- block elements behind it from receiving mouse events.
+-- @treturn self
 function Element:opaque()
 	self._transparent = false
 	return self
 end
 
+--- Adds a function to be called if this element emits the specified
+-- event this frame.
+-- @param event the event that should trigger the function
+-- @tparam function f the function to call
+-- @treturn self
 function Element:on(event, f)
 	self._listeners = self._listeners or {}
 	self._listeners[event] = self._listeners[event] or {}
@@ -779,6 +889,10 @@ function Element:on(event, f)
 	return self
 end
 
+--- Emits an event.
+-- @param event the event to emit
+-- @param[opt] ... additional arguments to pass to any registered function
+-- @treturn self
 function Element:emit(event, ...)
 	if not self._listeners then return end
 	if not self._listeners[event] then return end
@@ -788,6 +902,7 @@ function Element:emit(event, ...)
 	return self
 end
 
+--- Called before input is processed and elements are drawn.
 function Element:beforeDraw()
 	if not self:hasChildren() then return end
 	for _, child in ipairs(self.children) do
@@ -795,8 +910,13 @@ function Element:beforeDraw()
 	end
 end
 
+--- Called before drawing the element's children.
 function Element:drawBottom() end
+
+--- Called after drawing the element's children.
 function Element:drawTop() end
+
+--- Called after the element is drawn.
 function Element:afterDraw() end
 
 function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked, clipped)
@@ -876,6 +996,8 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked, c
 	return (blocked or (mouseInBounds and not self._transparent)) and not clipped
 end
 
+--- Defines the area to crop the element's children to
+-- if clipping is enabled.
 function Element:stencil()
 	love.graphics.rectangle('fill', self:get 'rectangle')
 end
@@ -902,6 +1024,12 @@ function Element:_drawChildren(stencilValue)
 	end
 end
 
+--- Draws the element. In most cases, you won't need
+-- to manually call this function or override it in
+-- custom element classes.
+-- @number stencilValue the pixel value to use to mask the
+-- element. This should increase by 1 for every nested
+-- child element.
 function Element:draw(stencilValue)
 	stencilValue = stencilValue or 0
 	love.graphics.push 'all'
@@ -913,6 +1041,7 @@ function Element:draw(stencilValue)
 	self:afterDraw()
 end
 
+--- Draws useful debugging info for this element.
 function Element:drawDebug()
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
@@ -928,24 +1057,50 @@ function Element:drawDebug()
 	love.graphics.pop()
 end
 
+--- A base class for elements that draw love.graphics
+-- primitives with a fill color and an outline color.
+-- This class isn't useful on its own; it's meant to be
+-- extended by custom classes.
+--
+-- Extends the @{Element} class.
+-- @type Shape
 local Shape = newElementClass('Shape', Element)
 
+--- Sets the fill color of the shape.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
+-- @treturn self
 function Shape:fillColor(r, g, b, a)
 	self:setColor('_fillColor', r, g, b, a)
 	return self
 end
 
+--- Sets the outline color of the shape.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
+-- @treturn self
 function Shape:outlineColor(r, g, b, a)
 	self:setColor('_outlineColor', r, g, b, a)
 	return self
 end
 
+--- Sets the width of the shape's outline.
+-- @number outlineWidth
+-- @treturn self
 function Shape:outlineWidth(outlineWidth)
 	checkArgument(1, outlineWidth, 'number')
 	self._outlineWidth = outlineWidth
 	return self
 end
 
+--- Draws the shape. Override this to define how the shape
+-- will be drawn.
+-- @string mode the drawing mode for the shape. Will be either
+-- "fill" or "line".
 function Shape:drawShape(mode) end
 
 function Shape:stencil()
@@ -969,19 +1124,32 @@ function Shape:drawTop()
 	love.graphics.pop()
 end
 
+--- Draws a rectangle.
+--
+-- Extends the @{Shape} class.
+-- @type Rectangle
 local Rectangle = newElementClass('Rectangle', Shape)
 
-function Rectangle:cornerRadius(cornerRadiusX, cornerRadiusY)
-	checkArgument(1, cornerRadiusX, 'number')
-	checkOptionalArgument(2, cornerRadiusY, 'number')
-	self._cornerRadiusX = cornerRadiusX
-	self._cornerRadiusY = cornerRadiusY or cornerRadiusX
-	return self
+--- Sets the radius of the corners of the rectangle.
+-- @number radiusX the horizontal radius
+-- @number[opt=radiusX] radiusY the vertical radius
+function Rectangle:cornerRadius(radiusX, radiusY)
+	checkArgument(1, radiusX, 'number')
+	checkOptionalArgument(2, radiusY, 'number')
+	self._cornerRadiusX = radiusX
+	self._cornerRadiusY = radiusY or radiusX
+end
+
+--- Sets the number of segments used to draw the corners.
+-- @number segments
+function Rectangle:cornerSegments(segments)
+	checkArgument(1, segments, 'number')
+	self._cornerSegments = segments
 end
 
 function Rectangle:drawShape(mode)
 	love.graphics.rectangle(mode, 0, 0, self:get 'width', self:get 'height',
-		self._cornerRadiusX, self._cornerRadiusY)
+		self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
 end
 
 --- Draws an ellipse.
@@ -1127,6 +1295,10 @@ function Polygon:drawShape(mode)
 	love.graphics.polygon(mode, self._points)
 end
 
+--- Draws text.
+--
+-- Extends the @{Element} class.
+-- @type Text
 local Text = newElementClass('Text', Element)
 
 --[[
@@ -1143,6 +1315,15 @@ Text.clearMode._align = 'none'
 Text.clearMode._textWidth = 'none'
 Text.clearMode._textHeight = 'none'
 
+--- Initializes the text.
+-- @tparam Font font the font to use
+-- @string text the text to draw
+-- @string[opt='left'] align how to align the text. Can be "left",
+-- "center", or "right".
+-- @number[opt=math.huge] limit the maximum amount of horizontal space
+-- this text can take up
+-- @number x the horizontal position of the text
+-- @number y the vertical position of the text
 function Text:new(font, text, align, limit, x, y)
 	checkArgument(2, font, 'Font')
 	checkArgument(3, text, 'string', 'number')
@@ -1166,21 +1347,34 @@ function Text:new(font, text, align, limit, x, y)
 	self:transparent()
 end
 
+--- Sets the color of the text.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Text:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 	return self
 end
 
+--- Sets the color of the text's shadow.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Text:shadowColor(r, g, b, a)
 	self:setColor('_shadowColor', r, g, b, a)
 	return self
 end
 
-function Text:shadowOffset(shadowOffsetX, shadowOffsetY)
-	checkArgument(1, shadowOffsetX, 'number')
-	checkOptionalArgument(2, shadowOffsetY, 'number')
-	self._shadowOffsetX = shadowOffsetX
-	self._shadowOffsetY = shadowOffsetY or shadowOffsetX
+--- Sets the horizontal and vertical offset of the text's shadow.
+-- @number offsetX
+-- @number[opt=offsetX] offsetY
+function Text:shadowOffset(offsetX, offsetY)
+	checkArgument(1, offsetX, 'number')
+	checkOptionalArgument(2, offsetY, 'number')
+	self._shadowOffsetX = offsetX
+	self._shadowOffsetY = offsetY or offsetX
 	return self
 end
 
@@ -1214,8 +1408,16 @@ function Text:drawBottom()
 	love.graphics.pop()
 end
 
+--- Draws an image.
+--
+-- Extends the @{Element} class.
+-- @type Image
 local Image = newElementClass('Image', Element)
 
+--- Initializes the image.
+-- @tparam Image image the image to use
+-- @number x the horizontal position of the image
+-- @number y the vertical position of the image
 function Image:new(image, x, y)
 	checkArgument(2, image, 'Image')
 	checkOptionalArgument(3, x, 'number')
@@ -1226,6 +1428,11 @@ function Image:new(image, x, y)
 	self._width, self._height = image:getDimensions()
 end
 
+--- Sets the blend color of the image.
+-- @tparam table|number r the red component of the color, or a table containing all of the color components
+-- @number[opt] g the green component of the color
+-- @number[opt] b the blue component of the color
+-- @number[opt] a the alpha component of the color
 function Image:color(r, g, b, a)
 	self:setColor('_color', r, g, b, a)
 	return self
@@ -1260,6 +1467,8 @@ local function validateElementClass(argumentIndex, class)
 	end
 end
 
+--- Creates, manages, and draws elements.
+-- @type Ui
 local Ui = {}
 
 function Ui:__index(k)
@@ -1340,6 +1549,13 @@ function Ui:_getNextElementName(element)
 	return className .. group.elementCount[className]
 end
 
+--- Gets an element table.
+-- @string element can be:
+--
+-- - `'@current'` to get the currently selected element
+-- - `'@previous'` to get the previously selected element
+-- - `'@parent'` to get the parent that elements are being added to
+-- @treturn Element
 function Ui:getElement(element)
 	checkOptionalArgument(1, element, 'string', 'table')
 	element = element or '@current'
@@ -1354,12 +1570,18 @@ function Ui:getElement(element)
 	end
 end
 
+--- Gets the name of an element.
+-- @tparam table|string element an element table or keyword selector
+-- @treturn string
 function Ui:getName(element)
 	self:_validateElement(element)
 	element = self:getElement(element)
 	return element._name
 end
 
+--- Gets the unique ID of an element.
+-- @tparam table|string element an element table or keyword selector
+-- @treturn string
 function Ui:getId(element)
 	self:_validateElement(element)
 	element = self:getElement(element)
@@ -1371,12 +1593,33 @@ function Ui:getId(element)
 	return id
 end
 
+--- Gets the state table for an element.
+-- @tparam table|string element an element table or keyword selector
+-- @treturn table
 function Ui:getState(element)
 	self:_validateElement(element)
 	element = self:getElement(element)
 	return self._state[self:getId(element)]
 end
 
+--[[
+	A note to self about layout.get:
+
+	It might be tempting to use a more compact syntax for
+	layout.get, like
+
+		layout.get 'elementName.propertyName'
+
+	But this doesn't work when you need to get an element by its
+	table and not its name! So don't make this mistake again!
+	It's not a good API choice!
+]]
+
+--- Gets the value of an element's property.
+-- @tparam table|string element an element table or keyword selector
+-- @string propertyName the name of the property to get
+-- @param ... additional arguments to pass to the element's property getter
+-- @return the property value
 function Ui:get(element, propertyName, ...)
 	self:_validateElement(element)
 	checkArgument(2, propertyName, 'string')
@@ -1385,6 +1628,8 @@ function Ui:get(element, propertyName, ...)
 	return element:get(propertyName, ...)
 end
 
+--- Starts a new draw frame.
+-- @treturn self
 function Ui:begin()
 	-- clear the tree
 	for i in ipairs(self._tree) do
@@ -1407,15 +1652,24 @@ function Ui:begin()
 	self._currentGroup = 0
 	self:_pushGroup()
 	self._finished = false
+	return self
 end
 
+--- Selects an element for subsequent operations to affect.
+-- @tparam table|string element an element table or keyword selector
+-- @treturn self
 function Ui:select(element)
 	self:_validateElement(element)
 	local currentGroup = self._groups[self._currentGroup]
 	currentGroup.previous = currentGroup.selected
 	currentGroup.selected = self:getElement(element)
+	return self
 end
 
+--- Creates a new element without adding it to the tree.
+-- @tparam string|table class the type of element to create
+-- @param ... additional arguments to pass to the new element's constructor
+-- @treturn Element the new element
 function Ui:create(class, ...)
 	validateElementClass(1, class)
 	-- if we just finished drawing, start a new frame
@@ -1459,6 +1713,9 @@ function Ui:create(class, ...)
 	return element
 end
 
+--- Adds an existing element to the tree.
+-- @tparam table element
+-- @treturn self
 function Ui:add(element)
 	checkArgument(1, element, 'table')
 	local parentGroup = self._groups[self._currentGroup - 1]
@@ -1470,6 +1727,10 @@ function Ui:add(element)
 	return self
 end
 
+--- Adds a new element to the tree and selects it.
+-- @tparam string|table class the type of element to create
+-- @param ... additional arguments to pass to the new element's constructor
+-- @treturn self
 function Ui:new(class, ...)
 	local element = self:create(class, ...)
 	self:add(element)
@@ -1477,16 +1738,23 @@ function Ui:new(class, ...)
 	return self
 end
 
+--- Sets the name for the next element.
+-- @string name
+-- @treturn self
 function Ui:name(name)
 	self._nextElementName = name
 	return self
 end
 
+--- Starts adding children to the currently selected element.
+-- @treturn self
 function Ui:beginChildren()
 	self:_pushGroup()
 	return self
 end
 
+--- Finishes adding children to the current parent element.
+-- @treturn self
 function Ui:endChildren()
 	self:_popGroup()
 	return self
@@ -1507,6 +1775,8 @@ function Ui:_processMouseEvents()
 	end
 end
 
+--- Draws the element tree.
+-- @treturn self
 function Ui:draw()
 	for _, element in ipairs(self._tree) do
 		element:beforeDraw()
@@ -1519,6 +1789,8 @@ function Ui:draw()
 	return self
 end
 
+--- Draws debugging info for the element tree.
+-- @treturn self
 function Ui:drawDebug()
 	for _, element in ipairs(self._tree) do
 		element:drawDebug()
@@ -1526,6 +1798,10 @@ function Ui:drawDebug()
 	return self
 end
 
+--- @section end
+
+--- Creates a new @{Ui}.
+-- @treturn Ui
 function charm.new()
 	return setmetatable({
 		_functionCache = {},
@@ -1545,6 +1821,13 @@ function charm.new()
 	}, Ui)
 end
 
+--- Creates a new element class.
+-- @tparam string className the name of the new class
+-- @tparam[opt='base'] table|string parent the element class to extend from.
+--
+-- This can be the element class table itself, or the name of a built-in
+-- element class.
+-- @treturn table
 function charm.extend(className, parent, ...)
 	if parent then validateElementClass(2, parent) end
 	if type(parent) == 'string' then parent = elementClasses[parent] end
