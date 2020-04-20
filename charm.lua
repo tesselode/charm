@@ -228,7 +228,7 @@ end
 -- happens when an element is created that didn't exist
 -- the previous frame.
 -- @tparam table state the state container for the element
-function Element:initState(state) end
+function Element:onInitState(state) end
 
 --- Gets the state table for this element.
 -- @treturn table
@@ -943,9 +943,9 @@ function Element:_processMouseEvents(x, y, dx, dy, pressed, released, blocked, c
 	local state = self:getState()
 	--[[
 		create the held and clicked tables if they don't already
-		exist. i could do this in Element.initState, but then
-		every other element class that overrides initState would
-		have to make sure it calls Element.initState so that
+		exist. i could do this in Element.onInitState, but then
+		every other element class that overrides onInitState would
+		have to make sure it calls Element.onInitState so that
 		these tables are initialized properly. kind of a pain
 		for the end user.
 	]]
@@ -1713,7 +1713,7 @@ function Ui:create(class, ...)
 	self._stateUsed[id] = true
 	if not self._state[id] then
 		self._state[id] = {}
-		element:initState(self._state[id], ...)
+		element:onInitState(self._state[id], ...)
 	end
 	element:new(...)
 	return element
