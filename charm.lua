@@ -752,14 +752,19 @@ function Element:alignChildren(originX, originY)
 	self:shiftChildren(dx, dy)
 end
 
---- Grows the element to the right and downward until to contain
+--- Grows the element in all directions until it contains
 -- all of its children.
 -- @treturn self
 function Element:expand()
 	if not self:hasChildren() then return end
-	local _, _, right, bottom = self:get 'childrenBounds'
-	self._width = math.max(self:get 'width', right)
-	self._height = math.max(self:get 'height', bottom)
+	local left, top, right, bottom = self:get 'childrenBounds'
+	left, top = math.min(left, 0), math.min(top, 0)
+	self:shift(left, top)
+	self:shiftChildren(-left, -top)
+	self._width = self:get 'width' - left
+	self._height = self:get 'height' - top
+	self._width = math.max(self:get 'width', right - left)
+	self._height = math.max(self:get 'height', bottom - top)
 	return self
 end
 
