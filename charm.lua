@@ -1058,15 +1058,23 @@ end
 function Element:drawDebug()
 	love.graphics.push 'all'
 	love.graphics.translate(self:get 'x', self:get 'y')
-	if self:get 'hovered' then
-		love.graphics.setColor(1, 0, 0, .15)
-		love.graphics.rectangle('fill', 0, 0, self:get 'size')
-	end
-	love.graphics.setColor(1, 0, 0)
-	love.graphics.rectangle('line', 0, 0, self:get 'size')
-	love.graphics.setColor(1, 1, 1)
-	if self:get 'hovered' then
+	if self:get 'width' == 0 or self:get 'height' == 0 then
+		love.graphics.setColor(1, 0, 0)
+		love.graphics.setPointSize(4)
+		love.graphics.points(0, 0)
+		love.graphics.setColor(1, 1, 1)
 		love.graphics.print(self:get 'id')
+	else
+		if self:get 'hovered' then
+			love.graphics.setColor(1, 0, 0, .15)
+			love.graphics.rectangle('fill', 0, 0, self:get 'size')
+		end
+		love.graphics.setColor(1, 0, 0)
+		love.graphics.rectangle('line', 0, 0, self:get 'size')
+		love.graphics.setColor(1, 1, 1)
+		if self:get 'hovered' then
+			love.graphics.print(self:get 'id')
+		end
 	end
 	if self.children then
 		for _, child in ipairs(self.children) do
