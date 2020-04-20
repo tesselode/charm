@@ -702,11 +702,19 @@ function Element:addChild(child)
 	return child
 end
 
+--- Called when a @{Ui} starts adding children to this element.
+-- @param ... arguments passed to @{Ui.beginChildren}
+function Element:onBeginChildren(...) end
+
 --- Called when a @{Ui} adds a child to this element.
 -- @tparam Element child the child to add
 function Element:onAddChild(child)
 	self:addChild(child)
 end
+
+--- Called when a @{Ui} finishes adding children to this element.
+-- @param ... arguments passed to @{Ui.endChildren}
+function Element:onEndChildren(...) end
 
 --- Moves the element's children.
 -- @number dx the amount to move the children horizontally
@@ -1754,15 +1762,17 @@ end
 
 --- Starts adding children to the currently selected element.
 -- @treturn self
-function Ui:beginChildren()
+function Ui:beginChildren(...)
+	self:getElement '@current':onBeginChildren(...)
 	self:_pushGroup()
 	return self
 end
 
 --- Finishes adding children to the current parent element.
 -- @treturn self
-function Ui:endChildren()
+function Ui:endChildren(...)
 	self:_popGroup()
+	self:getElement '@current':onEndChildren(...)
 	return self
 end
 
