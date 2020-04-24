@@ -703,7 +703,7 @@ function Element:addChild(child)
 end
 
 --- Called when a @{Ui} starts adding children to this element.
--- @param ... arguments passed to @{Ui.beginChildren}
+-- @param ... arguments passed to @{Ui:beginChildren}
 function Element:onBeginChildren(...) end
 
 --- Called when a @{Ui} adds a child to this element.
@@ -713,7 +713,7 @@ function Element:onAddChild(child)
 end
 
 --- Called when a @{Ui} finishes adding children to this element.
--- @param ... arguments passed to @{Ui.endChildren}
+-- @param ... arguments passed to @{Ui:endChildren}
 function Element:onEndChildren(...) end
 
 --- Moves the element's children.
