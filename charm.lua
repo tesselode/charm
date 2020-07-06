@@ -10,11 +10,15 @@ local function clamp(x, min, max)
 	return x < min and min or x > max and max or x
 end
 
-local function getConstraintsWithOffset(minWidth, minHeight, maxWidth, maxHeight, offsetX, offsetY)
+local function shrinkConstraints(minWidth, minHeight, maxWidth, maxHeight, offsetX, offsetY)
 	return math.max(minWidth - offsetX, 0),
 		math.max(minHeight - offsetY, 0),
 		math.max(maxWidth - offsetX, 0),
 		math.max(maxHeight - offsetY, 0)
+end
+
+local function constrain(width, height, minWidth, minHeight, maxWidth, maxHeight)
+	return clamp(width, minWidth, maxWidth), clamp(height, minHeight, maxHeight)
 end
 
 local function newElementClass(parent)
@@ -74,7 +78,7 @@ end
 function Element:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
 	for _, child in ipairs(self.children) do
 		self.childWidth[child], self.childHeight[child] = child:layout(
-			getConstraintsWithOffset(minWidth, minHeight, maxWidth, maxHeight, self:getChildPosition(child))
+			shrinkConstraints(minWidth, minHeight, maxWidth, maxHeight, self:getChildPosition(child))
 		)
 	end
 end
@@ -107,7 +111,7 @@ end
 
 function Box:layout(minWidth, minHeight, maxWidth, maxHeight)
 	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
-	return clamp(self.width, minWidth, maxWidth), clamp(self.height, minHeight, maxHeight)
+	return constrain(self.width, self.height, minWidth, minHeight, maxWidth, maxHeight)
 end
 
 local Wrapper = newElementClass(Element)
