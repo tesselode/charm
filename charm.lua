@@ -18,9 +18,7 @@ end
 
 local Element = newElementClass()
 
-function Element:init(width, height)
-	self._width = width or 0
-	self._height = height or 0
+function Element:init()
 	self._children = self._children or {}
 	self._childX = self._childX or {}
 	self._childY = self._childY or {}
@@ -28,14 +26,14 @@ function Element:init(width, height)
 	self._childHeight = self._childHeight or {}
 end
 
-function Element:add(element, x, y)
+function Element:add(x, y, element)
 	table.insert(self._children, element)
 	self._childX[element] = x
 	self._childY[element] = y
+	return self
 end
 
-function Element:layout(minWidth, minHeight, maxWidth, maxHeight)
-	local width, height = clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
+function Element:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
 	for _, child in ipairs(self._children) do
 		local childX, childY = self._childX[child], self._childY[child]
 		local childMinWidth = math.max(minWidth - childX, 0)
@@ -45,7 +43,11 @@ function Element:layout(minWidth, minHeight, maxWidth, maxHeight)
 		local childWidth, childHeight = child:layout(childMinWidth, childMinHeight, childMaxWidth, childMaxHeight)
 		self._childWidth[child], self._childHeight[child] = childWidth, childHeight
 	end
-	return width, height
+end
+
+function Element:layout(minWidth, minHeight, maxWidth, maxHeight)
+	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
+	return minWidth, minHeight
 end
 
 function Element:drawDebug(width, height)
@@ -61,8 +63,35 @@ function Element:drawDebug(width, height)
 	love.graphics.pop()
 end
 
+local Box = newElementClass(Element)
+
+function Box:init(width, height)
+	self._width = width
+	self._height = height
+	Element.init(self)
+end
+
+function Box:layout(minWidth, minHeight, maxWidth, maxHeight)
+	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
+	return clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
+end
+
+local Wrapper = newElementClass(Element)
+
+function Wrapper:layout(minWidth, minHeight, maxWidth, maxHeight)
+	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
+	local width, height = 0, 0
+	for _, child in ipairs(self._children) do
+		width = math.max(width, self._childX[child] + self._childWidth[child])
+		height = math.max(height, self._childY[child] + self._childHeight[child])
+	end
+	return width, height
+end
+
 local elementClasses = {
 	element = Element,
+	box = Box,
+	wrapper = Wrapper,
 }
 
 local Ui = {}
@@ -107,7 +136,7 @@ function Ui:new(class, ...)
 	return element
 end
 
-function Ui:add(element, x, y)
+function Ui:add(x, y, element)
 	if self._finished then self:begin() end
 	table.insert(self._children, element)
 	self._childX[element] = x
