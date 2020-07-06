@@ -19,29 +19,29 @@ end
 local Element = newElementClass()
 
 function Element:init()
-	self._children = self._children or {}
-	self._childX = self._childX or {}
-	self._childY = self._childY or {}
-	self._childWidth = self._childWidth or {}
-	self._childHeight = self._childHeight or {}
+	self.children = self.children or {}
+	self.childX = self.childX or {}
+	self.childY = self.childY or {}
+	self.childWidth = self.childWidth or {}
+	self.childHeight = self.childHeight or {}
 end
 
 function Element:add(x, y, element)
-	table.insert(self._children, element)
-	self._childX[element] = x
-	self._childY[element] = y
+	table.insert(self.children, element)
+	self.childX[element] = x
+	self.childY[element] = y
 	return self
 end
 
 function Element:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
-	for _, child in ipairs(self._children) do
-		local childX, childY = self._childX[child], self._childY[child]
+	for _, child in ipairs(self.children) do
+		local childX, childY = self.childX[child], self.childY[child]
 		local childMinWidth = math.max(minWidth - childX, 0)
 		local childMinHeight = math.max(minHeight - childY, 0)
 		local childMaxWidth = math.max(maxWidth - childX, 0)
 		local childMaxHeight = math.max(maxHeight - childY, 0)
 		local childWidth, childHeight = child:layout(childMinWidth, childMinHeight, childMaxWidth, childMaxHeight)
-		self._childWidth[child], self._childHeight[child] = childWidth, childHeight
+		self.childWidth[child], self.childHeight[child] = childWidth, childHeight
 	end
 end
 
@@ -54,10 +54,10 @@ function Element:drawDebug(width, height)
 	love.graphics.push 'all'
 		love.graphics.setColor(1, 0, 0)
 		love.graphics.rectangle('line', 0, 0, width, height)
-		for _, child in ipairs(self._children) do
+		for _, child in ipairs(self.children) do
 			love.graphics.push()
-				love.graphics.translate(self._childX[child], self._childY[child])
-				child:drawDebug(self._childWidth[child], self._childHeight[child])
+				love.graphics.translate(self.childX[child], self.childY[child])
+				child:drawDebug(self.childWidth[child], self.childHeight[child])
 			love.graphics.pop()
 		end
 	love.graphics.pop()
@@ -66,14 +66,14 @@ end
 local Box = newElementClass(Element)
 
 function Box:init(width, height)
-	self._width = width
-	self._height = height
+	self.width = width
+	self.height = height
 	Element.init(self)
 end
 
 function Box:layout(minWidth, minHeight, maxWidth, maxHeight)
 	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
-	return clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
+	return clamp(self.width, minWidth, maxWidth), clamp(self.height, minHeight, maxHeight)
 end
 
 local Wrapper = newElementClass(Element)
@@ -81,9 +81,9 @@ local Wrapper = newElementClass(Element)
 function Wrapper:layout(minWidth, minHeight, maxWidth, maxHeight)
 	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
 	local width, height = 0, 0
-	for _, child in ipairs(self._children) do
-		width = math.max(width, self._childX[child] + self._childWidth[child])
-		height = math.max(height, self._childY[child] + self._childHeight[child])
+	for _, child in ipairs(self.children) do
+		width = math.max(width, self.childX[child] + self.childWidth[child])
+		height = math.max(height, self.childY[child] + self.childHeight[child])
 	end
 	return width, height
 end
@@ -97,26 +97,26 @@ function Aligner:init(width, height, alignX, alignY)
 	if alignY == 'top' then alignY = 0 end
 	if alignY == 'center' then alignY = .5 end
 	if alignY == 'bottom' then alignY = 1 end
-	self._width = width
-	self._height = height
+	self.width = width
+	self.height = height
 	self._alignX = alignX
 	self._alignY = alignY
 	Element.init(self)
 end
 
 function Aligner:layout(minWidth, minHeight, maxWidth, maxHeight)
-	local width, height = clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
+	local width, height = clamp(self.width, minWidth, maxWidth), clamp(self.height, minHeight, maxHeight)
 	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
 	if self._alignX then
 		local targetX = width * self._alignX
-		for _, child in ipairs(self._children) do
-			self._childX[child] = targetX - self._childWidth[child] * self._alignX
+		for _, child in ipairs(self.children) do
+			self.childX[child] = targetX - self.childWidth[child] * self._alignX
 		end
 	end
 	if self._alignY then
 		local targetY = height * self._alignY
-		for _, child in ipairs(self._children) do
-			self._childY[child] = targetY - self._childHeight[child] * self._alignY
+		for _, child in ipairs(self.children) do
+			self.childY[child] = targetY - self.childHeight[child] * self._alignY
 		end
 	end
 	return width, height
