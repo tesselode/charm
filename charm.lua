@@ -13,18 +13,41 @@ end
 local Element = newElementClass()
 
 function Element:new(width, height)
-	self.width = width or 0
-	self.height = height or 0
+	self._width = width or 0
+	self._height = height or 0
+	self._children = self._children or {}
+	self._childX = self._childX or {}
+	self._childY = self._childY or {}
+	self._childWidth = self._childWidth or {}
+	self._childHeight = self._childHeight or {}
+end
+
+function Element:addChild(element, x, y)
+	table.insert(self._children, element)
+	self._childX[element] = x
+	self._childY[element] = y
 end
 
 function Element:layout(minWidth, minHeight, maxWidth, maxHeight)
-	return clamp(self.width, minWidth, maxWidth), clamp(self.height, minHeight, maxHeight)
+	local width, height = clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
+	for _, child in ipairs(self._children) do
+		local childX, childY = self._childX[child], self._childY[child]
+		self._childWidth[child], self._childHeight[child] = child:layout(minWidth - childX, minHeight - childY,
+			width - childX, height - childY)
+	end
+	return width, height
 end
 
 function Element:drawDebug(width, height)
 	love.graphics.push 'all'
 		love.graphics.setColor(1, 0, 0)
 		love.graphics.rectangle('line', 0, 0, width, height)
+		for _, child in ipairs(self._children) do
+			love.graphics.push()
+				love.graphics.translate(self._childX[child], self._childY[child])
+				child:drawDebug(self._childWidth[child], self._childHeight[child])
+			love.graphics.pop()
+		end
 	love.graphics.pop()
 end
 
@@ -35,26 +58,30 @@ local elementClasses = {
 local Ui = {}
 Ui.__index = Ui
 
-function Ui:new(class, x, y, ...)
+function Ui:createElement(class, ...)
 	local element = setmetatable({}, elementClasses[class])
 	element:new(...)
-	table.insert(self._elements, element)
-	self._x[element] = x
-	self._y[element] = y
+	return element
+end
+
+function Ui:addChild(element, x, y)
+	table.insert(self._children, element)
+	self._childX[element] = x
+	self._childY[element] = y
 	return self
 end
 
 function Ui:_layout()
-	for _, element in ipairs(self._elements) do
-		self._width[element], self._height[element] = element:layout(0, 0, math.huge, math.huge)
+	for _, element in ipairs(self._children) do
+		self._childWidth[element], self._childHeight[element] = element:layout(0, 0, math.huge, math.huge)
 	end
 end
 
 function Ui:_drawDebug()
-	for _, element in ipairs(self._elements) do
+	for _, element in ipairs(self._children) do
 		love.graphics.push()
-			love.graphics.translate(self._x[element], self._y[element])
-			element:drawDebug(self._width[element], self._height[element])
+			love.graphics.translate(self._childX[element], self._childY[element])
+			element:drawDebug(self._childWidth[element], self._childHeight[element])
 		love.graphics.pop()
 	end
 end
@@ -66,11 +93,11 @@ end
 
 function charm.new()
 	return setmetatable({
-		_elements = {},
-		_x = {},
-		_y = {},
-		_width = {},
-		_height = {},
+		_children = {},
+		_childX = {},
+		_childY = {},
+		_childWidth = {},
+		_childHeight = {},
 	}, Ui)
 end
 
