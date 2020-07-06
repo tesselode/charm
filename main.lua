@@ -9,9 +9,9 @@ end
 function love.draw(params)
 	ui
 		:add(
-			50, 50, ui:new 'wrapper'
+			25, 25, ui:new('aligner', 750, 550, nil, 1)
 				:add(50, 50, ui:new('box', 200, 200))
-				:add(150, 150, ui:new('box', 150, 200))
+				:add(150, 150, ui:new('box', 25, 25))
 		)
 		:draw()
 	love.graphics.print('Number of children: ' .. #ui._children)

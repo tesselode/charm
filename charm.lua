@@ -88,10 +88,45 @@ function Wrapper:layout(minWidth, minHeight, maxWidth, maxHeight)
 	return width, height
 end
 
+local Aligner = newElementClass(Element)
+
+function Aligner:init(width, height, alignX, alignY)
+	if alignX == 'left' then alignX = 0 end
+	if alignX == 'center' then alignX = .5 end
+	if alignX == 'right' then alignX = 1 end
+	if alignY == 'top' then alignY = 0 end
+	if alignY == 'center' then alignY = .5 end
+	if alignY == 'bottom' then alignY = 1 end
+	self._width = width
+	self._height = height
+	self._alignX = alignX
+	self._alignY = alignY
+	Element.init(self)
+end
+
+function Aligner:layout(minWidth, minHeight, maxWidth, maxHeight)
+	local width, height = clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
+	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
+	if self._alignX then
+		local targetX = width * self._alignX
+		for _, child in ipairs(self._children) do
+			self._childX[child] = targetX - self._childWidth[child] * self._alignX
+		end
+	end
+	if self._alignY then
+		local targetY = height * self._alignY
+		for _, child in ipairs(self._children) do
+			self._childY[child] = targetY - self._childHeight[child] * self._alignY
+		end
+	end
+	return width, height
+end
+
 local elementClasses = {
 	element = Element,
 	box = Box,
 	wrapper = Wrapper,
+	aligner = Aligner,
 }
 
 local Ui = {}
