@@ -1,5 +1,11 @@
 local charm = {}
 
+local function clear(t)
+	for k in pairs(t) do
+		t[k] = nil
+	end
+end
+
 local function clamp(x, min, max)
 	return x < min and min or x > max and max or x
 end
@@ -12,7 +18,7 @@ end
 
 local Element = newElementClass()
 
-function Element:new(width, height)
+function Element:init(width, height)
 	self._width = width or 0
 	self._height = height or 0
 	self._children = self._children or {}
@@ -22,7 +28,7 @@ function Element:new(width, height)
 	self._childHeight = self._childHeight or {}
 end
 
-function Element:addChild(element, x, y)
+function Element:add(element, x, y)
 	table.insert(self._children, element)
 	self._childX[element] = x
 	self._childY[element] = y
@@ -58,13 +64,47 @@ local elementClasses = {
 local Ui = {}
 Ui.__index = Ui
 
-function Ui:createElement(class, ...)
-	local element = setmetatable({}, elementClasses[class])
-	element:new(...)
+function Ui:begin()
+	clear(self._children)
+	for _, element in ipairs(self._elementPool) do
+		self._isElementUsed[element] = nil
+	end
+	self._finished = false
+end
+
+function Ui:_clearElement(element)
+	for k, v in pairs(element) do
+		if type(v) == 'table' then
+			clear(v)
+		else
+			element[k] = nil
+		end
+	end
+end
+
+function Ui:_getUnusedElement()
+	for _, element in ipairs(self._elementPool) do
+		if not self._isElementUsed[element] then
+			self._isElementUsed[element] = true
+			self:_clearElement(element)
+			return element
+		end
+	end
+	local element = {}
+	table.insert(self._elementPool, element)
+	self._isElementUsed[element] = true
 	return element
 end
 
-function Ui:addChild(element, x, y)
+function Ui:new(class, ...)
+	local element = self:_getUnusedElement()
+	setmetatable(element, elementClasses[class])
+	element:init(...)
+	return element
+end
+
+function Ui:add(element, x, y)
+	if self._finished then self:begin() end
 	table.insert(self._children, element)
 	self._childX[element] = x
 	self._childY[element] = y
@@ -89,15 +129,19 @@ end
 function Ui:draw()
 	self:_layout()
 	self:_drawDebug()
+	self._finished = true
 end
 
 function charm.new()
 	return setmetatable({
+		_elementPool = {},
+		_isElementUsed = {},
 		_children = {},
 		_childX = {},
 		_childY = {},
 		_childWidth = {},
 		_childHeight = {},
+		_finished = false,
 	}, Ui)
 end
 
