@@ -58,6 +58,13 @@ function Element:setChildPosition(child, x, y)
 	self:setChildY(child, y)
 end
 
+function Element:shiftChildren(dx, dy)
+	for _, child in ipairs(self.children) do
+		self.childX[child] = self.childX[child] + dx
+		self.childY[child] = self.childY[child] + dy
+	end
+end
+
 function Element:add(x, y, element)
 	table.insert(self.children, element)
 	self:setChildPosition(element, x, y)
@@ -105,13 +112,57 @@ end
 
 local Wrapper = newElementClass(Element)
 
+function Wrapper:init()
+	self.paddingLeft = 0
+	self.paddingTop = 0
+	self.paddingRight = 0
+	self.paddingBottom = 0
+	Element.init(self)
+end
+
+function Wrapper:padLeft(amount)
+	self.paddingLeft = amount
+	return self
+end
+
+function Wrapper:padTop(amount)
+	self.paddingTop = amount
+	return self
+end
+
+function Wrapper:padRight(amount)
+	self.paddingRight = amount
+	return self
+end
+
+function Wrapper:padBottom(amount)
+	self.paddingBottom = amount
+	return self
+end
+
+function Wrapper:padHorizontal(amount)
+	return self:padLeft(amount):padRight(amount)
+end
+
+function Wrapper:padVertical(amount)
+	return self:padTop(amount):padBottom(amount)
+end
+
+function Wrapper:pad(amount)
+	return self:padHorizontal(amount):padVertical(amount)
+end
+
 function Wrapper:layout(minWidth, minHeight, maxWidth, maxHeight)
-	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
+	self:shiftChildren(self.paddingLeft, self.paddingTop)
+	self:layoutChildren(minWidth - self.paddingRight, minHeight - self.paddingBottom,
+		maxWidth - self.paddingRight, maxHeight - self.paddingBottom)
 	local width, height = 0, 0
 	for _, child in ipairs(self.children) do
 		width = math.max(width, self.childX[child] + self.childWidth[child])
 		height = math.max(height, self.childY[child] + self.childHeight[child])
 	end
+	width = width + self.paddingRight
+	height = height + self.paddingBottom
 	return width, height
 end
 
