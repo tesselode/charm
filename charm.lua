@@ -170,36 +170,41 @@ function Wrapper:layout(minWidth, minHeight, maxWidth, maxHeight)
 	return width, height
 end
 
-local Aligner = newElementClass(Element)
+local Row = newElementClass(Element)
 
-function Aligner:init(width, height, alignX, alignY)
-	if alignX == 'left' then alignX = 0 end
-	if alignX == 'center' then alignX = .5 end
-	if alignX == 'right' then alignX = 1 end
-	if alignY == 'top' then alignY = 0 end
-	if alignY == 'center' then alignY = .5 end
-	if alignY == 'bottom' then alignY = 1 end
+function Row:init(width, height)
 	self.width = width
 	self.height = height
-	self._alignX = alignX
-	self._alignY = alignY
 	Element.init(self)
 end
 
-function Aligner:layout(minWidth, minHeight, maxWidth, maxHeight)
-	local width, height = clamp(self.width, minWidth, maxWidth), clamp(self.height, minHeight, maxHeight)
-	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
-	if self._alignX then
-		local targetX = width * self._alignX
+function Row:add(element)
+	Element.add(self, 0, 0, element)
+	return self
+end
+
+function Row:getChildrenTotalWidth()
+	local width = 0
+	for _, child in ipairs(self.children) do
+		width = width + self.childWidth[child]
+	end
+	return width
+end
+
+function Row:layout(minWidth, minHeight, maxWidth, maxHeight)
+	local width, height = constrain(self.width or maxWidth, self.height or maxHeight,
+		minWidth, minHeight, maxWidth, maxHeight)
+	self:layoutChildren(0, 0, math.huge, height)
+	local totalWidth = self:getChildrenTotalWidth()
+	if totalWidth > width then
 		for _, child in ipairs(self.children) do
-			self.childX[child] = targetX - self.childWidth[child] * self._alignX
+			self.childWidth[child] = self.childWidth[child] * width / totalWidth
 		end
 	end
-	if self._alignY then
-		local targetY = height * self._alignY
-		for _, child in ipairs(self.children) do
-			self.childY[child] = targetY - self.childHeight[child] * self._alignY
-		end
+	local nextX = 0
+	for _, child in ipairs(self.children) do
+		self.childX[child] = nextX
+		nextX = self.childX[child] + self.childWidth[child]
 	end
 	return width, height
 end
@@ -208,7 +213,7 @@ local elementClasses = {
 	element = Element,
 	box = Box,
 	wrapper = Wrapper,
-	aligner = Aligner,
+	row = Row,
 }
 
 local Ui = {}
