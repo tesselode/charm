@@ -38,8 +38,12 @@ function Element:layout(minWidth, minHeight, maxWidth, maxHeight)
 	local width, height = clamp(self._width, minWidth, maxWidth), clamp(self._height, minHeight, maxHeight)
 	for _, child in ipairs(self._children) do
 		local childX, childY = self._childX[child], self._childY[child]
-		self._childWidth[child], self._childHeight[child] = child:layout(minWidth - childX, minHeight - childY,
-			width - childX, height - childY)
+		local childMinWidth = math.max(minWidth - childX, 0)
+		local childMinHeight = math.max(minHeight - childY, 0)
+		local childMaxWidth = math.max(maxWidth - childX, 0)
+		local childMaxHeight = math.max(maxHeight - childY, 0)
+		local childWidth, childHeight = child:layout(childMinWidth, childMinHeight, childMaxWidth, childMaxHeight)
+		self._childWidth[child], self._childHeight[child] = childWidth, childHeight
 	end
 	return width, height
 end
