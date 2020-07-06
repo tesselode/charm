@@ -10,6 +10,13 @@ local function clamp(x, min, max)
 	return x < min and min or x > max and max or x
 end
 
+local function getConstraintsWithOffset(minWidth, minHeight, maxWidth, maxHeight, offsetX, offsetY)
+	return math.max(minWidth - offsetX, 0),
+		math.max(minHeight - offsetY, 0),
+		math.max(maxWidth - offsetX, 0),
+		math.max(maxHeight - offsetY, 0)
+end
+
 local function newElementClass(parent)
 	local class = setmetatable({}, {__index = parent})
 	class.__index = class
@@ -26,22 +33,42 @@ function Element:init()
 	self.childHeight = self.childHeight or {}
 end
 
+function Element:getChildX(child)
+	return self.childX[child]
+end
+
+function Element:getChildY(child)
+	return self.childY[child]
+end
+
+function Element:getChildPosition(child)
+	return self:getChildX(child), self:getChildY(child)
+end
+
+function Element:setChildX(child, x)
+	self.childX[child] = x
+end
+
+function Element:setChildY(child, y)
+	self.childY[child] = y
+end
+
+function Element:setChildPosition(child, x, y)
+	self:setChildX(child, x)
+	self:setChildY(child, y)
+end
+
 function Element:add(x, y, element)
 	table.insert(self.children, element)
-	self.childX[element] = x
-	self.childY[element] = y
+	self:setChildPosition(element, x, y)
 	return self
 end
 
 function Element:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
 	for _, child in ipairs(self.children) do
-		local childX, childY = self.childX[child], self.childY[child]
-		local childMinWidth = math.max(minWidth - childX, 0)
-		local childMinHeight = math.max(minHeight - childY, 0)
-		local childMaxWidth = math.max(maxWidth - childX, 0)
-		local childMaxHeight = math.max(maxHeight - childY, 0)
-		local childWidth, childHeight = child:layout(childMinWidth, childMinHeight, childMaxWidth, childMaxHeight)
-		self.childWidth[child], self.childHeight[child] = childWidth, childHeight
+		self.childWidth[child], self.childHeight[child] = child:layout(
+			getConstraintsWithOffset(minWidth, minHeight, maxWidth, maxHeight, self:getChildPosition(child))
+		)
 	end
 end
 
