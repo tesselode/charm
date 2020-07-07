@@ -10,9 +10,10 @@ function love.draw(params)
 	ui
 		:add(
 			25, 25, ui:new 'row'
-				:setMode('stack', 50)
-				:add(ui:new('box', 50, 200))
-				:add(ui:new('box', 200, 200))
+				:setSize(700, 500)
+				:setMode 'spaceEvenly'
+				:add(ui:new('box', 50, 100))
+				:add(ui:new('box', 200, 50))
 				:add(ui:new('box', 100, 200))
 		)
 		:draw()

@@ -233,13 +233,21 @@ function Row:layoutAndScaleChildren(width, height)
 	end
 end
 
-function Row:distribute()
+function Row:stack(spacing)
+	local nextX = 0
+	for _, child in ipairs(self.children) do
+		self.childX[child] = nextX
+		nextX = self.childX[child] + self.childWidth[child] + spacing
+	end
+end
+
+function Row:distribute(width)
 	if self.mode == 'stack' then
-		local nextX = 0
-		for _, child in ipairs(self.children) do
-			self.childX[child] = nextX
-			nextX = self.childX[child] + self.childWidth[child] + self.spacing
-		end
+		self:stack(self.spacing)
+	elseif self.mode == 'spaceEvenly' then
+		local totalSpace = width - self:getChildrenTotalWidth()
+		local spacing = totalSpace / (#self.children - 1)
+		self:stack(spacing)
 	end
 end
 
@@ -247,7 +255,7 @@ function Row:layout(minWidth, minHeight, maxWidth, maxHeight)
 	local width, height = constrain(self.width or maxWidth, self.height or maxHeight,
 		minWidth, minHeight, maxWidth, maxHeight)
 	self:layoutAndScaleChildren(width, height)
-	self:distribute()
+	self:distribute(width)
 	return width, height
 end
 
