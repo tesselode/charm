@@ -172,10 +172,17 @@ end
 
 local Row = newElementClass(Element)
 
-function Row:init(width, height)
+function Row:init(distributeMode, width, height)
+	self.distributeMode = distributeMode or 'stack'
+	self.spacing = 0
 	self.width = width
 	self.height = height
 	Element.init(self)
+end
+
+function Row:setSpacing(spacing)
+	self.spacing = spacing
+	return self
 end
 
 function Row:add(element)
@@ -191,21 +198,34 @@ function Row:getChildrenTotalWidth()
 	return width
 end
 
+function Row:distribute()
+	if self.distributeMode == 'stack' then
+		local nextX = 0
+		for _, child in ipairs(self.children) do
+			self.childX[child] = nextX
+			nextX = self.childX[child] + self.childWidth[child] + self.spacing
+		end
+	end
+end
+
 function Row:layout(minWidth, minHeight, maxWidth, maxHeight)
 	local width, height = constrain(self.width or maxWidth, self.height or maxHeight,
 		minWidth, minHeight, maxWidth, maxHeight)
+	-- first, get the desired width of each child given no constraints
 	self:layoutChildren(0, 0, math.huge, height)
+	-- shrink the children proportionally to fit the parent if necessary
 	local totalWidth = self:getChildrenTotalWidth()
-	if totalWidth > width then
+	local availableWidth = width
+	if self.distributeMode == 'stack' then
+		availableWidth = availableWidth - self.spacing * #self.children - 1
+		availableWidth = math.max(availableWidth, 0)
+	end
+	if totalWidth > availableWidth then
 		for _, child in ipairs(self.children) do
-			self.childWidth[child] = self.childWidth[child] * width / totalWidth
+			self.childWidth[child] = self.childWidth[child] * availableWidth / totalWidth
 		end
 	end
-	local nextX = 0
-	for _, child in ipairs(self.children) do
-		self.childX[child] = nextX
-		nextX = self.childX[child] + self.childWidth[child]
-	end
+	self:distribute()
 	return width, height
 end
 
