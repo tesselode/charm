@@ -109,6 +109,20 @@ function Box:init(width, height)
 	Element.init(self)
 end
 
+function Box:setWidth(width)
+	self.width = width
+	return self
+end
+
+function Box:setHeight(height)
+	self.height = height
+	return self
+end
+
+function Box:setSize(width, height)
+	return self:setWidth(width):setHeight(height)
+end
+
 function Box:layout(minWidth, minHeight, maxWidth, maxHeight)
 	self:layoutChildren(minWidth, minHeight, maxWidth, maxHeight)
 	return constrain(self.width, self.height, minWidth, minHeight, maxWidth, maxHeight)
@@ -170,18 +184,17 @@ function Wrapper:layout(minWidth, minHeight, maxWidth, maxHeight)
 	return width, height
 end
 
-local Row = newElementClass(Element)
+local Row = newElementClass(Box)
 
-function Row:init(distributeMode, width, height)
-	self.distributeMode = distributeMode or 'stack'
+function Row:init()
+	self.mode = 'stack'
 	self.spacing = 0
-	self.width = width
-	self.height = height
-	Element.init(self)
+	Box.init(self, nil, nil)
 end
 
-function Row:setSpacing(spacing)
-	self.spacing = spacing
+function Row:setMode(mode, spacing)
+	self.mode = mode
+	self.spacing = spacing or 0
 	return self
 end
 
@@ -199,7 +212,7 @@ function Row:getChildrenTotalWidth()
 end
 
 function Row:distribute()
-	if self.distributeMode == 'stack' then
+	if self.mode == 'stack' then
 		local nextX = 0
 		for _, child in ipairs(self.children) do
 			self.childX[child] = nextX
@@ -216,7 +229,7 @@ function Row:layout(minWidth, minHeight, maxWidth, maxHeight)
 	-- shrink the children proportionally to fit the parent if necessary
 	local totalWidth = self:getChildrenTotalWidth()
 	local availableWidth = width
-	if self.distributeMode == 'stack' then
+	if self.mode == 'stack' then
 		availableWidth = availableWidth - self.spacing * #self.children - 1
 		availableWidth = math.max(availableWidth, 0)
 	end

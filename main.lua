@@ -9,8 +9,8 @@ end
 function love.draw(params)
 	ui
 		:add(
-			25, 25, ui:new('row', 'stack')
-				:setSpacing(50)
+			25, 25, ui:new 'row'
+				:setMode('stack', 50)
 				:add(ui:new('box', 50, 200))
 				:add(ui:new('box', 200, 200))
 				:add(ui:new('box', 100, 200))
