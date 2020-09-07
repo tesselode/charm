@@ -13,6 +13,16 @@ function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
 end
 
+function love.mousemoved(x, y, dx, dy, istouch)
+	element:mousemoved(x, y, dx, dy)
+	if element:wasEntered() then
+		element:fillColor(.5, .5, .5)
+	end
+	if element:wasExited() then
+		element:fillColor(.25, .25, .25)
+	end
+end
+
 function love.draw()
 	element:draw()
 end

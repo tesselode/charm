@@ -21,6 +21,8 @@ function Element:new(x, y, width, height)
 	self._width = width or 0
 	self._height = height or 0
 	self._children = {}
+	self._hovered = false
+	self._hoveredPrevious = false
 end
 
 function Element:setColor(key, r, g, b, a)
@@ -29,6 +31,13 @@ function Element:setColor(key, r, g, b, a)
 	else
 		self[key] = r
 	end
+end
+
+function Element:pointInBounds(x, y)
+	return x >= self:getLeft()
+	   and x <= self:getRight()
+	   and y >= self:getTop()
+	   and y <= self:getBottom()
 end
 
 function Element:getX(anchor)
@@ -58,6 +67,16 @@ end
 
 function Element:getRectangle()
 	return self._x, self._y, self._width, self._height
+end
+
+function Element:isHovered() return self._hovered end
+
+function Element:wasEntered()
+	return self._hovered and not self._hoveredPrevious
+end
+
+function Element:wasExited()
+	return self._hoveredPrevious and not self._hovered
 end
 
 function Element:x(x, anchor)
@@ -99,6 +118,18 @@ end
 function Element:add(child)
 	table.insert(self._children, child)
 	return self
+end
+
+function Element:mousemoved(x, y, dx, dy, blocked)
+	for i = #self._children, 1, -1 do
+		local child = self._children[i]
+		if child:mousemoved(x - self._x, y - self._y, dx, dy, blocked) then
+			blocked = true
+		end
+	end
+	self._hoveredPrevious = self._hovered
+	self._hovered = not blocked and self:pointInBounds(x, y)
+	return self._hovered
 end
 
 function Element:drawBelowChildren() end
