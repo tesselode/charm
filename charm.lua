@@ -35,11 +35,24 @@ function Element:setColor(key, r, g, b, a)
 	end
 end
 
-function Element:emit(event, ...)
+function Element:trigger(event, ...)
 	local events = self._events[event]
 	if events then
 		for f in pairs(events) do f(self, ...) end
 	end
+	return self
+end
+
+function Element:emitToChildren(event, ...)
+	for _, child in ipairs(self._children) do
+		child:emit(event, ...)
+	end
+	return self
+end
+
+function Element:emit(event, ...)
+	self:trigger(event, ...)
+	self:emitToChildren(event, ...)
 	return self
 end
 
@@ -152,8 +165,8 @@ function Element:mousemoved(x, y, dx, dy, blocked)
 	end
 	self._hoveredPrevious = self._hovered
 	self._hovered = not blocked and self:pointInBounds(x, y)
-	if self:wasEntered() then self:emit('enter', x, y) end
-	if self:wasExited() then self:emit('exit', x, y) end
+	if self:wasEntered() then self:trigger('enter', x, y) end
+	if self:wasExited() then self:trigger('exit', x, y) end
 	return self._hovered
 end
 

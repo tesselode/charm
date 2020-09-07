@@ -7,9 +7,10 @@ local element = charm.Rectangle(50, 50, 100, 150)
 	:cornerRadius(10, 5)
 	:add(charm.Rectangle(25, 25, 25, 25)
 		:fillColor(1, 0, 0)
+		:on('hi', function() print 'hi!' end)
 	)
-	:on('enter', function(element) element:fillColor(.5, .5, .5) end)
-	:on('exit', function(element) element:fillColor(.25, .25, .25) end)
+	:on('hi', function() print 'hello!' end)
+	:emitToChildren 'hi'
 
 function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
