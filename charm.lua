@@ -105,7 +105,11 @@ end
 
 function Element:x(x, anchor)
 	anchor = anchor or 0
+	local previousX = self._x
 	self._x = x - self._width * anchor
+	if self._x ~= previousX then
+		self:emit('changeX', self._x)
+	end
 	return self
 end
 
@@ -115,7 +119,11 @@ function Element:right(x) return self:x(x, 1) end
 
 function Element:y(y, anchor)
 	anchor = anchor or 0
+	local previousY = self._y
 	self._y = y - self._height * anchor
+	if self._y ~= previousY then
+		self:emit('changeY', self._y)
+	end
 	return self
 end
 
@@ -124,11 +132,17 @@ function Element:centerY(y) return self:y(y, .5) end
 function Element:bottom(y) return self:y(y, 1) end
 
 function Element:width(width)
+	if width ~= self._width then
+		self:emit('changeWidth', width)
+	end
 	self._width = width
 	return self
 end
 
 function Element:height(height)
+	if height ~= self._height then
+		self:emit('changeHeight', height)
+	end
 	self._height = height
 	return self
 end
@@ -140,6 +154,7 @@ function Element:size(width, height)
 end
 
 function Element:add(child)
+	self:emit('addChild', child)
 	table.insert(self._children, child)
 	return self
 end

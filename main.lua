@@ -5,15 +5,17 @@ local element = charm.Rectangle(50, 50, 100, 150)
 	:outlineColor(1, 1, 1)
 	:outlineWidth(5)
 	:cornerRadius(10, 5)
+	:on('addChild', function(element, child) print(child) end)
 	:add(charm.Rectangle(25, 25, 25, 25)
 		:fillColor(1, 0, 0)
-		:on('hi', function() print 'hi!' end)
 	)
-	:on('hi', function() print 'hello!' end)
-	:emitToChildren 'hi'
+	:on('changeWidth', function(element, width) print('newWidth: ' .. width) end)
 
 function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
+	if key == 'space' then
+		element:width(100)
+	end
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
