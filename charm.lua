@@ -23,8 +23,10 @@ function Element:new(x, y, width, height)
 	self._children = {}
 	self._hovered = false
 	self._hoveredPrevious = false
+	self._events = {}
 end
 
+-- utilities (for internal use and custom classes) --
 function Element:setColor(key, r, g, b, a)
 	if type(r) == 'number' then
 		self[key] = {r, g, b, a}
@@ -33,6 +35,15 @@ function Element:setColor(key, r, g, b, a)
 	end
 end
 
+function Element:emit(event, ...)
+	local events = self._events[event]
+	if events then
+		for f in pairs(events) do f(self, ...) end
+	end
+	return self
+end
+
+-- main API --
 function Element:pointInBounds(x, y)
 	return x >= self:getLeft()
 	   and x <= self:getRight()
@@ -120,6 +131,18 @@ function Element:add(child)
 	return self
 end
 
+function Element:on(event, f)
+	self._events[event] = self._events[event] or {}
+	self._events[event][f] = true
+	return self
+end
+
+function Element:off(event, f)
+	local events = self._events[event]
+	if events then events[f] = nil end
+	return self
+end
+
 function Element:mousemoved(x, y, dx, dy, blocked)
 	for i = #self._children, 1, -1 do
 		local child = self._children[i]
@@ -129,6 +152,8 @@ function Element:mousemoved(x, y, dx, dy, blocked)
 	end
 	self._hoveredPrevious = self._hovered
 	self._hovered = not blocked and self:pointInBounds(x, y)
+	if self:wasEntered() then self:emit('enter', x, y) end
+	if self:wasExited() then self:emit('exit', x, y) end
 	return self._hovered
 end
 
