@@ -20,6 +20,7 @@ function Element:new(x, y, width, height)
 	self._y = y or 0
 	self._width = width or 0
 	self._height = height or 0
+	self._children = {}
 end
 
 function Element:getX(anchor)
@@ -87,10 +88,21 @@ function Element:size(width, height)
 	return self
 end
 
+function Element:add(child)
+	table.insert(self._children, child)
+	return self
+end
+
 function Element:drawDebug()
 	love.graphics.push 'all'
 		love.graphics.setColor(1, 0, 0)
 		love.graphics.rectangle('line', self:getRectangle())
+	love.graphics.pop()
+	love.graphics.push 'all'
+		love.graphics.translate(self._x, self._y)
+		for _, child in ipairs(self._children) do
+			child:drawDebug()
+		end
 	love.graphics.pop()
 end
 

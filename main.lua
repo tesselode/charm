@@ -4,6 +4,7 @@ local element = charm.Element()
 	:size(100, 150)
 	:right(love.graphics.getWidth())
 	:bottom(love.graphics.getHeight())
+	:add(charm.Element(25, 25, 25, 25))
 
 function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
