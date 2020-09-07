@@ -1,15 +1,18 @@
 local charm = require 'charm'
 
-local element = charm.Element()
-	:size(100, 150)
-	:right(love.graphics.getWidth())
-	:bottom(love.graphics.getHeight())
-	:add(charm.Element(25, 25, 25, 25))
+local element = charm.Rectangle(50, 50, 100, 150)
+	:fillColor(.25, .25, .25)
+	:outlineColor(1, 1, 1)
+	:outlineWidth(5)
+	:cornerRadius(10, 5)
+	:add(charm.Rectangle(25, 25, 25, 25)
+		:fillColor(1, 0, 0)
+	)
 
 function love.keypressed(key)
 	if key == 'escape' then love.event.quit() end
 end
 
 function love.draw()
-	element:drawDebug()
+	element:draw()
 end

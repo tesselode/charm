@@ -1,7 +1,7 @@
 local charm = {}
 
 local function newClass(parent)
-	local class = setmetatable({}, {
+	local class = setmetatable({parent = parent}, {
 		__index = parent,
 		__call = function(class, ...)
 			local instance = setmetatable({}, class)
@@ -21,6 +21,14 @@ function Element:new(x, y, width, height)
 	self._width = width or 0
 	self._height = height or 0
 	self._children = {}
+end
+
+function Element:setColor(key, r, g, b, a)
+	if type(r) == 'number' then
+		self[key] = {r, g, b, a}
+	else
+		self[key] = r
+	end
 end
 
 function Element:getX(anchor)
@@ -93,6 +101,20 @@ function Element:add(child)
 	return self
 end
 
+function Element:drawBelowChildren() end
+function Element:drawAboveChildren() end
+
+function Element:draw()
+	self:drawBelowChildren()
+	love.graphics.push 'all'
+		love.graphics.translate(self._x, self._y)
+		for _, child in ipairs(self._children) do
+			child:draw()
+		end
+	love.graphics.pop()
+	self:drawAboveChildren()
+end
+
 function Element:drawDebug()
 	love.graphics.push 'all'
 		love.graphics.setColor(1, 0, 0)
@@ -106,6 +128,62 @@ function Element:drawDebug()
 	love.graphics.pop()
 end
 
+local Shape = newClass(Element)
+
+function Shape:fillColor(r, g, b, a)
+	self:setColor('_fillColor', r, g, b, a)
+	return self
+end
+
+function Shape:outlineColor(r, g, b, a)
+	self:setColor('_outlineColor', r, g, b, a)
+	return self
+end
+
+function Shape:outlineWidth(width)
+	self._outlineWidth = width
+	return self
+end
+
+function Shape:drawShape(mode) end
+
+function Shape:drawBelowChildren()
+	if not self._fillColor then return end
+	love.graphics.push 'all'
+		love.graphics.setColor(self._fillColor)
+		self:drawShape 'fill'
+	love.graphics.pop()
+end
+
+function Shape:drawAboveChildren()
+	if not self._outlineColor then return end
+	love.graphics.push 'all'
+		love.graphics.setColor(self._outlineColor)
+		love.graphics.setLineWidth(self._outlineWidth)
+		self:drawShape 'line'
+	love.graphics.pop()
+end
+
+local Rectangle = newClass(Shape)
+
+function Rectangle:cornerRadius(radiusX, radiusY)
+	self._cornerRadiusX = radiusX
+	self._cornerRadiusY = radiusY
+	return self
+end
+
+function Rectangle:cornerSegments(segments)
+	self._cornerSegments = segments
+	return self
+end
+
+function Rectangle:drawShape(mode)
+	local x, y, width, height = self:getRectangle()
+	love.graphics.rectangle(mode, x, y, width, height, self._cornerRadiusX, self._cornerRadiusY, self._cornerSegments)
+end
+
 charm.Element = Element
+charm.Shape = Shape
+charm.Rectangle = Rectangle
 
 return charm
