@@ -1,3 +1,5 @@
+For now, Charm is **deprecated**. While I like the idea of an immediate-mode UI builder, I've never been satisfied with the result. Future UI exploration will likely focus on retained mode UI, and it will be with a separate library in a separate repo.
+
 Charm
 =====
 Charm is a library for LÖVE that makes it easier to arrange and draw graphics, such as shapes, images, and text. It's great for managing complex layouts with specific alignment and grouping needs.
